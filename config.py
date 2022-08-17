@@ -8,7 +8,8 @@ class Config():
         self.pvt_weights = ['../bb_weights/pvt_v2_b2.pth', ''][0]
         # BN
         self.use_bn = self.bb not in ['cnn-vgg16']
-        # Augmentation
+        # Data
+        self.size = 2048
         self.preproc_methods = ['flip', 'enhance', 'rotate', 'crop', 'pepper'][:3]
 
         # Components

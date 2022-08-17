@@ -13,7 +13,10 @@ import torch.nn.functional as F
 from data_loader_cache import get_im_gt_name_dict, create_dataloaders, GOSRandomHFlip, GOSResize, GOSRandomCrop, GOSNormalize #GOSDatasetCache,
 from basics import  f1_mae_torch #normPRED, GOSPRF1ScoresCache,f1score_torch,
 from models.isnet import ISNetDIS, ISNetGTEncoder
+from config import Config
 
+
+config = Config()
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 def get_gt_encoder(train_dataloaders, train_datasets, valid_dataloaders, valid_datasets, hypar, train_dataloaders_val, train_datasets_val): #model_path, model_save_fre, max_ite=1000000):
@@ -303,6 +306,7 @@ def train(net, optimizer, train_dataloaders, train_datasets, valid_dataloaders, 
     running_loss = 0.0 # count the toal loss
     running_tar_loss = 0.0 # count the target output loss
     last_f1 = [0 for x in range(len(valid_dataloaders))]
+    last_mae = [0 for x in range(len(valid_dataloaders))]
 
     train_num = train_datasets[0].__len__()
 
@@ -367,8 +371,11 @@ def train(net, optimizer, train_dataloaders, train_datasets, valid_dataloaders, 
             del ds, loss2, loss
             end_inf_loss_back = time.time()-start_inf_loss_back
 
-            print(">>>"+model_path.split('/')[-1]+" - [epoch: %3d/%3d, batch: %5d/%5d, ite: %d] train loss: %3f, tar: %3f, time-per-iter: %3f s, time_read: %3f" % (
-            epoch + 1, epoch_num, (i + 1) * batch_size_train, train_num, ite_num, running_loss / ite_num4val, running_tar_loss / ite_num4val, time.time()-start_last, time.time()-start_last-end_inf_loss_back))
+            if ite_num % (model_save_fre // 10) == 0:
+                print(">>>"+model_path.split('/')[-1]+" - [epoch: %3d/%3d, batch: %5d/%5d, ite: %d] train loss: %3f, tar: %3f, time-per-iter: %3f s, time_read: %3f" % (
+                    epoch + 1, epoch_num, (i + 1) * batch_size_train, train_num, ite_num, running_loss / ite_num4val, running_tar_loss / ite_num4val,
+                    time.time()-start_last, time.time()-start_last-end_inf_loss_back
+                ))
             start_last = time.time()
 
             if ite_num % model_save_fre == 0:  # validate every 2000 iterations
@@ -377,14 +384,17 @@ def train(net, optimizer, train_dataloaders, train_datasets, valid_dataloaders, 
                 tmp_f1, tmp_mae, val_loss, tar_loss, i_val, tmp_time = valid(net, valid_dataloaders, valid_datasets, hypar, epoch)
                 net.train()  # resume train
 
-                tmp_out = 0
-                print("last_f1:",last_f1)
-                print("tmp_f1:",tmp_f1)
+                tmp_out_f1, tmp_out_mae = 0, 0
+                print("last_f1, last_mae:", last_f1, last_mae)
+                print("tmp_f1, tmp_mae:", tmp_f1, tmp_mae)
                 for fi in range(len(last_f1)):
                     if(tmp_f1[fi]>last_f1[fi]):
-                        tmp_out = 1
-                print("tmp_out:",tmp_out)
-                if(tmp_out):
+                        tmp_out_f1 = 1
+                for fi in range(len(last_mae)):
+                    if(tmp_mae[fi]>last_mae[fi]):
+                        tmp_out_mae = 1
+                print("tmp_out_f1, tmp_out_mae:", tmp_out_f1, tmp_out_mae)
+                if(tmp_out_f1):
                     notgood_cnt = 0
                     last_f1 = tmp_f1
                     tmp_f1_str = [str(round(f1x,4)) for f1x in tmp_f1]
@@ -620,49 +630,49 @@ if __name__ == "__main__":
                  "gt_dir": os.path.join(data_root_dir, "DIS5K/DIS-TR/gt"),
                  "im_ext": ".jpg",
                  "gt_ext": ".png",
-                 "cache_dir":"../DIS5K-Cache/DIS-TR"}
+                 "cache_dir": os.path.join(data_root_dir, "DIS5K-Cache/DIS-TR")}
 
     dataset_vd = {"name": "DIS5K-VD",
                  "im_dir": os.path.join(data_root_dir, "DIS5K/DIS-VD/im"),
                  "gt_dir": os.path.join(data_root_dir, "DIS5K/DIS-VD/gt"),
                  "im_ext": ".jpg",
                  "gt_ext": ".png",
-                 "cache_dir":"../DIS5K-Cache/DIS-VD"}
+                 "cache_dir": os.path.join(data_root_dir, "DIS5K-Cache/DIS-VD")}
 
     dataset_te1 = {"name": "DIS5K-TE1",
                  "im_dir": os.path.join(data_root_dir, "DIS5K/DIS-TE1/im"),
                  "gt_dir": os.path.join(data_root_dir, "DIS5K/DIS-TE1/gt"),
                  "im_ext": ".jpg",
                  "gt_ext": ".png",
-                 "cache_dir":"../DIS5K-Cache/DIS-TE1"}
+                 "cache_dir": os.path.join(data_root_dir, "DIS5K-Cache/DIS-TE1")}
 
     dataset_te2 = {"name": "DIS5K-TE2",
                  "im_dir": os.path.join(data_root_dir, "DIS5K/DIS-TE2/im"),
                  "gt_dir": os.path.join(data_root_dir, "DIS5K/DIS-TE2/gt"),
                  "im_ext": ".jpg",
                  "gt_ext": ".png",
-                 "cache_dir":"../DIS5K-Cache/DIS-TE2"}
+                 "cache_dir": os.path.join(data_root_dir, "DIS5K-Cache/DIS-TE2")}
 
     dataset_te3 = {"name": "DIS5K-TE3",
                  "im_dir": os.path.join(data_root_dir, "DIS5K/DIS-TE3/im"),
                  "gt_dir": os.path.join(data_root_dir, "DIS5K/DIS-TE3/gt"),
                  "im_ext": ".jpg",
                  "gt_ext": ".png",
-                 "cache_dir":"../DIS5K-Cache/DIS-TE3"}
+                 "cache_dir": os.path.join(data_root_dir, "DIS5K-Cache/DIS-TE3")}
 
     dataset_te4 = {"name": "DIS5K-TE4",
                  "im_dir": os.path.join(data_root_dir, "DIS5K/DIS-TE4/im"),
                  "gt_dir": os.path.join(data_root_dir, "DIS5K/DIS-TE4/gt"),
                  "im_ext": ".jpg",
                  "gt_ext": ".png",
-                 "cache_dir":"../DIS5K-Cache/DIS-TE4"}
+                 "cache_dir": os.path.join(data_root_dir, "DIS5K-Cache/DIS-TE4")}
     ### test your own dataset
     dataset_demo = {"name": "your-dataset",
-                 "im_dir": "../your-dataset/im",
+                 "im_dir":  os.path.join(data_root_dir, "your-dataset/im"),
                  "gt_dir": "",
                  "im_ext": ".jpg",
                  "gt_ext": "",
-                 "cache_dir":"../your-dataset/cache"}
+                 "cache_dir": os.path.join(data_root_dir, "your-dataset/cache")}
 
     train_datasets = [dataset_tr] ## users can create mutiple dictionary for setting a list of datasets as training set
     # valid_datasets = [dataset_vd] ## users can create mutiple dictionary for setting a list of datasets as vaidation sets or inference sets
@@ -681,13 +691,13 @@ if __name__ == "__main__":
 
     if hypar["mode"] == "train":
         hypar["valid_out_dir"] = "" ## for "train" model leave it as "", for "valid"("inference") mode: set it according to your local directory
-        hypar["model_path"] ="../saved_models/IS-Net-test" ## model weights saving (or restoring) path
+        hypar["model_path"] = os.path.join(data_root_dir, "saved_models/IS-Net-test") ## model weights saving (or restoring) path
         hypar["restore_model"] = "" ## name of the segmentation model weights .pth for resume training process from last stop or for the inferencing
         hypar["start_ite"] = 0 ## start iteration for the training, can be changed to match the restored training process
         hypar["gt_encoder_model"] = ""
     else: ## configure the segmentation output path and the to-be-used model weights path
-        hypar["valid_out_dir"] = "../your-results/"##"../DIS5K-Results-test" ## output inferenced segmentation maps into this fold
-        hypar["model_path"] = "../saved_models/IS-Net" ## load trained weights from this path
+        hypar["valid_out_dir"] =  os.path.join(data_root_dir, "your-results/")## os.path.join(data_root_dir, "DIS5K-Results-test") ## output inferenced segmentation maps into this fold
+        hypar["model_path"] =  os.path.join(data_root_dir, "saved_models/IS-Net") ## load trained weights from this path
         hypar["restore_model"] = "isnet.pth"##"isnet.pth" ## name of the to-be-loaded weights
 
     # if hypar["restore_model"]!="":
@@ -700,13 +710,13 @@ if __name__ == "__main__":
     ## -- 2.3. cache data spatial size --
     ## To handle large size input images, which take a lot of time for loading in training,
     #  we introduce the cache mechanism for pre-convering and resizing the jpg and png images into .pt file
-    hypar["cache_size"] = [1024, 1024] ## cached input spatial resolution, can be configured into different size
-    hypar["cache_boost_train"] = False ## "True" or "False", indicates wheather to load all the training datasets into RAM, True will greatly speed the training process while requires more RAM
-    hypar["cache_boost_valid"] = False ## "True" or "False", indicates wheather to load all the validation datasets into RAM, True will greatly speed the training process while requires more RAM
+    hypar["cache_size"] = [config.size, config.size] ## cached input spatial resolution, can be configured into different size
+    hypar["cache_boost_train"] = True ## "True" or "False", indicates wheather to load all the training datasets into RAM, True will greatly speed the training process while requires more RAM
+    hypar["cache_boost_valid"] = True ## "True" or "False", indicates wheather to load all the validation datasets into RAM, True will greatly speed the training process while requires more RAM
 
     ## --- 2.4. data augmentation parameters ---
-    hypar["input_size"] = [1024, 1024] ## mdoel input spatial size, usually use the same value hypar["cache_size"], which means we don't further resize the images
-    hypar["crop_size"] = [1024, 1024] ## random crop size from the input, it is usually set as smaller than hypar["cache_size"], e.g., [920,920] for data augmentation
+    hypar["input_size"] = [config.size, config.size] ## mdoel input spatial size, usually use the same value hypar["cache_size"], which means we don't further resize the images
+    hypar["crop_size"] = [config.size, config.size] ## random crop size from the input, it is usually set as smaller than hypar["cache_size"], e.g., [920,920] for data augmentation
     hypar["random_flip_h"] = 1 ## horizontal flip, currently hard coded in the dataloader and it is not in use
     hypar["random_flip_v"] = 0 ## vertical flip , currently not in use
 
