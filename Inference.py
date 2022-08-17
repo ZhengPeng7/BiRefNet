@@ -13,7 +13,7 @@ import torch.optim as optim
 import torch.nn.functional as F
 from torchvision.transforms.functional import normalize
 
-from models import *
+from models.isnet import ISNetDIS
 
 
 if __name__ == "__main__":

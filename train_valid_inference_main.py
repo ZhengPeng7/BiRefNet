@@ -12,7 +12,7 @@ import torch.nn.functional as F
 
 from data_loader_cache import get_im_gt_name_dict, create_dataloaders, GOSRandomHFlip, GOSResize, GOSRandomCrop, GOSNormalize #GOSDatasetCache,
 from basics import  f1_mae_torch #normPRED, GOSPRF1ScoresCache,f1score_torch,
-from models import *
+from models.isnet import ISNetDIS, ISNetGTEncoder
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
