@@ -176,10 +176,10 @@ def compute_hce(pred_root,gt_root,gt_ske_root):
     return np.mean(np.array(hces)[:,-1])
 
 def main():
-
-    gt_root = "../DIS5K/DIS-VD/gt"
+    data_root_dir = '/root/autodl-tmp/datasets/dis'
+    gt_root = os.path.join(data_root_dir, "DIS5K/DIS-VD/gt")
     gt_ske_root = ""
-    pred_root = "../Results/isnet(ours)/DIS-VD"
+    pred_root = os.path.join(data_root_dir, "Results/isnet(ours)/DIS-VD")
 
     print("The average HCE metric: ", compute_hce(pred_root,gt_root,gt_ske_root))
 

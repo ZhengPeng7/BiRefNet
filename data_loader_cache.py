@@ -265,7 +265,7 @@ class GOSDatasetCache(Dataset):
         return self.load_cache(cache_folder)
 
     def cache(self,cache_folder):
-        os.mkdir(cache_folder)
+        os.makedirs(cache_folder)
         cached_dataset = deepcopy(self.dataset)
 
         # ims_list = []

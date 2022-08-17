@@ -60,7 +60,7 @@ def get_gt_encoder(train_dataloaders, train_datasets, valid_dataloaders, valid_d
     batch_size_valid = hypar["batch_size_valid"]
 
     if(not os.path.exists(model_path)):
-        os.mkdir(model_path)
+        os.makedirs(model_path)
 
     ite_num = hypar["start_ite"] # count the total iteration number
     ite_num4val = 0 #
@@ -296,7 +296,7 @@ def train(net, optimizer, train_dataloaders, train_datasets, valid_dataloaders, 
     batch_size_valid = hypar["batch_size_valid"]
 
     if(not os.path.exists(model_path)):
-        os.mkdir(model_path)
+        os.makedirs(model_path)
 
     ite_num = hypar["start_ite"] # count the toal iteration number
     ite_num4val = 0 #
@@ -614,44 +614,45 @@ if __name__ == "__main__":
     train_datasets, valid_datasets = [], []
     dataset_1, dataset_1 = {}, {}
 
+    data_root_dir = '/root/autodl-tmp/datasets/dis'
     dataset_tr = {"name": "DIS5K-TR",
-                 "im_dir": "../DIS5K/DIS-TR/im",
-                 "gt_dir": "../DIS5K/DIS-TR/gt",
+                 "im_dir": os.path.join(data_root_dir, "DIS5K/DIS-TR/im"),
+                 "gt_dir": os.path.join(data_root_dir, "DIS5K/DIS-TR/gt"),
                  "im_ext": ".jpg",
                  "gt_ext": ".png",
                  "cache_dir":"../DIS5K-Cache/DIS-TR"}
 
     dataset_vd = {"name": "DIS5K-VD",
-                 "im_dir": "../DIS5K/DIS-VD/im",
-                 "gt_dir": "../DIS5K/DIS-VD/gt",
+                 "im_dir": os.path.join(data_root_dir, "DIS5K/DIS-VD/im"),
+                 "gt_dir": os.path.join(data_root_dir, "DIS5K/DIS-VD/gt"),
                  "im_ext": ".jpg",
                  "gt_ext": ".png",
                  "cache_dir":"../DIS5K-Cache/DIS-VD"}
 
     dataset_te1 = {"name": "DIS5K-TE1",
-                 "im_dir": "../DIS5K/DIS-TE1/im",
-                 "gt_dir": "../DIS5K/DIS-TE1/gt",
+                 "im_dir": os.path.join(data_root_dir, "DIS5K/DIS-TE1/im"),
+                 "gt_dir": os.path.join(data_root_dir, "DIS5K/DIS-TE1/gt"),
                  "im_ext": ".jpg",
                  "gt_ext": ".png",
                  "cache_dir":"../DIS5K-Cache/DIS-TE1"}
 
     dataset_te2 = {"name": "DIS5K-TE2",
-                 "im_dir": "../DIS5K/DIS-TE2/im",
-                 "gt_dir": "../DIS5K/DIS-TE2/gt",
+                 "im_dir": os.path.join(data_root_dir, "DIS5K/DIS-TE2/im"),
+                 "gt_dir": os.path.join(data_root_dir, "DIS5K/DIS-TE2/gt"),
                  "im_ext": ".jpg",
                  "gt_ext": ".png",
                  "cache_dir":"../DIS5K-Cache/DIS-TE2"}
 
     dataset_te3 = {"name": "DIS5K-TE3",
-                 "im_dir": "../DIS5K/DIS-TE3/im",
-                 "gt_dir": "../DIS5K/DIS-TE3/gt",
+                 "im_dir": os.path.join(data_root_dir, "DIS5K/DIS-TE3/im"),
+                 "gt_dir": os.path.join(data_root_dir, "DIS5K/DIS-TE3/gt"),
                  "im_ext": ".jpg",
                  "gt_ext": ".png",
                  "cache_dir":"../DIS5K-Cache/DIS-TE3"}
 
     dataset_te4 = {"name": "DIS5K-TE4",
-                 "im_dir": "../DIS5K/DIS-TE4/im",
-                 "gt_dir": "../DIS5K/DIS-TE4/gt",
+                 "im_dir": os.path.join(data_root_dir, "DIS5K/DIS-TE4/im"),
+                 "gt_dir": os.path.join(data_root_dir, "DIS5K/DIS-TE4/gt"),
                  "im_ext": ".jpg",
                  "gt_ext": ".png",
                  "cache_dir":"../DIS5K-Cache/DIS-TE4"}
