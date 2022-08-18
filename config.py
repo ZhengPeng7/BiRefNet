@@ -9,10 +9,12 @@ class Config():
         # BN
         self.use_bn = self.bb not in ['cnn-vgg16']
         # Data
-        self.size = 2048
+        self.size = 1024
+        self.batch_size = 3
         self.preproc_methods = ['flip', 'enhance', 'rotate', 'crop', 'pepper'][:3]
 
         # Components
+        self.dec_blk = ['ResBlk'][0]
 
         # Training
 

@@ -12,7 +12,7 @@ import torch.nn.functional as F
 
 from data_loader_cache import get_im_gt_name_dict, create_dataloaders, GOSRandomHFlip, GOSResize, GOSRandomCrop, GOSNormalize #GOSDatasetCache,
 from basics import  f1_mae_torch #normPRED, GOSPRF1ScoresCache,f1score_torch,
-from models.isnet import ISNetDIS, ISNetGTEncoder
+from models.isnet import ISNetDIS#, ISNetGTEncoder
 from config import Config
 
 
@@ -729,7 +729,7 @@ if __name__ == "__main__":
     hypar["early_stop"] = 20 ## stop the training when no improvement in the past 20 validation periods, smaller numbers can be used here e.g., 5 or 10.
     hypar["model_save_fre"] = 2000 ## valid and save model weights every 2000 iterations
 
-    hypar["batch_size_train"] = 7 ## batch size for training
+    hypar["batch_size_train"] = config.batch_size ## batch size for training
     hypar["batch_size_valid"] = 1 ## batch size for validation and inferencing
     print("batch size: ", hypar["batch_size_train"])
 
