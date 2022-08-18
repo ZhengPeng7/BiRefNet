@@ -264,7 +264,9 @@ def valid_gt_encoder(net, valid_dataloaders, valid_datasets, hypar, epoch=0):
             val_loss += loss_val.item()#data[0]
             tar_loss += loss2_val.item()#data[0]
 
-            print("[validating: %5d/%5d] val_ls:%f, tar_ls: %f, f1: %f, mae: %f, time: %f"% (i_val, val_num, val_loss / (i_val + 1), tar_loss / (i_val + 1), np.amax(F1[i_test,:]), MAE[i_test],t_end))
+            
+            if (i_val + 1) % 50 == 0:
+                print("[validating: %5d/%5d] val_ls:%f, tar_ls: %f, f1: %f, mae: %f, time: %f"% (i_val, val_num, val_loss / (i_val + 1), tar_loss / (i_val + 1), np.amax(F1[i_test,:]), MAE[i_test],t_end))
 
             del loss2_val, loss_val
 
@@ -316,6 +318,7 @@ def train(net, optimizer, train_dataloaders, train_datasets, valid_dataloaders, 
     gos_dataloader = train_dataloaders[0]
     epoch_num = hypar["max_epoch_num"]
     notgood_cnt = 0
+    best_f1, best_mae = 0, 0
     for epoch in range(epoch_num): ## set the epoch num as 100000
 
         for i, data in enumerate(gos_dataloader):
@@ -384,17 +387,16 @@ def train(net, optimizer, train_dataloaders, train_datasets, valid_dataloaders, 
                 tmp_f1, tmp_mae, val_loss, tar_loss, i_val, tmp_time = valid(net, valid_dataloaders, valid_datasets, hypar, epoch)
                 net.train()  # resume train
 
-                tmp_out_f1, tmp_out_mae = 0, 0
                 print("last_f1, last_mae:", last_f1, last_mae)
+                update = 0
+                for fi in range(len(tmp_f1)):
+                    if(tmp_f1[fi]>best_f1):
+                        best_f1 = tmp_f1[0]
+                        best_mae = tmp_mae[0]
+                        update = 1
                 print("tmp_f1, tmp_mae:", tmp_f1, tmp_mae)
-                for fi in range(len(last_f1)):
-                    if(tmp_f1[fi]>last_f1[fi]):
-                        tmp_out_f1 = 1
-                for fi in range(len(last_mae)):
-                    if(tmp_mae[fi]>last_mae[fi]):
-                        tmp_out_mae = 1
-                print("tmp_out_f1, tmp_out_mae:", tmp_out_f1, tmp_out_mae)
-                if(tmp_out_f1):
+                print("best: f1={:.4f}, mae={:.4f}".format(best_f1, best_mae))
+                if update:
                     notgood_cnt = 0
                     last_f1 = tmp_f1
                     tmp_f1_str = [str(round(f1x,4)) for f1x in tmp_f1]
@@ -511,7 +513,8 @@ def valid(net, valid_dataloaders, valid_datasets, hypar, epoch=0):
             val_loss += loss_val.item()#data[0]
             tar_loss += loss2_val.item()#data[0]
 
-            print("[validating: %5d/%5d] val_ls:%f, tar_ls: %f, f1: %f, mae: %f, time: %f"% (i_val, val_num, val_loss / (i_val + 1), tar_loss / (i_val + 1), np.amax(F1[i_test,:]), MAE[i_test],t_end))
+            if (i_val + 1) % 50 == 0:
+                print("[validating: %5d/%5d] val_ls:%f, tar_ls: %f, f1: %f, mae: %f, time: %f"% (i_val, val_num, val_loss / (i_val + 1), tar_loss / (i_val + 1), np.amax(F1[i_test,:]), MAE[i_test],t_end))
 
             del loss2_val, loss_val
 
@@ -711,8 +714,8 @@ if __name__ == "__main__":
     ## To handle large size input images, which take a lot of time for loading in training,
     #  we introduce the cache mechanism for pre-convering and resizing the jpg and png images into .pt file
     hypar["cache_size"] = [config.size, config.size] ## cached input spatial resolution, can be configured into different size
-    hypar["cache_boost_train"] = True ## "True" or "False", indicates wheather to load all the training datasets into RAM, True will greatly speed the training process while requires more RAM
-    hypar["cache_boost_valid"] = True ## "True" or "False", indicates wheather to load all the validation datasets into RAM, True will greatly speed the training process while requires more RAM
+    hypar["cache_boost_train"] = False ## "True" or "False", indicates wheather to load all the training datasets into RAM, True will greatly speed the training process while requires more RAM
+    hypar["cache_boost_valid"] = False ## "True" or "False", indicates wheather to load all the validation datasets into RAM, True will greatly speed the training process while requires more RAM
 
     ## --- 2.4. data augmentation parameters ---
     hypar["input_size"] = [config.size, config.size] ## mdoel input spatial size, usually use the same value hypar["cache_size"], which means we don't further resize the images
@@ -726,7 +729,7 @@ if __name__ == "__main__":
     hypar["early_stop"] = 20 ## stop the training when no improvement in the past 20 validation periods, smaller numbers can be used here e.g., 5 or 10.
     hypar["model_save_fre"] = 2000 ## valid and save model weights every 2000 iterations
 
-    hypar["batch_size_train"] = 8 ## batch size for training
+    hypar["batch_size_train"] = 7 ## batch size for training
     hypar["batch_size_valid"] = 1 ## batch size for validation and inferencing
     print("batch size: ", hypar["batch_size_train"])
 
