@@ -130,6 +130,12 @@ class ISNetDIS(nn.Module):
         self.dec_layer1 = DecBlk(lateral_channels_in[bb][3], lateral_channels_in[bb][3]//2)
         self.conv_out1 = nn.Sequential(nn.Conv2d(lateral_channels_in[bb][3]//2, 1, 1, 1, 0))
 
+        if self.config.freeze_bb:
+            print(self.named_parameters())
+            for key, value in self.named_parameters():
+                if 'bb.' in key:
+                    value.requires_grad = False
+
     def compute_loss_kl(self, preds, targets, dfs, fs, mode='MSE'):
 
         # return muti_loss_fusion(preds,targets)

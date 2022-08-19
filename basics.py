@@ -56,7 +56,7 @@ def f1_mae_torch(pred, gt, valid_dataset, idx, mybins, hypar):
 		if(not os.path.exists(dataset_folder)):
 			os.mkdir(dataset_folder)
 		io.imsave(os.path.join(dataset_folder,valid_dataset.dataset["im_name"][idx]+".png"),pred.cpu().data.numpy().astype(np.uint8))
-	print(valid_dataset.dataset["im_name"][idx]+".png")
-	print("time for evaluation : ", time.time()-tic)
+	# print(valid_dataset.dataset["im_name"][idx]+".png")
+	# print("time for evaluation : ", time.time()-tic)
 
 	return pre.cpu().data.numpy(), rec.cpu().data.numpy(), f1.cpu().data.numpy(), mae.cpu().data.numpy()
