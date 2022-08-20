@@ -124,6 +124,7 @@ def train(net, optimizer, train_dataloaders, train_datasets, valid_dataloaders, 
                         best_wfm_all_ds = wFm_all_ds
                         best_emean_all_ds = Emean_all_ds
                 for idx_tmp in range(len(Sm_all_ds)):
+                    # Dependin on the Sm of all test sets to decide whether to update the best.
                     if Sm_all_ds[idx_tmp] > best_sm_all_ds[idx_tmp]:
                         improved_count += 1
                 if improved_count > len(Sm_all_ds) / 2:
