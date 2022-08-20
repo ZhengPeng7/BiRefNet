@@ -1,4 +1,5 @@
 import os
+import torch
 
 
 class Config():
@@ -11,14 +12,16 @@ class Config():
         self.use_bn = self.bb not in ['cnn-vgg16']
         # Data
         self.size = 1024
-        self.batch_size = 8
+        self.batch_size = 30
         self.preproc_methods = ['flip', 'enhance', 'rotate', 'crop', 'pepper'][:3]
 
         # Components
         self.dec_blk = ['ResBlk'][0]
 
         # Training
+        self.eval_all_metrics = True
 
         # Loss
 
         # others
+        self.device = ['cuda', 'cpu'][0]
