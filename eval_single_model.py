@@ -92,12 +92,16 @@ valid_dataloaders, valid_datasets = create_dataloaders(valid_nm_im_gt_list,
 print(len(valid_dataloaders), " valid dataloaders created")
 print("--- build model ---")
 net = hypar["model"]
-net.load_state_dict(torch.load(
-    '../../../datasets/dis/saved_models/IS-Net-test/gpu_itr_16000_traLoss_0.0555_traTarLoss_0.0555_valLoss_0.2227_valTarLoss_0.2227_maxF1_0.8119_mae_0.077_time_0.034913.pth',
-    map_location="cpu"
-))
 if 'cuda' in config.device:
+    net.load_state_dict(torch.load(
+        '../../../datasets/dis/saved_models/IS-Net-test/gpu_itr_16000_traLoss_0.0555_traTarLoss_0.0555_valLoss_0.2227_valTarLoss_0.2227_maxF1_0.8119_mae_0.077_time_0.034913.pth'
+    ))
     net.cuda()
+else:
+    net.load_state_dict(torch.load(
+        '../../../datasets/dis/saved_models/IS-Net-test/gpu_itr_16000_traLoss_0.0555_traTarLoss_0.0555_valLoss_0.2227_valTarLoss_0.2227_maxF1_0.8119_mae_0.077_time_0.034913.pth',
+        map_location="cpu"
+    ))
 
 res = valid(net, valid_dataloaders, valid_datasets, hypar, eval_all_metrics=config.eval_all_metrics)
 if config.eval_all_metrics:
