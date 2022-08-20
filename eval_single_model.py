@@ -105,7 +105,7 @@ else:
 
 res = valid(net, valid_dataloaders, valid_datasets, hypar, eval_all_metrics=config.eval_all_metrics)
 if config.eval_all_metrics:
-    keys = ['Emax_all_ds', 'Sm_all_ds', 'Fmax_all_ds', 'MAE_all_ds', 'wFm_all_ds', 'val_loss', 'tar_loss', 'i_val']
+    keys = ['Emax_all_ds', 'Sm_all_ds', 'Fmax_all_ds', 'MAE_all_ds', 'wFm_all_ds', 'Emean_all_ds', 'val_loss', 'tar_loss', 'i_val']
 else:
     keys = ['tmp_sm', 'tmp_mae', 'val_loss', 'tar_loss', 'i_val']
 for k, r in zip(keys, res):

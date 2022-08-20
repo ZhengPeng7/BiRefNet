@@ -47,7 +47,7 @@ def train(net, optimizer, train_dataloaders, train_datasets, valid_dataloaders, 
     notgood_cnt = 0
     best_sm_all_ds, best_mae_all_ds = [], []
     if config.eval_all_metrics:
-        best_emax_all_ds, best_fmax_all_ds, best_wfm_all_ds = [], []
+        best_emax_all_ds, best_fmax_all_ds, best_wfm_all_ds, best_emean_all_ds = [], [], [], []
     for epoch in range(epoch_num): ## set the epoch num as 100000
 
         for i, data in enumerate(gos_dataloader):
@@ -108,49 +108,52 @@ def train(net, optimizer, train_dataloaders, train_datasets, valid_dataloaders, 
                 notgood_cnt += 1
                 net.eval()
                 if config.eval_all_metrics:
-                    tmp_emax, tmp_sm, tmp_fmax, tmp_mae, tmp_wfm, val_loss, tar_loss, i_val, tmp_time = valid(net, valid_dataloaders, valid_datasets, hypar, epoch, eval_all_metrics=config.eval_all_metrics)
+                    Emax_all_ds, Sm_all_ds, Fmax_all_ds, MAE_all_ds, wFm_all_ds, Emean_all_ds, val_loss, tar_loss, i_val = valid(net, valid_dataloaders, valid_datasets, hypar, epoch, eval_all_metrics=config.eval_all_metrics)
                 else:
-                    tmp_sm, tmp_mae, val_loss, tar_loss, i_val, tmp_time = valid(net, valid_dataloaders, valid_datasets, hypar, epoch, eval_all_metrics=config.eval_all_metrics)
+                    Sm_all_ds, MAE_all_ds, val_loss, tar_loss, i_val = valid(net, valid_dataloaders, valid_datasets, hypar, epoch, eval_all_metrics=config.eval_all_metrics)
                 net.train()  # resume train
 
                 print("last_sm, last_mae:", last_sm, last_mae)
                 update = 0
                 improved_count = 0
                 if not best_sm_all_ds:
-                    best_sm_all_ds, best_mae_all_ds = tmp_sm, tmp_mae
+                    best_sm_all_ds, best_mae_all_ds = Sm_all_ds, MAE_all_ds
                     if config.eval_all_metrics:
-                        best_emax_all_ds = tmp_emax
-                        best_fmax_all_ds = tmp_fmax
-                        best_wfm_all_ds = tmp_wfm
-                for idx_tmp in range(len(tmp_sm)):
-                    if tmp_sm[idx_tmp] > best_sm_all_ds[idx_tmp]:
+                        best_emax_all_ds = Emax_all_ds
+                        best_fmax_all_ds = Fmax_all_ds
+                        best_wfm_all_ds = wFm_all_ds
+                        best_emean_all_ds = Emean_all_ds
+                for idx_tmp in range(len(Sm_all_ds)):
+                    if Sm_all_ds[idx_tmp] > best_sm_all_ds[idx_tmp]:
                         improved_count += 1
-                if improved_count > len(tmp_sm) / 2:
-                    for idx_imp in range(len(tmp_sm)):
-                        best_sm_all_ds[idx_imp] = tmp_sm[idx_imp]
-                        best_mae_all_ds[idx_imp] = tmp_mae[idx_imp]
+                if improved_count > len(Sm_all_ds) / 2:
+                    for idx_imp in range(len(Sm_all_ds)):
+                        best_sm_all_ds[idx_imp] = Sm_all_ds[idx_imp]
+                        best_mae_all_ds[idx_imp] = MAE_all_ds[idx_imp]
                         if config.eval_all_metrics:
-                            best_emax_all_ds[idx_tmp] = tmp_emax[idx_tmp]
-                            best_fmax_all_ds[idx_tmp] = tmp_fmax[idx_tmp]
-                            best_wfm_all_ds[idx_tmp] = tmp_wfm[idx_tmp]
+                            best_emax_all_ds[idx_tmp] = Emax_all_ds[idx_tmp]
+                            best_fmax_all_ds[idx_tmp] = Fmax_all_ds[idx_tmp]
+                            best_wfm_all_ds[idx_tmp] = wFm_all_ds[idx_tmp]
+                            best_emean_all_ds[idx_tmp] = Emean_all_ds[idx_tmp]
                     update = 1
-                print("tmp_sm, tmp_mae:", tmp_sm, tmp_mae)
+                print("tmp_sm, tmp_mae:", Sm_all_ds, MAE_all_ds)
                 print("Best of sm, mae:\t", 
                     list(np.round(best_sm_all_ds, 4)),
                     list(np.round(best_mae_all_ds, 4))
                 )
                 if config.eval_all_metrics:
-                    print("tmp_emax, tmp_fmax, tmp_wfm:", tmp_emax, tmp_fmax, tmp_wfm)
-                    print("Best of emax, fmax, wfm:\t",
+                    print("Emax_all_ds, Fmax_all_ds, wFm_all_ds, Emean_all_ds:", Emax_all_ds, Fmax_all_ds, wFm_all_ds, Emean_all_ds)
+                    print("Best of emax, fmax, wfm, emean:\t",
                         list(np.round(best_emax_all_ds, 4)),
                         list(np.round(best_fmax_all_ds, 4)),
-                        list(np.round(best_wfm_all_ds, 4))
+                        list(np.round(best_wfm_all_ds, 4)),
+                        list(np.round(best_emean_all_ds, 4))
                     )
                 if update:
                     notgood_cnt = 0
-                    last_sm = tmp_sm
-                    tmp_sm_str = [str(round(smx,4)) for smx in tmp_sm]
-                    tmp_mae_str = [str(round(mx,4)) for mx in tmp_mae]
+                    last_sm = Sm_all_ds
+                    tmp_sm_str = [str(round(smx,4)) for smx in Sm_all_ds]
+                    tmp_mae_str = [str(round(mx,4)) for mx in MAE_all_ds]
                     maxsm = '_'.join(tmp_sm_str)
                     meanM = '_'.join(tmp_mae_str)
                     # .cpu().detach().numpy()
@@ -161,7 +164,7 @@ def train(net, optimizer, train_dataloaders, train_datasets, valid_dataloaders, 
                                 "_valTarLoss_"+str(np.round(tar_loss /(i_val+1),4)) + \
                                 "_maxsm_" + maxsm + \
                                 "_mae_" + meanM + \
-                                "_time_" + str(np.round(np.mean(np.array(tmp_time))/batch_size_valid,6))+".pth"
+                                ".pth"
                     torch.save(net.state_dict(), model_path + model_name)
 
                 running_loss = 0.0
@@ -183,13 +186,7 @@ def valid(net, valid_dataloaders, valid_datasets, hypar, epoch=0, eval_all_metri
     tar_loss = 0.0
     val_cnt = 0.0
 
-    tmp_sm = []
-    tmp_mae = []
-    tmp_time = []
-
-    start_valid = time.time()
-
-    Emax_all_ds, Sm_all_ds, Fmax_all_ds, MAE_all_ds, wFm_all_ds = [], [], [], [], []
+    Emax_all_ds, Sm_all_ds, Fmax_all_ds, MAE_all_ds, wFm_all_ds, Emean_all_ds = [], [], [], [], [], []
     for k in range(len(valid_dataloaders)):
 
         valid_dataloader = valid_dataloaders[k]
@@ -197,7 +194,7 @@ def valid(net, valid_dataloaders, valid_datasets, hypar, epoch=0, eval_all_metri
 
         val_num = valid_dataset.__len__()
         mybins = np.arange(0,256)
-        Emax, Sm, Fmax, MAE, wFm = [], [], [], [], []
+        Emax, Sm, Fmax, MAE, wFm, Emean = [], [], [], [], [], []
 
         for i_val, data_val in enumerate(valid_dataloader):
             val_cnt = val_cnt + 1.0
@@ -216,10 +213,7 @@ def valid(net, valid_dataloaders, valid_datasets, hypar, epoch=0, eval_all_metri
             else:
                 inputs_val_v, labels_val_v = Variable(inputs_val, requires_grad=False), Variable(labels_val,requires_grad=False)
 
-            t_start = time.time()
             ds_val = net(inputs_val_v)[0]
-            t_end = time.time()-t_start
-            tmp_time.append(t_end)
 
             # loss2_val, loss_val = muti_loss_fusion(ds_val, labels_val_v)
             loss2_val, loss_val = net.compute_loss(ds_val, labels_val_v)
@@ -256,6 +250,7 @@ def valid(net, valid_dataloaders, valid_datasets, hypar, epoch=0, eval_all_metri
                     Emax.append(em['curve'].max())
                     Fmax.append(fm['curve'].max())
                     wFm.append(wfm)
+                    Emean.append(em['curve'].mean())
 
                 del ds_val, gt
                 gc.collect()
@@ -280,13 +275,15 @@ def valid(net, valid_dataloaders, valid_datasets, hypar, epoch=0, eval_all_metri
             mean_emax = np.mean(Emax)
             mean_fmax = np.mean(Fmax)
             mean_wfm = np.mean(wFm)
+            mean_emean = np.mean(Emean)
             Emax_all_ds.append(mean_emax)
             Fmax_all_ds.append(mean_fmax)
             wFm_all_ds.append(mean_wfm)
+            Emean_all_ds.append(mean_emean)
 
 
     if eval_all_metrics:
-        return Emax_all_ds, Sm_all_ds, Fmax_all_ds, MAE_all_ds, wFm_all_ds, val_loss, tar_loss, i_val
+        return Emax_all_ds, Sm_all_ds, Fmax_all_ds, MAE_all_ds, wFm_all_ds, Emean_all_ds, val_loss, tar_loss, i_val
     else:
         return Sm_all_ds, MAE_all_ds, val_loss, tar_loss, i_val
 
