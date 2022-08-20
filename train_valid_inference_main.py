@@ -262,7 +262,7 @@ def valid(net, valid_dataloaders, valid_datasets, hypar, epoch=0, eval_all_metri
 
 
             if (i_val + 1) % 50 == 0:
-                print("[validating: %5d/%5d] val_ls:%f, tar_ls: %f, Sm: %f, mae: %f, time: %f"% (i_val, val_num, val_loss / (i_val + 1), tar_loss / (i_val + 1), sm, mae, t_end))
+                print("[validating: %5d/%5d] val_ls:%f, tar_ls: %f, Sm: %f, mae: %f"% (i_val, val_num, val_loss / (i_val + 1), tar_loss / (i_val + 1), sm, mae))
 
             del loss2_val, loss_val
 
