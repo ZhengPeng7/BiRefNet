@@ -13,11 +13,17 @@ config = Config()
 
 
 class ResBlk(nn.Module):
-    def __init__(self, channel_in=64, channel_out=64, groups=0):
+    def __init__(self, channel_in=64, channel_out=64, dilation=config.dilation):
         super(ResBlk, self).__init__()
-        self.conv_in = nn.Conv2d(channel_in, 64, 3, 1, 1)
+        if dilation == 1:
+            self.conv_in = nn.Conv2d(channel_in, 64, 3, 1, 1)
+        elif dilation == 2:
+            self.conv_in = nn.Conv2d(channel_in, 64, 3, 1, dilation, dilation=dilation)
         self.relu_in = nn.ReLU(inplace=True)
-        self.conv_out = nn.Conv2d(64, channel_out, 3, 1, 1)
+        if dilation == 1:
+            self.conv_in = nn.Conv2d(64, channel_out, 3, 1, 1)
+        elif dilation == 2:
+            self.conv_in = nn.Conv2d(64, channel_out, 3, 1, dilation, dilation=dilation)
         if config.use_bn:
             self.bn_in = nn.BatchNorm2d(64)
             self.bn_out = nn.BatchNorm2d(channel_out)

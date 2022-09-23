@@ -1,11 +1,8 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from functools import partial
 
 from timm.models.layers import DropPath, to_2tuple, trunc_normal_
-from timm.models.registry import register_model
-from timm.models.vision_transformer import _cfg
 from timm.models.registry import register_model
 
 import math
@@ -303,14 +300,6 @@ class PyramidVisionTransformerImpr(nn.Module):
     def reset_classifier(self, num_classes, global_pool=''):
         self.num_classes = num_classes
         self.head = nn.Linear(self.embed_dim, num_classes) if num_classes > 0 else nn.Identity()
-
-    # def _get_pos_embed(self, pos_embed, patch_embed, H, W):
-    #     if H * W == self.patch_embed1.num_patches:
-    #         return pos_embed
-    #     else:
-    #         return F.interpolate(
-    #             pos_embed.reshape(1, patch_embed.H, patch_embed.W, -1).permute(0, 3, 1, 2),
-    #             size=(H, W), mode="bilinear").reshape(1, -1, H * W).permute(0, 2, 1)
 
     def forward_features(self, x):
         B = x.shape[0]

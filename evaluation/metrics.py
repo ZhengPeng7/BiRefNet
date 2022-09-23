@@ -1,9 +1,77 @@
+import os
+from tqdm import tqdm
+import cv2
 import numpy as np
 from scipy.ndimage import convolve, distance_transform_edt as bwdist
 
 
 _EPS = np.spacing(1)
 _TYPE = np.float64
+
+
+def evaluator(gt_paths, pred_paths, metrics=['S', 'MAE', 'E', 'F', 'WF']):
+    # define measures
+    if 'E' in metrics:
+        EM = Emeasure()
+    if 'S' in metrics:
+        SM = Smeasure()
+    if 'F' in metrics:
+        FM = Fmeasure()
+    if 'MAE' in metrics:
+        MAE = MAEmeasure()
+    if 'WF' in metrics:
+        WFM = WeightedFmeasure()
+
+    if isinstance(gt_paths, list) and isinstance(pred_paths, list):
+        print(len(gt_paths), len(pred_paths))
+        assert len(gt_paths) == len(pred_paths)
+
+    for idx_sample in range(len(gt_paths)):
+    # for idx_sample in tqdm(range(len(gt_paths)), total=len(gt_paths)):
+        gt = gt_paths[idx_sample]
+        pred = pred_paths[idx_sample]
+
+        pred = pred[:-4] + '.png'
+        if os.path.exists(pred):
+            pred_ary = cv2.imread(pred, cv2.IMREAD_GRAYSCALE)
+        else:
+            pred_ary = cv2.imread(pred.replace('.png', '.jpg'), cv2.IMREAD_GRAYSCALE)
+        gt_ary = cv2.imread(gt, cv2.IMREAD_GRAYSCALE)
+        pred_ary = cv2.resize(pred_ary, (gt_ary.shape[1], gt_ary.shape[0]))
+
+        if 'E' in metrics:
+            EM.step(pred=pred_ary, gt=gt_ary)
+        if 'S' in metrics:
+            SM.step(pred=pred_ary, gt=gt_ary)
+        if 'F' in metrics:
+            FM.step(pred=pred_ary, gt=gt_ary)
+        if 'MAE' in metrics:
+            MAE.step(pred=pred_ary, gt=gt_ary)
+        if 'WF' in metrics:
+            WFM.step(pred=pred_ary, gt=gt_ary)
+
+    if 'E' in metrics:
+        em = EM.get_results()['em']
+    else:
+        em = {'curve': np.array([np.float128(-1)]), 'adp': np.float128(-1)}
+    if 'S' in metrics:
+        sm = SM.get_results()['sm']
+    else:
+        sm = np.float128(-1)
+    if 'F' in metrics:
+        fm = FM.get_results()['fm']
+    else:
+        fm = {'curve': np.array([np.float128(-1)]), 'adp': np.float128(-1)}
+    if 'MAE' in metrics:
+        mae = MAE.get_results()['mae']
+    else:
+        mae = np.float128(-1)
+    if 'WF' in metrics:
+        wfm = WFM.get_results()['wfm']
+    else:
+        wfm = np.float128(-1)
+
+    return em, sm, fm, mae, wfm
 
 
 def _prepare_data(pred: np.ndarray, gt: np.ndarray) -> tuple:
@@ -76,7 +144,7 @@ class Fmeasure(object):
                     pr=dict(p=precision, r=recall))
 
 
-class MAE(object):
+class MAEmeasure(object):
     def __init__(self):
         self.maes = []
 
@@ -145,15 +213,13 @@ class Smeasure(object):
 
     def centroid(self, matrix: np.ndarray) -> tuple:
         h, w = matrix.shape
-        if matrix.sum() == 0:
+        area_object = np.count_nonzero(matrix)
+        if area_object == 0:
             x = np.round(w / 2)
             y = np.round(h / 2)
         else:
-            area_object = np.sum(matrix)
-            row_ids = np.arange(h)
-            col_ids = np.arange(w)
-            x = np.round(np.sum(np.sum(matrix, axis=0) * col_ids) / area_object)
-            y = np.round(np.sum(np.sum(matrix, axis=1) * row_ids) / area_object)
+            # More details can be found at: https://www.yuque.com/lart/blog/gpbigm
+            y, x = np.argwhere(matrix).mean(axis=0).round()
         return int(x) + 1, int(y) + 1
 
     def divide_with_xy(self, pred: np.ndarray, gt: np.ndarray, x, y) -> dict:

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Set dst repo here.
-repo="VS-GCAM_adv_tri3-2"
+repo="loss_BCE_IoU-dilation2"
 mkdir ../${repo}
 mkdir ../${repo}/evaluation
 mkdir ../${repo}/models
