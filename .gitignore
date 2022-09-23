@@ -1,5 +1,11 @@
 # Custom
+.vscode
+ckpt
+preds
+evaluation/eval-*
 *.out
+tmp*
+*.pth
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
