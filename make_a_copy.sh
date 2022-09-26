@@ -1,6 +1,6 @@
 #!/bin/bash
 # Set dst repo here.
-repo="loss_BCE_IoU-dilation2"
+repo="aug_pepper"
 mkdir ../${repo}
 mkdir ../${repo}/evaluation
 mkdir ../${repo}/models

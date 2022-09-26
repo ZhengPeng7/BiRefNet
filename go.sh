@@ -2,12 +2,12 @@
 # Run script
 method="$1"
 epochs=150
-val_last=25
+val_last=20
 
 # Train
 CUDA_VISIBLE_DEVICES=$2 python train.py --ckpt_dir ckpt/${method} --epochs ${epochs} --testsets DIS-VD+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4
 
-# step=5
+# step=10
 # for ((ep=${epochs};ep>${epochs}-${val_last};ep-=${step}))
 # do
 # pred_dir=/root/autodl-tmp/datasets/dis/preds/${method}/ep${ep}

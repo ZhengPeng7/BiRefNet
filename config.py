@@ -19,7 +19,7 @@ class Config():
         self.dataset = 'DIS5K'
         self.size = 1024
         self.batch_size = 15
-        self.preproc_methods = ['flip', 'enhance', 'rotate', 'crop', 'pepper'][:3]
+        self.preproc_methods = ['flip', 'enhance', 'rotate', 'crop', 'pepper'][:1]
         self.num_workers = 8
         self.load_all = True   # 23GB CPU memory to load all sets.
         # On one 3090 + 12 cores Intel(R) Xeon(R) Platinum 8255C CPU @ 2.50GHz, 2.75mins/epoch for training w/ pre-loading vs 7mins/epoch for training w/ online loading.
