@@ -10,7 +10,7 @@ class Config():
         self.freeze_bb = True
 
         # Components
-        self.dec_blk = ['ResBlk'][0]
+        self.dec_blk = ['ResBlk', 'DWBlk'][0]
         self.dilation = 2
         self.use_bn = self.bb not in ['cnn-vgg16']
 

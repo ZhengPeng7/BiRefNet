@@ -43,11 +43,12 @@ args = parser.parse_args()
 config = Config()
 
 # Prepare dataset
+training_set = 'DIS-TR'
 data_loader_train = torch.utils.data.DataLoader(
-    dataset=MyData(data_root=os.path.join(config.data_root_dir, config.dataset, 'DIS-TR'), image_size=config.size, is_train=True),
+    dataset=MyData(data_root=os.path.join(config.data_root_dir, config.dataset, training_set), image_size=config.size, is_train=True),
     batch_size=config.batch_size, shuffle=True, num_workers=config.num_workers, pin_memory=True
 )
-print(len(data_loader_train), "train dataloaders created.")
+print(len(data_loader_train), "batches of train dataloader {} have been created.".format(training_set))
 
 test_loaders = {}
 for testset in args.testsets.split('+'):
@@ -55,7 +56,7 @@ for testset in args.testsets.split('+'):
         dataset=MyData(data_root=os.path.join(config.data_root_dir, config.dataset, testset), image_size=config.size, is_train=False),
         batch_size=config.batch_size_valid, shuffle=False, num_workers=config.num_workers, pin_memory=True
     )
-    print(len(data_loader_test), "valid dataloader {} has been created.".format(testset))
+    print(len(data_loader_test), "batches of valid dataloader {} have been created.".format(testset))
     test_loaders[testset] = data_loader_test
 
 if config.rand_seed:

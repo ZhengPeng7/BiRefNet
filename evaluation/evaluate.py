@@ -34,9 +34,8 @@ def evaluate(pred_dir, method, testset, only_S_MAE=False, epoch=0):
                 em['adp'].round(3), wfm.round(3), fm['adp'].round(3)
             ] if not only_S_MAE else [method, testset, sm.round(3), mae.round(3)]
         )
-        tb = tb.replace('+', '|')
         print(tb)
-        file_to_write.write(str(tb)+'\n')
+        file_to_write.write(str(tb).replace('+', '|')+'\n')
         file_to_write.close()
     return {'em': em, 'sm': sm, 'fm': fm, 'mae': mae, 'wfm': wfm}
 

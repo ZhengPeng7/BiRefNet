@@ -1,6 +1,6 @@
 #!/bin/bash
 # Set dst repo here.
-repo="aug_pepper"
+repo="DWBlk"
 mkdir ../${repo}
 mkdir ../${repo}/evaluation
 mkdir ../${repo}/models
