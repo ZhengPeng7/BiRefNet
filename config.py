@@ -12,6 +12,8 @@ class Config():
         # Components
         self.dec_blk = ['ResBlk', 'DWBlk'][0]
         self.dilation = 2
+        self.dec_non_local = False
+        self.dec_channel_inter = ['fixed', 'adap'][1]
         self.use_bn = self.bb not in ['cnn-vgg16']
 
         # Data

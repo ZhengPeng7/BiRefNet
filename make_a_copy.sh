@@ -1,6 +1,6 @@
 #!/bin/bash
 # Set dst repo here.
-repo="DWBlk"
+repo="dec_channel_inter_adap"
 mkdir ../${repo}
 mkdir ../${repo}/evaluation
 mkdir ../${repo}/models
