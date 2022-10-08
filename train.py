@@ -1,3 +1,4 @@
+from imghdr import tests
 import os
 import argparse
 import torch
@@ -138,6 +139,11 @@ def main():
         # Save checkpoint
         if epoch >= args.epochs - config.val_last and (args.epochs - epoch) % config.save_step == 0:
             torch.save(model.state_dict(), os.path.join(args.ckpt_dir, 'ep{}.pth'.format(epoch)))
+            num_image_testset_all = {'DIS-VD': 470, 'DIS-TE1': 500, 'DIS-TE2': 500, 'DIS-TE3': 500, 'DIS-TE4': 500}
+            num_image_testset = {}
+            for testset in args.testsets.split('+'):
+                num_image_testset[testset] = num_image_testset_all[testset]
+            weighted_score = {}
             for testset, data_loader_test in test_loaders.items():
                 performance_dict = valid(
                     model,
@@ -148,8 +154,16 @@ def main():
                     only_S_MAE=True
                 )
                 print('Test set: {}:'.format(testset))
-                print('Smeasure: {:.4f}'.format(performance_dict['sm']))
-                print('MAE: {:.4f}'.format(performance_dict['mae']))
+                print('Smeasure: {:.4f}, MAE: {:.4f}'.format(performance_dict['sm'], performance_dict['mae']))
+            for k_metric, v in performance_dict.items():
+                if not weighted_score.get(k_metric):
+                    weighted_score[k_metric] = v *(num_image_testset[testset] / sum(list(num_image_testset.values())))
+                else:
+                    weighted_score[k_metric] += v *(num_image_testset[testset] / sum(list(num_image_testset.values())))
+            print('>>>>>>>>>>>>>>weighted_score:<<<<<<<<<<<<<<\n')
+            for k, v in weighted_score:
+                print(k, '\t', '{:.4f}'.format(v))
+            print('--' * 5)
         lr_scheduler.step()
         if config.lambda_adv_g:
             lr_scheduler_d.step()
