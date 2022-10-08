@@ -145,7 +145,7 @@ def main():
                     pred_dir='.',
                     method=args.ckpt_dir.split('/')[-1],
                     testset=testset,
-                    only_S_MAE=False
+                    only_S_MAE=True
                 )
                 print('Test set: {}:'.format(testset))
                 print('Smeasure: {:.4f}'.format(performance_dict['sm']))

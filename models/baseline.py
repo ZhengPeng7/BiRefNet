@@ -7,7 +7,7 @@ import torch.nn.functional as F
 from torchvision.models import vgg16, vgg16_bn
 from torchvision.models import resnet50
 
-from models.modules import ResBlk, DWBlk
+from models.modules import ResBlk
 from models.bb_pvtv2 import pvt_v2_b2
 from config import Config
 
@@ -62,8 +62,6 @@ class BSL(nn.Module):
 
         if self.config.dec_blk == 'ResBlk':
             DecBlk = ResBlk
-        elif self.config.dec_blk == 'DWBlk':
-            DecBlk = DWBlk
 
         self.top_layer = DecBlk(lateral_channels_in[bb][0], lateral_channels_in[bb][1])
 

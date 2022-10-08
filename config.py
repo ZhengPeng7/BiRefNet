@@ -10,10 +10,10 @@ class Config():
         self.freeze_bb = True
 
         # Components
-        self.dec_blk = ['ResBlk', 'DWBlk'][0]
+        self.dec_blk = ['ResBlk'][0]
         self.dilation = 2
-        self.dec_non_local = False
-        self.dec_channel_inter = ['fixed', 'adap'][1]
+        self.dec_att = 0
+        self.dec_channel_inter = ['fixed', 'adap'][0]
         self.use_bn = self.bb not in ['cnn-vgg16']
 
         # Data
@@ -22,7 +22,7 @@ class Config():
         self.size = 1024
         self.batch_size = 15
         self.preproc_methods = ['flip', 'enhance', 'rotate', 'crop', 'pepper'][:1]
-        self.num_workers = 8
+        self.num_workers = 5
         self.load_all = True   # 23GB CPU memory to load all sets.
         # On one 3090 + 12 cores Intel(R) Xeon(R) Platinum 8255C CPU @ 2.50GHz, 2.75mins/epoch for training w/ pre-loading vs 7mins/epoch for training w/ online loading.
 

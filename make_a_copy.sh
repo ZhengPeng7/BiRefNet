@@ -1,6 +1,6 @@
 #!/bin/bash
 # Set dst repo here.
-repo="dec_channel_inter_adap"
+repo="tmp_repo"
 mkdir ../${repo}
 mkdir ../${repo}/evaluation
 mkdir ../${repo}/models
