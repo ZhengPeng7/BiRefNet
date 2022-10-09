@@ -1,6 +1,6 @@
 #!/bin/bash
 # Set dst repo here.
-repo="adv"
+repo="aspp"
 mkdir ../${repo}
 mkdir ../${repo}/evaluation
 mkdir ../${repo}/models

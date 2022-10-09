@@ -37,38 +37,75 @@ class ResBlk(nn.Module):
             x = self.bn_out(x)
         return x
 
+class _ASPPModule(nn.Module):
+    def __init__(self, channel_in, planes, kernel_size, padding, dilation):
+        super(_ASPPModule, self).__init__()
+        self.atrous_conv = nn.Conv2d(channel_in, planes, kernel_size=kernel_size,
+                                            stride=1, padding=padding, dilation=dilation, bias=False)
+        self.bn = nn.BatchNorm2d(planes)
+        self.relu = nn.ReLU()
 
-class AttentionModule(nn.Module):
-    def __init__(self, channel_in=64):
-        super(AttentionModule, self).__init__()
-        self.conv0 = nn.Conv2d(channel_in, channel_in, 5, padding=2, groups=channel_in)
-        self.conv0_1 = nn.Conv2d(channel_in, channel_in, (1, 7), padding=(0, 3), groups=channel_in)
-        self.conv0_2 = nn.Conv2d(channel_in, channel_in, (7, 1), padding=(3, 0), groups=channel_in)
-
-        self.conv1_1 = nn.Conv2d(channel_in, channel_in, (1, 11), padding=(0, 5), groups=channel_in)
-        self.conv1_2 = nn.Conv2d(channel_in, channel_in, (11, 1), padding=(5, 0), groups=channel_in)
-
-        self.conv2_1 = nn.Conv2d(
-            channel_in, channel_in, (1, 21), padding=(0, 10), groups=channel_in)
-        self.conv2_2 = nn.Conv2d(
-            channel_in, channel_in, (21, 1), padding=(10, 0), groups=channel_in)
-        self.conv3 = nn.Conv2d(channel_in, channel_in, 1)
+        # self._init_weight()
 
     def forward(self, x):
-        u = x.clone()
-        attn = self.conv0(x)
+        x = self.atrous_conv(x)
+        x = self.bn(x)
 
-        attn_0 = self.conv0_1(attn)
-        attn_0 = self.conv0_2(attn_0)
+        return self.relu(x)
 
-        attn_1 = self.conv1_1(attn)
-        attn_1 = self.conv1_2(attn_1)
+    def _init_weight(self):
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                torch.nn.init.kaiming_normal_(m.weight)
+            elif isinstance(m, nn.BatchNorm2d):
+                m.weight.data.fill_(1)
+                m.bias.data.zero_()
 
-        attn_2 = self.conv2_1(attn)
-        attn_2 = self.conv2_2(attn_2)
-        attn = attn + attn_0 + attn_1 + attn_2
+class AttentionModule(nn.Module):
+    def __init__(self, channel_in=64, output_stride=16):
+        super(AttentionModule, self).__init__()
+        self.down_scale = 4
+        if output_stride == 16:
+            dilations = [1, 6, 12, 18]
+        elif output_stride == 8:
+            dilations = [1, 12, 24, 36]
+        else:
+            raise NotImplementedError
 
-        attn = self.conv3(attn)
+        self.aspp1 = _ASPPModule(channel_in, 256 // self.down_scale, 1, padding=0, dilation=dilations[0])
+        self.aspp2 = _ASPPModule(channel_in, 256 // self.down_scale, 3, padding=dilations[1], dilation=dilations[1])
+        self.aspp3 = _ASPPModule(channel_in, 256 // self.down_scale, 3, padding=dilations[2], dilation=dilations[2])
+        self.aspp4 = _ASPPModule(channel_in, 256 // self.down_scale, 3, padding=dilations[3], dilation=dilations[3])
 
-        return attn * u
+        self.global_avg_pool = nn.Sequential(nn.AdaptiveAvgPool2d((1, 1)),
+                                             nn.Conv2d(channel_in, 256 // self.down_scale, 1, stride=1, bias=False),
+                                             nn.BatchNorm2d(256 // self.down_scale),
+                                             nn.ReLU())
+        self.conv1 = nn.Conv2d(1280 // self.down_scale, 256 // self.down_scale, 1, bias=False)
+        self.bn1 = nn.BatchNorm2d(256 // self.down_scale)
+        self.relu = nn.ReLU()
+        self.dropout = nn.Dropout(0.5)
+        self._init_weight()
 
+    def forward(self, x):
+        x1 = self.aspp1(x)
+        x2 = self.aspp2(x)
+        x3 = self.aspp3(x)
+        x4 = self.aspp4(x)
+        x5 = self.global_avg_pool(x)
+        x5 = F.interpolate(x5, size=x4.size()[2:], mode='bilinear', align_corners=True)
+        x = torch.cat((x1, x2, x3, x4, x5), dim=1)
+
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+
+        return self.dropout(x)
+
+    def _init_weight(self):
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                torch.nn.init.kaiming_normal_(m.weight)
+            elif isinstance(m, nn.BatchNorm2d):
+                m.weight.data.fill_(1)
+                m.bias.data.zero_()

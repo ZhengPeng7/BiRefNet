@@ -12,7 +12,7 @@ class Config():
         # Components
         self.dec_blk = ['ResBlk'][0]
         self.dilation = 2
-        self.dec_att = 0
+        self.dec_att = False
         self.dec_channel_inter = ['fixed', 'adap'][0]
         self.use_bn = self.bb not in ['cnn-vgg16']
         # self.refine = True
@@ -41,7 +41,7 @@ class Config():
             'mse': 150 * 0,         # can smooth the saliency map
             'triplet': 3 * 0,
             'reg': 100 * 0,
-            'ssim': 1 * 0,          # help contours
+            'ssim': 5 * 0,          # help contours
         }
         # Adv
         self.lambda_adv_g = 10. * 0        # turn to 0 to avoid adv training

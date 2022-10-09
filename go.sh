@@ -1,7 +1,7 @@
 #!/bin/bash
 # Run script
 method="$1"
-epochs=80
+epochs=120
 val_last=20
 step=20
 
