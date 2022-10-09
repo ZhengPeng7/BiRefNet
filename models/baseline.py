@@ -116,4 +116,8 @@ class BSL(nn.Module):
         p1_out = self.conv_out1(p1)
         scaled_preds.append(p1_out)
 
+        # # refine patch-level segmentation
+        # if self.config.refine:
+        #     p0 = self.refiner(p1_out)
+
         return scaled_preds

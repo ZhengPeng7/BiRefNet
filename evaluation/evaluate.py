@@ -28,16 +28,18 @@ def evaluate(pred_dir, method, testset, only_S_MAE=False, epoch=0):
             pred_paths=pred_paths[:],
             metrics=['S', 'MAE', 'E', 'F', 'WF'][:10*(not only_S_MAE) + 2]
         )
+        e_max, e_mean, e_adp = em['curve'].max(), em['curve'].mean(), em['adp'].mean()
+        f_max, f_mean, f_wfm, f_adp = fm['curve'].max(), fm['curve'].mean(), wfm, fm['adp']
         tb.add_row(
             [
-                method+str(epoch), testset, em['curve'].max().round(3), sm.round(3), fm['curve'].max().round(3), mae.round(3), em['curve'].mean().round(3), fm['curve'].mean().round(3),
-                em['adp'].round(3), wfm.round(3), fm['adp'].round(3)
+                method+str(epoch), testset, e_max.round(3), sm.round(3), f_max.round(3), mae.round(3), e_mean.round(3), f_mean.round(3),
+                em['adp'].round(3), f_wfm.round(3), f_adp.round(3)
             ] if not only_S_MAE else [method, testset, sm.round(3), mae.round(3)]
         )
         print(tb)
         file_to_write.write(str(tb).replace('+', '|')+'\n')
         file_to_write.close()
-    return {'em': em, 'sm': sm, 'fm': fm, 'mae': mae, 'wfm': wfm}
+    return {'e_max': e_max, 'e_mean': e_mean, 'e_adp': e_adp, 'sm': sm, 'mae': mae, 'f_max': f_max, 'f_mean': f_mean, 'f_wfm': f_wfm, 'f_adp': f_adp}
 
 
 def main():

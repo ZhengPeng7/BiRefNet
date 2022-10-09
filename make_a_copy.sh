@@ -1,6 +1,6 @@
 #!/bin/bash
 # Set dst repo here.
-repo="tmp_repo"
+repo="adv"
 mkdir ../${repo}
 mkdir ../${repo}/evaluation
 mkdir ../${repo}/models

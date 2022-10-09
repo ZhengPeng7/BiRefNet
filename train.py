@@ -157,6 +157,8 @@ def main():
                 print('Smeasure: {:.4f}, MAE: {:.4f}'.format(performance_dict['sm'], performance_dict['mae']))
             # Compute weighted scores of all testsets.
             for k_metric, v in performance_dict.items():
+                if v == -1:
+                    continue
                 if not weighted_score.get(k_metric):
                     weighted_score[k_metric] = v *(num_image_testset[testset] / sum(list(num_image_testset.values())))
                 else:
