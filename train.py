@@ -164,7 +164,7 @@ def main():
                 else:
                     weighted_score[k_metric] += v *(num_image_testset[testset] / sum(list(num_image_testset.values())))
             print('>>>>>>>>>>>>>>weighted_score:<<<<<<<<<<<<<<\n')
-            for k, v in weighted_score:
+            for k, v in weighted_score.items():
                 print(k, '\t', '{:.4f}'.format(v))
             print('--' * 5)
         lr_scheduler.step()
