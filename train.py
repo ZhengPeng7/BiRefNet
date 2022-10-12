@@ -23,10 +23,6 @@ parser.add_argument('--resume',
                     type=str,
                     help='path to latest checkpoint')
 parser.add_argument('--epochs', default=100, type=int)
-parser.add_argument('--start_epoch',
-                    default=1,
-                    type=int,
-                    help='manual epoch number (useful on restarts)')
 parser.add_argument('--trainset',
                     default='DIS5K',
                     type=str,
@@ -83,7 +79,7 @@ elif config.optimizer == 'Adam':
     optimizer = optim.Adam(params=model.parameters(), lr=config.lr, weight_decay=0)
 lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(
     optimizer,
-    milestones=[lde if lde > 0 else args.epochs + lde for lde in config.lr_decay_epochs],
+    milestones=[lde if lde > 0 else args.epochs + lde + 1 for lde in config.lr_decay_epochs],
     gamma=0.1
 )
 
@@ -99,11 +95,11 @@ if config.lambda_adv_g:
         optimizer_d = optim.Adam(params=model.parameters(), lr=config.lr, weight_decay=0)
     lr_scheduler_d = torch.optim.lr_scheduler.MultiStepLR(
         optimizer_d,
-        milestones=[lde if lde > 0 else args.epochs + lde for lde in config.lr_decay_epochs],
+        milestones=[lde if lde > 0 else args.epochs + lde + 1 for lde in config.lr_decay_epochs],
         gamma=0.1
     )
 
-# Why freeze the backbone?...
+# Freeze the backbone...
 if config.freeze:
     for key, value in model.named_parameters():
         if 'bb.' in key:
