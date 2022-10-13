@@ -45,26 +45,17 @@ class _ASPPModule(nn.Module):
         self.bn = nn.BatchNorm2d(planes)
         self.relu = nn.ReLU()
 
-        # self._init_weight()
-
     def forward(self, x):
         x = self.atrous_conv(x)
         x = self.bn(x)
 
         return self.relu(x)
 
-    def _init_weight(self):
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                torch.nn.init.kaiming_normal_(m.weight)
-            elif isinstance(m, nn.BatchNorm2d):
-                m.weight.data.fill_(1)
-                m.bias.data.zero_()
-
 class AttentionModule(nn.Module):
     def __init__(self, channel_in=64, output_stride=16):
         super(AttentionModule, self).__init__()
         self.down_scale = 4
+        self.channel_inter = 256 // self.down_scale
         if output_stride == 16:
             dilations = [1, 6, 12, 18]
         elif output_stride == 8:
@@ -72,20 +63,19 @@ class AttentionModule(nn.Module):
         else:
             raise NotImplementedError
 
-        self.aspp1 = _ASPPModule(channel_in, 256 // self.down_scale, 1, padding=0, dilation=dilations[0])
-        self.aspp2 = _ASPPModule(channel_in, 256 // self.down_scale, 3, padding=dilations[1], dilation=dilations[1])
-        self.aspp3 = _ASPPModule(channel_in, 256 // self.down_scale, 3, padding=dilations[2], dilation=dilations[2])
-        self.aspp4 = _ASPPModule(channel_in, 256 // self.down_scale, 3, padding=dilations[3], dilation=dilations[3])
+        self.aspp1 = _ASPPModule(channel_in, self.channel_inter, 1, padding=0, dilation=dilations[0])
+        self.aspp2 = _ASPPModule(channel_in, self.channel_inter, 3, padding=dilations[1], dilation=dilations[1])
+        self.aspp3 = _ASPPModule(channel_in, self.channel_inter, 3, padding=dilations[2], dilation=dilations[2])
+        self.aspp4 = _ASPPModule(channel_in, self.channel_inter, 3, padding=dilations[3], dilation=dilations[3])
 
         self.global_avg_pool = nn.Sequential(nn.AdaptiveAvgPool2d((1, 1)),
-                                             nn.Conv2d(channel_in, 256 // self.down_scale, 1, stride=1, bias=False),
-                                             nn.BatchNorm2d(256 // self.down_scale),
+                                             nn.Conv2d(channel_in, self.channel_inter, 1, stride=1, bias=False),
+                                             nn.BatchNorm2d(self.channel_inter),
                                              nn.ReLU())
-        self.conv1 = nn.Conv2d(1280 // self.down_scale, 256 // self.down_scale, 1, bias=False)
-        self.bn1 = nn.BatchNorm2d(256 // self.down_scale)
+        self.conv1 = nn.Conv2d(self.channel_inter * 5, channel_in, 1, bias=False)
+        self.bn1 = nn.BatchNorm2d(channel_in)
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(0.5)
-        self._init_weight()
 
     def forward(self, x):
         x1 = self.aspp1(x)
@@ -101,11 +91,3 @@ class AttentionModule(nn.Module):
         x = self.relu(x)
 
         return self.dropout(x)
-
-    def _init_weight(self):
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                torch.nn.init.kaiming_normal_(m.weight)
-            elif isinstance(m, nn.BatchNorm2d):
-                m.weight.data.fill_(1)
-                m.bias.data.zero_()
