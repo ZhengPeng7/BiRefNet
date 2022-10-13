@@ -23,7 +23,7 @@ class Config():
         self.size = 1024
         self.batch_size = 15
         self.preproc_methods = ['flip', 'enhance', 'rotate', 'crop', 'pepper'][:1]
-        self.num_workers = 5
+        self.num_workers = 8
         self.load_all = True   # 23GB CPU memory to load all sets, save 3 mins for each epoch.
 
         # Training
