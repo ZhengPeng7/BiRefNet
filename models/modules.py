@@ -43,7 +43,7 @@ class _ASPPModule(nn.Module):
         self.atrous_conv = nn.Conv2d(channel_in, planes, kernel_size=kernel_size,
                                             stride=1, padding=padding, dilation=dilation, bias=False)
         self.bn = nn.BatchNorm2d(planes)
-        self.relu = nn.ReLU()
+        self.relu = nn.ReLU(inplace=True)
 
     def forward(self, x):
         x = self.atrous_conv(x)
@@ -71,10 +71,10 @@ class AttentionModule(nn.Module):
         self.global_avg_pool = nn.Sequential(nn.AdaptiveAvgPool2d((1, 1)),
                                              nn.Conv2d(channel_in, self.channel_inter, 1, stride=1, bias=False),
                                              nn.BatchNorm2d(self.channel_inter),
-                                             nn.ReLU())
+                                             nn.ReLU(inplace=True))
         self.conv1 = nn.Conv2d(self.channel_inter * 5, channel_in, 1, bias=False)
         self.bn1 = nn.BatchNorm2d(channel_in)
-        self.relu = nn.ReLU()
+        self.relu = nn.ReLU(inplace=True)
         self.dropout = nn.Dropout(0.5)
 
     def forward(self, x):
