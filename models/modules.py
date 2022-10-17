@@ -54,7 +54,7 @@ class _ASPPModule(nn.Module):
 class AttentionModule(nn.Module):
     def __init__(self, channel_in=64, output_stride=16):
         super(AttentionModule, self).__init__()
-        self.down_scale = 4
+        self.down_scale = 1
         self.channel_inter = 256 // self.down_scale
         if output_stride == 16:
             dilations = [1, 6, 12, 18]

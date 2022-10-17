@@ -21,7 +21,7 @@ class Config():
         self.data_root_dir = '/root/autodl-tmp/datasets/dis'
         self.dataset = 'DIS5K'
         self.size = 1024
-        self.batch_size = 15
+        self.batch_size = 8
         self.preproc_methods = ['flip', 'enhance', 'rotate', 'crop', 'pepper'][:1]
         self.num_workers = 8
         self.load_all = True   # 23GB CPU memory to load all sets, save 3 mins for each epoch.
