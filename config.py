@@ -12,7 +12,7 @@ class Config():
         # Components
         self.dec_blk = ['ResBlk'][0]
         self.dilation = 2
-        self.dec_att = True
+        self.dec_att = ['', 'ASPP'][1]
         self.dec_channel_inter = ['fixed', 'adap'][0]
         self.use_bn = self.bb not in ['cnn-vgg16']
         # self.refine = True

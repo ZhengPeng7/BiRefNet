@@ -2,9 +2,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import fvcore.nn.weight_init as weight_init
 from functools import partial
-from einops import rearrange
 
 from config import Config
 
@@ -18,8 +16,8 @@ class ResBlk(nn.Module):
         channel_inter = channel_in // 4 if config.dec_channel_inter == 'adap' else 64
         self.conv_in = nn.Conv2d(channel_in, channel_inter, 3, 1, padding=dilation, dilation=dilation)
         self.relu_in = nn.ReLU(inplace=True)
-        if config.dec_att:
-            self.dec_att = AttentionModule(channel_in=channel_inter)
+        if config.dec_att == 'ASPP':
+            self.dec_att = ASPP(channel_in=channel_inter)
         self.conv_out = nn.Conv2d(channel_inter, channel_out, 3, 1, padding=dilation, dilation=dilation)
         if config.use_bn:
             self.bn_in = nn.BatchNorm2d(channel_inter)
@@ -51,9 +49,9 @@ class _ASPPModule(nn.Module):
 
         return self.relu(x)
 
-class AttentionModule(nn.Module):
+class ASPP(nn.Module):
     def __init__(self, channel_in=64, output_stride=16):
-        super(AttentionModule, self).__init__()
+        super(ASPP, self).__init__()
         self.down_scale = 1
         self.channel_inter = 256 // self.down_scale
         if output_stride == 16:

@@ -1,0 +1,5 @@
+opencv-python
+tqdm
+timm
+prettytable
+scipy

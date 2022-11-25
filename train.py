@@ -1,4 +1,3 @@
-from imghdr import tests
 import os
 import argparse
 import torch
