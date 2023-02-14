@@ -1,5 +1,8 @@
 import os
+import math
+import psutil
 import torch
+
 
 
 class Config():
@@ -18,17 +21,19 @@ class Config():
         # self.refine = True
 
         # Data
-        self.data_root_dir = '/root/autodl-tmp/datasets/dis'
+        self.data_root_dir = '../../../datasets/dis'
         self.dataset = 'DIS5K'
-        self.size = 1024
-        self.batch_size = 8
         self.preproc_methods = ['flip', 'enhance', 'rotate', 'crop', 'pepper'][:1]
         self.num_workers = 8
-        self.load_all = True   # 23GB CPU memory to load all sets, save 3 mins for each epoch.
-
+        # Check free CPU mem. 23GB CPU memory to load all sets, save 3 mins for each epoch. 8G mem for main pipeline.
+        self.load_all = psutil.virtual_memory().free // (2 ** (10 * 3)) > 23 + 8
         # Training
+        self.size = 1024
+        # See current free GPU memory to set the batch_size for training
+        free_mem_gpu = torch.cuda.mem_get_info()[0] / (2 ** (10 * 3))
+        self.batch_size = int((free_mem_gpu - 5) / 3.5)   # (free_mem_gpu - base model mem) // per batch mem
         self.optimizer = ['Adam', 'AdamW'][0]
-        self.lr = 1e-4
+        self.lr = 1e-4 * math.sqrt(self.batch_size / 8)  # adapt the lr linearly
         self.freeze = True
         self.lr_decay_epochs = [-20]    # Set to negative N to decay the lr in the last N-th epoch.
 
