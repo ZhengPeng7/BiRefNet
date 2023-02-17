@@ -137,7 +137,8 @@ def main():
             num_image_testset_all = {'DIS-VD': 470, 'DIS-TE1': 500, 'DIS-TE2': 500, 'DIS-TE3': 500, 'DIS-TE4': 500}
             num_image_testset = {}
             for testset in args.testsets.split('+'):
-                num_image_testset[testset] = num_image_testset_all[testset]
+                if 'DIS-TE' in testset:
+                    num_image_testset[testset] = num_image_testset_all[testset]
             weighted_score = {}
             for testset, data_loader_test in test_loaders.items():
                 performance_dict = valid(
@@ -149,15 +150,17 @@ def main():
                     only_S_MAE=False
                 )
                 print('Test set: {}:'.format(testset))
-                print('Smeasure: {:.4f}, MAE: {:.4f}'.format(performance_dict['sm'], performance_dict['mae']))
+                print('Fmax: {:.4f}, Smeasure: {:.4f}, MAE: {:.4f}'.format(
+                    performance_dict['f_max'], performance_dict['sm'], performance_dict['mae'])
+                )
             # Compute weighted scores of all testsets.
             for k_metric, v in performance_dict.items():
                 if v == -1:
                     continue
                 if not weighted_score.get(k_metric):
-                    weighted_score[k_metric] = v *(num_image_testset[testset] / sum(list(num_image_testset.values())))
+                    weighted_score[k_metric] = v * (num_image_testset[testset] / sum(list(num_image_testset.values())))
                 else:
-                    weighted_score[k_metric] += v *(num_image_testset[testset] / sum(list(num_image_testset.values())))
+                    weighted_score[k_metric] += v * (num_image_testset[testset] / sum(list(num_image_testset.values())))
             print('>>>>>>>>>>>>>>weighted_score:<<<<<<<<<<<<<<\n')
             for k, v in weighted_score.items():
                 print(k, '\t', '{:.4f}'.format(v))

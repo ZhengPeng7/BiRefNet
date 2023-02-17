@@ -11,6 +11,12 @@ config = Config()
 
 def evaluate(pred_dir, method, testset, only_S_MAE=False, epoch=0):
     filename = os.path.join('evaluation', 'eval-{}.txt'.format(method))
+    if os.path.exists(filename):
+        id_suffix = 1
+        filename += '.{}'.format(id_suffix)
+        while os.path.exists(filename):
+            id_suffix += 1
+            filename = '.'.join(filename.split('.')[:-1] + ['{}'.format(id_suffix)])
     gt_paths = [
         os.path.join(config.data_root_dir, config.dataset, testset, 'gt', p)
         for p in os.listdir(os.path.join(config.data_root_dir, config.dataset, testset, 'gt'))
@@ -19,8 +25,8 @@ def evaluate(pred_dir, method, testset, only_S_MAE=False, epoch=0):
     with open(filename, 'a+') as file_to_write:
         tb = pt.PrettyTable()
         field_names = [
-            "Dataset", "Method", "maxEm", "Smeasure", "maxFm", "MAE", "meanEm", "meanFm",
-            "adpEm", "wFmeasure", "adpFm"
+            "Dataset", "Method", "maxFm", "wFmeasure", "MAE", "Smeasure", "meanEm", "maxEm", "meanFm",
+            "adpEm", "adpFm"
         ]
         tb.field_names = [name for name in field_names if not only_S_MAE or all(metric not in name for metric in ['Em', 'Fm'])]
         em, sm, fm, mae, wfm = evaluator(
@@ -32,8 +38,8 @@ def evaluate(pred_dir, method, testset, only_S_MAE=False, epoch=0):
         f_max, f_mean, f_wfm, f_adp = fm['curve'].max(), fm['curve'].mean(), wfm, fm['adp']
         tb.add_row(
             [
-                method+str(epoch), testset, e_max.round(3), sm.round(3), f_max.round(3), mae.round(3), e_mean.round(3), f_mean.round(3),
-                em['adp'].round(3), f_wfm.round(3), f_adp.round(3)
+                method+str(epoch), testset, f_max.round(3), f_wfm.round(3), mae.round(3), sm.round(3),
+                e_mean.round(3), e_max.round(3), f_mean.round(3), em['adp'].round(3), f_adp.round(3)
             ] if not only_S_MAE else [method, testset, sm.round(3), mae.round(3)]
         )
         print(tb)
