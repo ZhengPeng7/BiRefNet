@@ -114,6 +114,9 @@ logger.info("Scheduler details:")
 logger.info(lr_scheduler)
 logger.info("Other hyperparameters:")
 logger.info(args)
+print('batch size:', config.batch_size)
+
+
 
 # Setting Loss
 pix_loss = PixLoss()
@@ -145,9 +148,9 @@ def main():
                     model,
                     data_loader_test,
                     pred_dir='.',
-                    method=args.ckpt_dir.split('/')[-1],
+                    method=args.ckpt_dir.split('/')[-1] if args.ckpt_dir.split('/')[-1].strip('.').strip('/') else 'tmp_val',
                     testset=testset,
-                    only_S_MAE=False
+                    only_S_MAE=True
                 )
                 print('Test set: {}:'.format(testset))
                 print('Fmax: {:.4f}, Smeasure: {:.4f}, MAE: {:.4f}'.format(

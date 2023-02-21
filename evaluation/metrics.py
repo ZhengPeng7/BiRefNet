@@ -53,23 +53,23 @@ def evaluator(gt_paths, pred_paths, metrics=['S', 'MAE', 'E', 'F', 'WF']):
     if 'E' in metrics:
         em = EM.get_results()['em']
     else:
-        em = {'curve': np.array([np.float128(-1)]), 'adp': np.float128(-1)}
+        em = {'curve': np.array([np.float64(-1)]), 'adp': np.float64(-1)}
     if 'S' in metrics:
         sm = SM.get_results()['sm']
     else:
-        sm = np.float128(-1)
+        sm = np.float64(-1)
     if 'F' in metrics:
         fm = FM.get_results()['fm']
     else:
-        fm = {'curve': np.array([np.float128(-1)]), 'adp': np.float128(-1)}
+        fm = {'curve': np.array([np.float64(-1)]), 'adp': np.float64(-1)}
     if 'MAE' in metrics:
         mae = MAE.get_results()['mae']
     else:
-        mae = np.float128(-1)
+        mae = np.float64(-1)
     if 'WF' in metrics:
         wfm = WFM.get_results()['wfm']
     else:
-        wfm = np.float128(-1)
+        wfm = np.float64(-1)
 
     return em, sm, fm, mae, wfm
 

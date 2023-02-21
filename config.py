@@ -35,7 +35,7 @@ class Config():
         self.optimizer = ['Adam', 'AdamW'][0]
         self.lr = 1e-4 * math.sqrt(self.batch_size / 8)  # adapt the lr linearly
         self.freeze = True
-        self.lr_decay_epochs = [-20]    # Set to negative N to decay the lr in the last N-th epoch.
+        self.lr_decay_epochs = [-10]    # Set to negative N to decay the lr in the last N-th epoch.
 
         # Loss
         self.lambdas_pix_last = {
