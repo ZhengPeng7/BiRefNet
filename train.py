@@ -99,7 +99,7 @@ if config.lambda_adv_g:
     )
 
 # Freeze the backbone...
-if config.freeze:
+if config.freeze_bb:
     for key, value in model.named_parameters():
         if 'bb.' in key:
             value.requires_grad = False

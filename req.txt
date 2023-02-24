@@ -3,3 +3,5 @@ tqdm
 timm
 prettytable
 scipy
+psutil
+

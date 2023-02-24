@@ -10,7 +10,7 @@ class Config():
         # Backbone
         self.bb = ['cnn-vgg16', 'cnn-vgg16bn', 'cnn-resnet50', 'trans-pvt'][3]
         self.pvt_weights = ['../bb_weights/pvt_v2_b2.pth', ''][0]
-        self.freeze_bb = True
+        self.freeze_bb = False
 
         # Components
         self.dec_blk = ['ResBlk'][0]
@@ -31,10 +31,9 @@ class Config():
         self.size = 1024
         # See current free GPU memory to set the batch_size for training
         free_mem_gpu = torch.cuda.mem_get_info()[0] / (2 ** (10 * 3))
-        self.batch_size = int((free_mem_gpu - 5) / 3.5)   # (free_mem_gpu - base model mem) // per batch mem
+        self.batch_size = 10#int((free_mem_gpu - (5 + 2 * (not self.freeze_bb))) / (3.5 + 4.5 * (not self.freeze_bb)))   # (free_mem_gpu - base model mem) // per batch mem
         self.optimizer = ['Adam', 'AdamW'][0]
         self.lr = 1e-4 * math.sqrt(self.batch_size / 8)  # adapt the lr linearly
-        self.freeze = True
         self.lr_decay_epochs = [-10]    # Set to negative N to decay the lr in the last N-th epoch.
 
         # Loss
