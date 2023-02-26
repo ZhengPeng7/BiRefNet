@@ -31,10 +31,11 @@ class Config():
         self.size = 1024
         # See current free GPU memory to set the batch_size for training
         free_mem_gpu = torch.cuda.mem_get_info()[0] / (2 ** (10 * 3))
-        self.batch_size = 10#int((free_mem_gpu - (5 + 2 * (not self.freeze_bb))) / (3.5 + 4.5 * (not self.freeze_bb)))   # (free_mem_gpu - base model mem) // per batch mem
+        self.batch_size = 10    #int((free_mem_gpu - (5 + 2 * (not self.freeze_bb))) / (3.5 + 4.5 * (not self.freeze_bb)))   # (free_mem_gpu - base model mem) // per batch mem
         self.optimizer = ['Adam', 'AdamW'][0]
         self.lr = 1e-4 * math.sqrt(self.batch_size / 8)  # adapt the lr linearly
         self.lr_decay_epochs = [-10]    # Set to negative N to decay the lr in the last N-th epoch.
+        self.only_S_MAE = False
 
         # Loss
         self.lambdas_pix_last = {

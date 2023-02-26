@@ -150,7 +150,7 @@ def main():
                     pred_dir='.',
                     method=args.ckpt_dir.split('/')[-1] if args.ckpt_dir.split('/')[-1].strip('.').strip('/') else 'tmp_val',
                     testset=testset,
-                    only_S_MAE=True
+                    only_S_MAE=config.only_S_MAE
                 )
                 print('Test set: {}:'.format(testset))
                 print('Fmax: {:.4f}, Smeasure: {:.4f}, MAE: {:.4f}'.format(

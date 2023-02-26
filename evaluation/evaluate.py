@@ -40,7 +40,7 @@ def evaluate(pred_dir, method, testset, only_S_MAE=False, epoch=0):
             [
                 method+str(epoch), testset, f_max.round(3), f_wfm.round(3), mae.round(3), sm.round(3),
                 e_mean.round(3), e_max.round(3), f_mean.round(3), em['adp'].round(3), f_adp.round(3)
-            ] if not only_S_MAE else [method, testset, sm.round(3), mae.round(3)]
+            ] if not only_S_MAE else [method, testset, mae.round(3), sm.round(3)]
         )
         print(tb)
         file_to_write.write(str(tb).replace('+', '|')+'\n')
