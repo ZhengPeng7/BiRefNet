@@ -4,4 +4,5 @@ timm
 prettytable
 scipy
 psutil
+scikit-image
 

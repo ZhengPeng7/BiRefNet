@@ -4,34 +4,35 @@ import psutil
 import torch
 
 
-
 class Config():
     def __init__(self) -> None:
+        self.load_all = 0#psutil.virtual_memory().free // (2 ** (10 * 3)) > 23 + 8
+        self.freeze_bb = 1
+        self.model = ['BSL', 'PVTVP'][1]
+        self.dec_att = ['', 'ASPP'][0]  # Useless for PVTVP
         # Backbone
         self.bb = ['cnn-vgg16', 'cnn-vgg16bn', 'cnn-resnet50', 'trans-pvt'][3]
-        self.pvt_weights = ['../bb_weights/pvt_v2_b2.pth', ''][0]
-        self.freeze_bb = False
+        self.pvt_weights = ['/mnt/workspace/workgroup/mohe/weights/pvt_v2_b2.pth', ''][0]
 
         # Components
+        self.auxiliary_classification = False
         self.dec_blk = ['ResBlk'][0]
-        self.dilation = 2
-        self.dec_att = ['', 'ASPP'][1]
+        self.dilation = 1   # too slow
         self.dec_channel_inter = ['fixed', 'adap'][0]
         self.use_bn = self.bb not in ['cnn-vgg16']
         # self.refine = True
 
         # Data
-        self.data_root_dir = '../../../datasets/dis'
+        self.data_root_dir = '/mnt/workspace/workgroup/mohe/datasets/dis'
         self.dataset = 'DIS5K'
         self.preproc_methods = ['flip', 'enhance', 'rotate', 'crop', 'pepper'][:1]
-        self.num_workers = 8
         # Check free CPU mem. 23GB CPU memory to load all sets, save 3 mins for each epoch. 8G mem for main pipeline.
-        self.load_all = psutil.virtual_memory().free // (2 ** (10 * 3)) > 23 + 8
         # Training
-        self.size = 1024
+        self.size = 512
         # See current free GPU memory to set the batch_size for training
         free_mem_gpu = torch.cuda.mem_get_info()[0] / (2 ** (10 * 3))
         self.batch_size = 10    #int((free_mem_gpu - (5 + 2 * (not self.freeze_bb))) / (3.5 + 4.5 * (not self.freeze_bb)))   # (free_mem_gpu - base model mem) // per batch mem
+        self.num_workers = min(10, self.batch_size)
         self.optimizer = ['Adam', 'AdamW'][0]
         self.lr = 1e-4 * math.sqrt(self.batch_size / 8)  # adapt the lr linearly
         self.lr_decay_epochs = [-10]    # Set to negative N to decay the lr in the last N-th epoch.
@@ -54,7 +55,6 @@ class Config():
 
         # others
         self.device = ['cuda', 'cpu'][0]
-        self.self_supervision = False
         self.label_smoothing = False
 
         self.batch_size_valid = 1

@@ -11,6 +11,7 @@ from loss import saliency_structure_consistency, PixLoss
 from utils import generate_smoothed_gt
 from dataset import MyData
 from models.baseline import BSL
+from models.pvtvp import PVTVP
 from utils import Logger, AverageMeter, set_seed
 from evaluation.valid import valid
 
@@ -69,7 +70,10 @@ logger_loss_idx = 1
 # Init model
 device = torch.device(config.device)
 
-model = BSL().to(device)
+if config.model == 'BSL':
+    model = BSL().to(device)
+elif config.model == 'PVTVP':
+    model = PVTVP().to(device)
 
 # Setting optimizer
 if config.optimizer == 'AdamW':
@@ -181,25 +185,23 @@ def train(epoch):
     for batch_idx, batch in enumerate(data_loader_train):
         inputs = batch[0].to(torch.device(config.device))
         gts = batch[1].squeeze(0).to(torch.device(config.device))
+        class_labels = batch[2].to(torch.device(config.device))
 
-        scaled_preds = model(inputs)
-
-        # Tricks
-        loss_pix = pix_loss(scaled_preds, gts)
-        if config.label_smoothing:
-            loss_pix = 0.5 * (loss_pix + pix_loss(scaled_preds, generate_smoothed_gt(gts)))
-        if config.self_supervision:
-            H, W = inputs.shape[-2:]
-            images_scale = F.interpolate(inputs, size=(H//4, W//4), mode='bilinear', align_corners=True)
-            sal_scale = model(images_scale)[0][-1]
-            atts = scaled_preds[-1]
-            sal_s = F.interpolate(atts, size=(H//4, W//4), mode='bilinear', align_corners=True)
-            loss_ss = saliency_structure_consistency(sal_scale.sigmoid(), sal_s.sigmoid())
-            loss_pix += loss_ss * 0.3
+        if config.auxiliary_classification:
+            scaled_preds, class_preds = model(inputs)
+            loss_cls = F.cross_entropy(class_preds, class_labels)
+        else:
+            scaled_preds = model(inputs)
+            loss_cls = 0.
 
         # Loss
+        loss_pix = pix_loss(scaled_preds, gts)
+        # Tricks
+        if config.label_smoothing:
+            loss_pix = 0.5 * (loss_pix + pix_loss(scaled_preds, generate_smoothed_gt(gts)))
         # since there may be several losses for sal, the lambdas for them (lambdas_pix) are inside the loss.py
-        loss = loss_pix * 1.0
+        loss = loss_pix * 1.0 + loss_cls * 1.0
+
         if config.lambda_adv_g:
             # gen
             valid = Variable(Tensor(scaled_preds[-1].shape[0], 1).fill_(1.0), requires_grad=False)

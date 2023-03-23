@@ -2,12 +2,13 @@
 # Run script
 method="$1"
 epochs=120
-val_last=30
+val_last=20
 step=10
 
 # Train
-python train.py --ckpt_dir ckpt/${method} --epochs ${epochs} --testsets DIS-VD+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4
+CUDA_VISIBLE_DEVICES=$2 python train.py --ckpt_dir ckpt/${method} --epochs ${epochs} \
+    --testsets DIS-VD+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4
 
 
-nvidia-smi
+nvidia-smi | head -1
 hostname

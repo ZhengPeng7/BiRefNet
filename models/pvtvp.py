@@ -9,13 +9,14 @@ from torchvision.models import resnet50
 
 from models.modules import ResBlk
 from models.bb_pvtv2 import pvt_v2_b2
+from models.dec_pvtv2 import pvt_v2_b2_decoder
 from config import Config
 from dataset import class_labels_TR_sorted
 
 
-class BSL(nn.Module):
+class PVTVP(nn.Module):
     def __init__(self):
-        super(BSL, self).__init__()
+        super(PVTVP, self).__init__()
         self.config = Config()
         self.epoch = 1
         bb = self.config.bb
@@ -67,22 +68,7 @@ class BSL(nn.Module):
                 nn.Linear(lateral_channels_in[bb][0], len(class_labels_TR_sorted))
             )
 
-        if self.config.dec_blk == 'ResBlk':
-            DecBlk = ResBlk
-
-        self.top_layer = DecBlk(lateral_channels_in[bb][0], lateral_channels_in[bb][0])
-
-        self.dec_layer4 = DecBlk(lateral_channels_in[bb][0], lateral_channels_in[bb][1])
-        self.lat_layer4 = nn.Conv2d(lateral_channels_in[bb][1], lateral_channels_in[bb][1], 1, 1, 0)
-
-        self.dec_layer3 = DecBlk(lateral_channels_in[bb][1], lateral_channels_in[bb][2])
-        self.lat_layer3 = nn.Conv2d(lateral_channels_in[bb][2], lateral_channels_in[bb][2], 1, 1, 0)
-
-        self.dec_layer2 = DecBlk(lateral_channels_in[bb][2], lateral_channels_in[bb][3])
-        self.lat_layer2 = nn.Conv2d(lateral_channels_in[bb][3], lateral_channels_in[bb][3], 1, 1, 0)
-
-        self.dec_layer1 = DecBlk(lateral_channels_in[bb][3], lateral_channels_in[bb][3]//2)
-        self.conv_out1 = nn.Sequential(nn.Conv2d(lateral_channels_in[bb][3]//2, 1, 1, 1, 0))
+        self.decoder = pvt_v2_b2_decoder()
 
         if self.config.freeze_bb:
             print(self.named_parameters())
@@ -104,27 +90,9 @@ class BSL(nn.Module):
         if self.training and self.config.auxiliary_classification:
             class_preds = self.cls_head(self.avgpool(x4).view(x4.shape[0], -1))
 
-        p4 = self.top_layer(x4)
 
         ########## Decoder ##########
-        scaled_preds = []
-
-        p4 = self.dec_layer4(p4)
-        p4 = F.interpolate(p4, size=x3.shape[2:], mode='bilinear', align_corners=True)
-        p3 = p4 + self.lat_layer4(x3)
-
-        p3 = self.dec_layer3(p3)
-        p3 = F.interpolate(p3, size=x2.shape[2:], mode='bilinear', align_corners=True)
-        p2 = p3 + self.lat_layer3(x2)
-
-        p2 = self.dec_layer2(p2)
-        p2 = F.interpolate(p2, size=x1.shape[2:], mode='bilinear', align_corners=True)
-        p1 = p2 + self.lat_layer2(x1)
-
-        p1 = self.dec_layer1(p1)
-        p1 = F.interpolate(p1, size=x.shape[2:], mode='bilinear', align_corners=True)
-        p1_out = self.conv_out1(p1)
-        scaled_preds.append(p1_out)
+        scaled_preds = self.decoder(x4, [x3, x2, x1])[-1:]
 
         # # refine patch-level segmentation
         # if self.config.refine:
