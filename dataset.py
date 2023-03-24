@@ -25,7 +25,8 @@ class MyData(data.Dataset):
         self.load_all = config.load_all
         self.device = torch.device(config.device)
         self.dataset = data_root.replace('\\', '/').split('/')[-1]
-        self.cls_name2id = {_name: _id for _id, _name in enumerate(class_labels_TR_sorted)}
+        if self.is_train and config.auxiliary_classification:
+            self.cls_name2id = {_name: _id for _id, _name in enumerate(class_labels_TR_sorted)}
         if self.load_all:
             self.transform_image = transforms.Compose([
                 transforms.ToTensor(),
@@ -50,7 +51,7 @@ class MyData(data.Dataset):
         self.label_paths = [p.replace('/im/', '/gt/').replace('.jpg', '.png') for p in self.image_paths]
         if self.load_all:
             self.images_loaded, self.labels_loaded = [], []
-            self.class_labels = []
+            self.class_labels_loaded = []
             # for image_path, label_path in zip(self.image_paths, self.label_paths):
             for image_path, label_path in tqdm(zip(self.image_paths, self.label_paths), total=len(self.image_paths)):
                 self.images_loaded.append(
@@ -64,7 +65,7 @@ class MyData(data.Dataset):
                     ).convert('L')
                 )
                 self.class_labels_loaded.append(
-                    self.cls_name2id[label_path.split('/')[-1].split('#')[3]]
+                    self.cls_name2id[label_path.split('/')[-1].split('#')[3]] if self.is_train and config.auxiliary_classification else None
                 )
 
 
@@ -73,11 +74,11 @@ class MyData(data.Dataset):
         if self.load_all:
             image = self.images_loaded[index]
             label = self.labels_loaded[index]
-            class_label = self.class_labels_loaded[index] if self.is_train else None
+            class_label = self.class_labels_loaded[index] if self.is_train and config.auxiliary_classification else None
         else:
             image = Image.open(self.image_paths[index]).convert('RGB')
             label = Image.open(self.label_paths[index]).convert('L')
-            class_label = self.cls_name2id[self.label_paths[index].split('/')[-1].split('#')[3]] if self.is_train else None
+            class_label = self.cls_name2id[self.label_paths[index].split('/')[-1].split('#')[3]] if self.is_train and config.auxiliary_classification else None
 
         # loading image and label
         if self.is_train:
