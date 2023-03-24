@@ -160,18 +160,18 @@ def main():
                 print('Fmax: {:.4f}, Smeasure: {:.4f}, MAE: {:.4f}'.format(
                     performance_dict['f_max'], performance_dict['sm'], performance_dict['mae'])
                 )
-            # Compute weighted scores of all testsets.
-            for k_metric, v in performance_dict.items():
-                if v == -1:
-                    continue
-                if not weighted_score.get(k_metric):
-                    weighted_score[k_metric] = v * (num_image_testset[testset] / sum(list(num_image_testset.values())))
-                else:
-                    weighted_score[k_metric] += v * (num_image_testset[testset] / sum(list(num_image_testset.values())))
-            print('>>>>>>>>>>>>>>weighted_score:<<<<<<<<<<<<<<\n')
-            for k, v in weighted_score.items():
-                print(k, '\t', '{:.4f}'.format(v))
-            print('--' * 5)
+            # # Compute weighted scores of all testsets.
+            # for k_metric, v in performance_dict.items():
+            #     if v == -1:
+            #         continue
+            #     if not weighted_score.get(k_metric):
+            #         weighted_score[k_metric] = v * (num_image_testset[testset] / sum(list(num_image_testset.values())))
+            #     else:
+            #         weighted_score[k_metric] += v * (num_image_testset[testset] / sum(list(num_image_testset.values())))
+            # print('>>>>>>>>>>>>>>weighted_score:<<<<<<<<<<<<<<\n')
+            # for k, v in weighted_score.items():
+            #     print(k, '\t', '{:.4f}'.format(v))
+            # print('--' * 5)
         lr_scheduler.step()
         if config.lambda_adv_g:
             lr_scheduler_d.step()

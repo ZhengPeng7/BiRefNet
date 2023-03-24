@@ -65,7 +65,7 @@ class MyData(data.Dataset):
                     ).convert('L')
                 )
                 self.class_labels_loaded.append(
-                    self.cls_name2id[label_path.split('/')[-1].split('#')[3]] if self.is_train and config.auxiliary_classification else None
+                    self.cls_name2id[label_path.split('/')[-1].split('#')[3]] if self.is_train and config.auxiliary_classification else -1
                 )
 
 
@@ -74,11 +74,11 @@ class MyData(data.Dataset):
         if self.load_all:
             image = self.images_loaded[index]
             label = self.labels_loaded[index]
-            class_label = self.class_labels_loaded[index] if self.is_train and config.auxiliary_classification else None
+            class_label = self.class_labels_loaded[index] if self.is_train and config.auxiliary_classification else -1
         else:
             image = Image.open(self.image_paths[index]).convert('RGB')
             label = Image.open(self.label_paths[index]).convert('L')
-            class_label = self.cls_name2id[self.label_paths[index].split('/')[-1].split('#')[3]] if self.is_train and config.auxiliary_classification else None
+            class_label = self.cls_name2id[self.label_paths[index].split('/')[-1].split('#')[3]] if self.is_train and config.auxiliary_classification else -1
 
         # loading image and label
         if self.is_train:
