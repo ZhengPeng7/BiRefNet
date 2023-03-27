@@ -156,7 +156,7 @@ def compute_hce(pred_root, gt_root, gt_ske_root):
 
         gt = cv2.imread(gt_path, cv2.IMREAD_GRAYSCALE)
         pred = cv2.imread(pred_path, cv2.IMREAD_GRAYSCALE)
-        pred = cv2.threshold(cv2.imread(pred_path, cv2.IMREAD_GRAYSCALE), 127, 255, cv2.THRESH_BINARY)[1]
+        # pred = cv2.threshold(cv2.imread(pred_path, cv2.IMREAD_GRAYSCALE), 127, 255, cv2.THRESH_BINARY)[1]
 
         ske_path = os.path.join(gt_ske_root, gt_name)
         if os.path.exists(ske_path):

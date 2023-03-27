@@ -6,7 +6,7 @@ import torch
 
 class Config():
     def __init__(self) -> None:
-        self.load_all = 0#psutil.virtual_memory().free // (2 ** (10 * 3)) > 23 + 8
+        self.load_all = psutil.virtual_memory().free // (2 ** (10 * 3)) > 23 + 8
         self.freeze_bb = False
         self.dec_att = ['', 'ASPP'][1]  # Useless for PVTVP
         self.model = ['BSL', 'PVTVP'][0]
