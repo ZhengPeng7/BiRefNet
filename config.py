@@ -6,13 +6,24 @@ import torch
 
 class Config():
     def __init__(self) -> None:
-        self.load_all = psutil.virtual_memory().free // (2 ** (10 * 3)) > 23 + 8
-        self.freeze_bb = 1
-        self.model = ['BSL', 'PVTVP'][1]
-        self.dec_att = ['', 'ASPP'][0]  # Useless for PVTVP
+        self.load_all = 0#psutil.virtual_memory().free // (2 ** (10 * 3)) > 23 + 8
+        self.freeze_bb = False
+        self.dec_att = ['', 'ASPP'][1]  # Useless for PVTVP
+        self.model = ['BSL', 'PVTVP'][0]
+        self.IoU_finetune_last_epochs = [-20, 0][0]     # choose 0 to skip
         # Backbone
-        self.bb = ['cnn-vgg16', 'cnn-vgg16bn', 'cnn-resnet50', 'trans-pvt'][3]
-        self.pvt_weights = ['/mnt/workspace/workgroup/mohe/weights/pvt_v2_b2.pth', ''][0]
+        self.bb = [
+            'cnn-vgg16', 'cnn-vgg16bn', 'cnn-resnet50',     # 1, 2, 3
+            'trans-pvtv2_b2', 'trans-pvtv2_b5',             # 3, 4
+            'trans-swinv1_b', 'trans-swinv1_l'              # 5, 6
+        ][6]
+        self.weights_root_dir = '/mnt/workspace/workgroup/mohe/weights'
+        self.weights = {
+            'pvtv2_b2': os.path.join(self.weights_root_dir, 'pvt_v2_b2.pth'),
+            'pvtv2_b5': os.path.join(self.weights_root_dir, 'pvt_v2_b5.pth'),
+            'swinv1_b': os.path.join(self.weights_root_dir, 'swin_base_patch4_window12_384_22kto1k.pth'),
+            'swinv1_l': os.path.join(self.weights_root_dir, 'swin_large_patch4_window12_384_22kto1k.pth'),
+        }
 
         # Components
         self.auxiliary_classification = False

@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 from skimage import io
+import matplotlib.pyplot as plt
 from skimage.morphology import skeletonize
 from skimage.morphology import erosion, dilation, disk
 from skimage.measure import label
@@ -18,7 +19,7 @@ config = Config()
 
 def filter_bdy_cond(bdy_, mask, cond):
 
-    cond = cv2.dilate(cond.astype(np.uint8),disk(1))
+    cond = cv2.dilate(cond.astype(np.uint8), disk(1))
     labels = label(mask) # find the connected regions
     lbls = np.unique(labels) # the indices of the connected regions
     indep = np.ones(lbls.shape[0]) # the label of each connected regions
@@ -26,23 +27,23 @@ def filter_bdy_cond(bdy_, mask, cond):
 
     boundaries = []
     h,w = cond.shape[0:2]
-    ind_map = np.zeros((h,w))
+    ind_map = np.zeros((h, w))
     indep_cnt = 0
 
-    for i in range(0,len(bdy_)):
+    for i in range(0, len(bdy_)):
         tmp_bdies = []
         tmp_bdy = []
-        for j in range(0,bdy_[i].shape[0]):
+        for j in range(0, bdy_[i].shape[0]):
             r, c = bdy_[i][j,0,1],bdy_[i][j,0,0]
 
-            if(np.sum(cond[r,c])==0 or ind_map[r,c]!=0):
+            if(np.sum(cond[r, c])==0 or ind_map[r, c]!=0):
                 if(len(tmp_bdy)>0):
                     tmp_bdies.append(tmp_bdy)
                     tmp_bdy = []
                 continue
-            tmp_bdy.append([c,r])
-            ind_map[r,c] =  ind_map[r,c] + 1
-            indep[labels[r,c]] = 0 # indicates part of the boundary of this region needs human correction
+            tmp_bdy.append([c, r])
+            ind_map[r, c] =  ind_map[r, c] + 1
+            indep[labels[r, c]] = 0 # indicates part of the boundary of this region needs human correction
         if(len(tmp_bdy)>0):
             tmp_bdies.append(tmp_bdy)
 
@@ -58,8 +59,8 @@ def filter_bdy_cond(bdy_, mask, cond):
                 tmp_bdies[-1].extend(tmp_bdies[0][::-1])
                 del tmp_bdies[0]
 
-        for k in range(0,len(tmp_bdies)):
-            tmp_bdies[k] =  np.array(tmp_bdies[k])[:,np.newaxis,:]
+        for k in range(0, len(tmp_bdies)):
+            tmp_bdies[k] =  np.array(tmp_bdies[k])[:, np.newaxis, :]
         if(len(tmp_bdies)>0):
             boundaries.extend(tmp_bdies)
 
@@ -67,18 +68,18 @@ def filter_bdy_cond(bdy_, mask, cond):
 
 # this function approximate each boundary by DP algorithm
 # https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm
-def approximate_RDP(boundaries,epsilon=1.0):
+def approximate_RDP(boundaries, epsilon=1.0):
 
     boundaries_ = []
     boundaries_len_ = []
     pixel_cnt_ = 0
 
     # polygon approximate of each boundary
-    for i in range(0,len(boundaries)):
-        boundaries_.append(cv2.approxPolyDP(boundaries[i],epsilon,False))
+    for i in range(0, len(boundaries)):
+        boundaries_.append(cv2.approxPolyDP(boundaries[i], epsilon, False))
 
     # count the control points number of each boundary and the total control points number of all the boundaries
-    for i in range(0,len(boundaries_)):
+    for i in range(0, len(boundaries_)):
         boundaries_len_.append(len(boundaries_[i]))
         pixel_cnt_ = pixel_cnt_ + len(boundaries_[i])
 
@@ -92,41 +93,41 @@ def relax_HCE(gt, rs, gt_ske, relax=5, epsilon=2.0):
 
     # Binarize gt
     if(len(gt.shape)>2):
-        gt = gt[:,:,0]
+        gt = gt[:, :, 0]
 
     epsilon_gt = 128#(np.amin(gt)+np.amax(gt))/2.0
     gt = (gt>epsilon_gt).astype(np.uint8)
 
     # Binarize rs
     if(len(rs.shape)>2):
-        rs = rs[:,:,0]
+        rs = rs[:, :, 0]
     epsilon_rs = 128#(np.amin(rs)+np.amax(rs))/2.0
     rs = (rs>epsilon_rs).astype(np.uint8)
 
-    Union = np.logical_or(gt,rs)
-    TP = np.logical_and(gt,rs)
+    Union = np.logical_or(gt, rs)
+    TP = np.logical_and(gt, rs)
     FP = rs - TP
     FN = gt - TP
 
     # relax the Union of gt and rs
     Union_erode = Union.copy()
-    Union_erode = cv2.erode(Union_erode.astype(np.uint8),disk(1),iterations=relax)
+    Union_erode = cv2.erode(Union_erode.astype(np.uint8), disk(1), iterations=relax)
 
     # --- get the relaxed False Positive regions for computing the human efforts in correcting them ---
-    FP_ = np.logical_and(FP,Union_erode) # get the relaxed FP
-    for i in range(0,relax):
-        FP_ = cv2.dilate(FP_.astype(np.uint8),disk(1))
-        FP_ = np.logical_and(FP_, 1-np.logical_or(TP,FN))
+    FP_ = np.logical_and(FP, Union_erode) # get the relaxed FP
+    for i in range(0, relax):
+        FP_ = cv2.dilate(FP_.astype(np.uint8), disk(1))
+        FP_ = np.logical_and(FP_, 1-np.logical_or(TP, FN))
     FP_ = np.logical_and(FP, FP_)
 
     # --- get the relaxed False Negative regions for computing the human efforts in correcting them ---
-    FN_ = np.logical_and(FN,Union_erode) # preserve the structural components of FN
+    FN_ = np.logical_and(FN, Union_erode) # preserve the structural components of FN
     ## recover the FN, where pixels are not close to the TP borders
-    for i in range(0,relax):
-        FN_ = cv2.dilate(FN_.astype(np.uint8),disk(1))
-        FN_ = np.logical_and(FN_,1-np.logical_or(TP,FP))
-    FN_ = np.logical_and(FN,FN_)
-    FN_ = np.logical_or(FN_, np.logical_xor(gt_ske,np.logical_and(TP,gt_ske))) # preserve the structural components of FN
+    for i in range(0, relax):
+        FN_ = cv2.dilate(FN_.astype(np.uint8), disk(1))
+        FN_ = np.logical_and(FN_, 1-np.logical_or(TP, FP))
+    FN_ = np.logical_and(FN, FN_)
+    FN_ = np.logical_or(FN_, np.logical_xor(gt_ske, np.logical_and(TP, gt_ske))) # preserve the structural components of FN
 
     ## 2. =============Find exact polygon control points and independent regions==============
     ## find contours from FP_
@@ -136,14 +137,14 @@ def relax_HCE(gt, rs, gt_ske, relax=5, epsilon=2.0):
     ## find contours from FN_
     ctrs_FN, hier_FN = cv2.findContours(FN_.astype(np.uint8), cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
     ## find control points and independent regions for human correction
-    bdies_FN, indep_cnt_FN = filter_bdy_cond(ctrs_FN, FN_, 1-np.logical_or(np.logical_or(TP,FP_),FN_))
+    bdies_FN, indep_cnt_FN = filter_bdy_cond(ctrs_FN, FN_, 1-np.logical_or(np.logical_or(TP, FP_), FN_))
 
-    poly_FP, poly_FP_len, poly_FP_point_cnt = approximate_RDP(bdies_FP,epsilon=epsilon)
-    poly_FN, poly_FN_len, poly_FN_point_cnt = approximate_RDP(bdies_FN,epsilon=epsilon)
+    poly_FP, poly_FP_len, poly_FP_point_cnt = approximate_RDP(bdies_FP, epsilon=epsilon)
+    poly_FN, poly_FN_len, poly_FN_point_cnt = approximate_RDP(bdies_FN, epsilon=epsilon)
 
     return poly_FP_point_cnt, indep_cnt_FP, poly_FN_point_cnt, indep_cnt_FN
 
-def compute_hce(pred_root,gt_root,gt_ske_root):
+def compute_hce(pred_root, gt_root, gt_ske_root):
 
     gt_name_list = glob(pred_root+'/*.png')
     gt_name_list = sorted([x.split('/')[-1] for x in gt_name_list])
@@ -153,37 +154,35 @@ def compute_hce(pred_root,gt_root,gt_ske_root):
         gt_path = os.path.join(gt_root, gt_name)
         pred_path = os.path.join(pred_root, gt_name)
 
-        gt = cv2.threshold(cv2.imread(gt_path, cv2.IMREAD_GRAYSCALE), 127, 255, cv2.THRESH_BINARY)[1]
+        gt = cv2.imread(gt_path, cv2.IMREAD_GRAYSCALE)
         pred = cv2.imread(pred_path, cv2.IMREAD_GRAYSCALE)
+        pred = cv2.threshold(cv2.imread(pred_path, cv2.IMREAD_GRAYSCALE), 127, 255, cv2.THRESH_BINARY)[1]
 
-        ske_path = os.path.join(gt_ske_root,gt_name)
+        ske_path = os.path.join(gt_ske_root, gt_name)
         if os.path.exists(ske_path):
-            ske = cv2.imread(ske_path,cv2.IMREAD_GRAYSCALE)
-            ske = ske>128
+            ske = cv2.imread(ske_path, cv2.IMREAD_GRAYSCALE)
+            ske = ske > 128
         else:
             ske = skeletonize(gt>128)
+            os.makedirs(gt_ske_root, exist_ok=True)
+            cv2.imwrite(ske_path, ske.astype(np.uint8)*255)
 
-        FP_points, FP_indep, FN_points, FN_indep = relax_HCE(gt, pred,ske)
-        print(gt_path.split('/')[-1],FP_points, FP_indep, FN_points, FN_indep)
+        FP_points, FP_indep, FN_points, FN_indep = relax_HCE(gt, pred, ske)
+        # print(gt_path.split('/')[-1],FP_points, FP_indep, FN_points, FN_indep)
         hces.append([FP_points, FP_indep, FN_points, FN_indep, FP_points+FP_indep+FN_points+FN_indep])
 
-    hce_metric ={'names': gt_name_list,
-                 'hces': hces}
-
-
-    file_metric = open(pred_root+'/hce_metric.pkl','wb')
-    pkl.dump(hce_metric,file_metric)
-    # file_metrics.write(cmn_metrics)
-    file_metric.close()
-
-    return np.mean(np.array(hces)[:,-1])
+    return np.mean(np.array(hces)[:, -1])
 
 def main():
-    method = 'a'
-    testsets = 'DIS-TE1'
+    """
+    Save the skeletons of gts once to save time later
+    """
+    method = 'IoU-20'
+    testsets = 'DIS-VD+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4'
     for testset in testsets.split('+'):
+        print('Evaluating {}:'.format(testset))
         gt_root = os.path.join(config.data_root_dir, config.dataset, testset, "gt")
-        gt_ske_root = ""
+        gt_ske_root = os.path.join(config.data_root_dir, config.dataset, testset, "ske")
         pred_root = os.path.join(method, testset)
 
         print(

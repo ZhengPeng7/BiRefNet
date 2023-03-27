@@ -1,8 +1,8 @@
 #!/bin/bash
 # Run script
 method="$1"
-epochs=120
-val_last=20
+epochs=150
+val_last=50
 step=10
 
 # Train

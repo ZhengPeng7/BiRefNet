@@ -8,7 +8,8 @@ from torchvision.models import vgg16, vgg16_bn
 from torchvision.models import resnet50
 
 from models.modules import ResBlk
-from models.bb_pvtv2 import pvt_v2_b2
+from models.bb_pvtv2 import pvt_v2_b2, pvt_v2_b5
+from models.bb_swinv1 import SwinB, SwinL
 from config import Config
 from dataset import class_labels_TR_sorted
 
@@ -43,14 +44,23 @@ class BSL(nn.Module):
                 'conv3': bb_net[5],
                 'conv4': bb_net[6]
             })
-        elif bb == 'trans-pvt':
-            self.bb = pvt_v2_b2()
-            if self.config.pvt_weights:
-                save_model = torch.load(self.config.pvt_weights)
-                model_dict = self.bb.state_dict()
-                state_dict = {k: v for k, v in save_model.items() if k in model_dict.keys()}
-                model_dict.update(state_dict)
-                self.bb.load_state_dict(model_dict)
+        elif 'trans' in bb:
+            if bb.split('trans-')[-1] == 'pvtv2_b2':
+                self.bb = pvt_v2_b2()
+            elif bb == 'trans-pvtv2_b5':
+                self.bb = pvt_v2_b5()
+            elif bb == 'trans-swinv1_b':
+                self.bb = SwinB()
+            elif bb == 'trans-swinv1_l':
+                self.bb = SwinL()
+            else:
+                print('Unknown backbone, exit now.')
+                exit()
+            save_model = torch.load(self.config.weights[bb.split('trans-')[-1]])
+            model_dict = self.bb.state_dict()
+            state_dict = {k: v for k, v in save_model.items() if k in model_dict.keys()}
+            model_dict.update(state_dict)
+            self.bb.load_state_dict(model_dict)
 
         if 'cnn-' in bb:
             self.bb = nn.Sequential(bb_convs)
@@ -58,7 +68,10 @@ class BSL(nn.Module):
             'cnn-vgg16': [512, 256, 128, 64],
             'cnn-vgg16bn': [512, 256, 128, 64],
             'cnn-resnet50': [1024, 512, 256, 64],
-            'trans-pvt': [512, 320, 128, 64],
+            'trans-pvtv2_b2': [512, 320, 128, 64],
+            'trans-pvtv2_b5': [512, 320, 128, 64],
+            'trans-swinv1_b': [1024, 512, 256, 128],
+            'trans-swinv1_l': [1024, 512, 256, 128],
         }
 
         if self.config.auxiliary_classification:

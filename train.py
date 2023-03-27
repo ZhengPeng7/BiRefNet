@@ -181,6 +181,9 @@ def train(epoch):
     loss_log = AverageMeter()
     global logger_loss_idx
     model.train()
+    if epoch > args.epochs + config.IoU_finetune_last_epochs:
+        pix_loss.lambdas_pix_last['bce'] = 0
+        pix_loss.lambdas_pix_last['iou'] = 2
 
     for batch_idx, batch in enumerate(data_loader_train):
         inputs = batch[0].to(torch.device(config.device))
