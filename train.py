@@ -146,7 +146,8 @@ def main():
             for testset in args.testsets.split('+'):
                 if 'DIS-TE' in testset:
                     num_image_testset[testset] = num_image_testset_all[testset]
-            weighted_score = {}
+            weighted_scores = {'f_max': 0, 'sm': 0, 'e_max': 0, 'mae': 0}
+            len_all_data_loaders = 0
             for testset, data_loader_test in test_loaders.items():
                 performance_dict = valid(
                     model,
@@ -157,21 +158,20 @@ def main():
                     only_S_MAE=config.only_S_MAE
                 )
                 print('Test set: {}:'.format(testset))
-                print('Fmax: {:.4f}, Smeasure: {:.4f}, MAE: {:.4f}'.format(
-                    performance_dict['f_max'], performance_dict['sm'], performance_dict['mae'])
-                )
-            # # Compute weighted scores of all testsets.
-            # for k_metric, v in performance_dict.items():
-            #     if v == -1:
-            #         continue
-            #     if not weighted_score.get(k_metric):
-            #         weighted_score[k_metric] = v * (num_image_testset[testset] / sum(list(num_image_testset.values())))
-            #     else:
-            #         weighted_score[k_metric] += v * (num_image_testset[testset] / sum(list(num_image_testset.values())))
-            # print('>>>>>>>>>>>>>>weighted_score:<<<<<<<<<<<<<<\n')
-            # for k, v in weighted_score.items():
-            #     print(k, '\t', '{:.4f}'.format(v))
-            # print('--' * 5)
+                print('Smeasure: {:.4f}, MAE: {:.4f}'.format(
+                    performance_dict['sm'], performance_dict['mae']
+                ))
+                # print('Fmax: {:.4f}, Smeasure: {:.4f}, MAE: {:.4f}'.format(
+                #     performance_dict['f_max'], performance_dict['sm'], performance_dict['mae'])
+                # )
+                for metric in ['sm', 'mae']:
+                    weighted_scores[metric] += performance_dict[metric] * len(data_loader_test)
+                len_all_data_loaders += len(data_loader_test)
+            print('Weighted Scores:')
+            for metric, score in weighted_scores.items():
+                if score:
+                    print('\t{}: {:.4f}.'.format(metric, score / len_all_data_loaders))
+                
         lr_scheduler.step()
         if config.lambda_adv_g:
             lr_scheduler_d.step()
@@ -199,9 +199,6 @@ def train(epoch):
 
         # Loss
         loss_pix = pix_loss(scaled_preds, gts)
-        # Tricks
-        if config.label_smoothing:
-            loss_pix = 0.5 * (loss_pix + pix_loss(scaled_preds, generate_smoothed_gt(gts)))
         # since there may be several losses for sal, the lambdas for them (lambdas_pix) are inside the loss.py
         loss = loss_pix * 1.0 + loss_cls * 1.0
 

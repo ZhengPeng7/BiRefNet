@@ -1,39 +1,7 @@
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from functools import partial
 
-from config import Config
-
-
-config = Config()
-
-
-class ResBlk(nn.Module):
-    def __init__(self, channel_in=64, channel_out=64, channel_inter=64, dilation=config.dilation):
-        super(ResBlk, self).__init__()
-        channel_inter = channel_in // 4 if config.dec_channel_inter == 'adap' else 64
-        self.conv_in = nn.Conv2d(channel_in, channel_inter, 3, 1, padding=dilation, dilation=dilation)
-        self.relu_in = nn.ReLU(inplace=True)
-        if config.dec_att == 'ASPP':
-            self.dec_att = ASPP(channel_in=channel_inter)
-        self.conv_out = nn.Conv2d(channel_inter, channel_out, 3, 1, padding=dilation, dilation=dilation)
-        if config.use_bn:
-            self.bn_in = nn.BatchNorm2d(channel_inter)
-            self.bn_out = nn.BatchNorm2d(channel_out)
-
-    def forward(self, x):
-        x = self.conv_in(x)
-        if config.use_bn:
-            x = self.bn_in(x)
-        x = self.relu_in(x)
-        if config.dec_att:
-            x = self.dec_att(x)
-        x = self.conv_out(x)
-        if config.use_bn:
-            x = self.bn_out(x)
-        return x
 
 class _ASPPModule(nn.Module):
     def __init__(self, channel_in, planes, kernel_size, padding, dilation):
@@ -89,3 +57,52 @@ class ASPP(nn.Module):
         x = self.relu(x)
 
         return self.dropout(x)
+
+
+##################### MLP
+
+
+class MLPLayer(nn.Module):
+    r""" MLP layer of InternImage
+    Args:
+        in_features (int): number of input features
+        hidden_features (int): number of hidden features
+        out_features (int): number of output features
+        act_layer (str): activation layer
+        drop (float): dropout rate
+    """
+
+    def __init__(self,
+                 in_features,
+                 hidden_features=None,
+                 out_features=None,
+                 act_layer='GELU',
+                 drop=0.):
+        super().__init__()
+        out_features = out_features or in_features
+        hidden_features = hidden_features or in_features
+        self.fc1 = nn.Linear(in_features, hidden_features)
+        self.act = build_act_layer(act_layer)
+        self.fc2 = nn.Linear(hidden_features, out_features)
+        self.drop = nn.Dropout(drop)
+
+    def forward(self, x):
+        x = self.fc1(x)
+        x = self.act(x)
+        x = self.drop(x)
+        x = self.fc2(x)
+        x = self.drop(x)
+        return x
+
+
+def build_act_layer(act_layer):
+    if act_layer == 'ReLU':
+        return nn.ReLU(inplace=True)
+    elif act_layer == 'SiLU':
+        return nn.SiLU(inplace=True)
+    elif act_layer == 'GELU':
+        return nn.GELU()
+
+    raise NotImplementedError(f'build_act_layer does not support {act_layer}')
+
+
