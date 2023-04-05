@@ -6,10 +6,10 @@ import torch
 
 class Config():
     def __init__(self) -> None:
-        self.ms_supervision = True
+        self.ms_supervision = False
         self.freeze_bb = 1
         self.load_all = 0
-        self.dec_att = ['', 'ASPP'][0]  # Useless for PVTVP
+        self.dec_att = ['', 'ASPP', 'ASPPDeformable'][2]  # Useless for PVTVP
         self.model = ['BSL', 'PVTVP'][0]
         self.IoU_finetune_last_epochs = [-20, 0][0]     # choose 0 to skip
         # Backbone
@@ -28,8 +28,8 @@ class Config():
 
         # Components
         self.auxiliary_classification = False
-        self.dec_blk = ['BasicBlk', 'BlockA'][0]
-        self.dilation = 1   # too slow
+        self.dec_blk = ['BasicDecBlk', 'BlockA'][0]
+        self.lat_blk = ['BasicLatBlk'][0]
         self.dec_channel_inter = ['fixed', 'adap'][0]
         # self.refine = True
 
@@ -38,7 +38,7 @@ class Config():
         self.batch_size = 10
         self.num_workers = min(10, self.batch_size)
         self.optimizer = ['Adam', 'AdamW'][0]
-        self.lr = 1e-4 * math.sqrt(self.batch_size / 8)  # adapt the lr linearly
+        self.lr = 1e-4 * math.sqrt(self.batch_size / 5)  # adapt the lr linearly
         self.lr_decay_epochs = [-10]    # Set to negative N to decay the lr in the last N-th epoch.
         self.only_S_MAE = True
 

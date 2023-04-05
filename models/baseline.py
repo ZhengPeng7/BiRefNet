@@ -10,7 +10,8 @@ from torchvision.models import resnet50
 from config import Config
 from dataset import class_labels_TR_sorted
 from models.backbones.build_backbone import build_backbone
-from models.modules.basic_dec_blk import BasicBlk
+from models.modules.decoder_blocks import BasicDecBlk
+from models.modules.lateral_blocks import BasicLatBlk
 from models.modules.ing import *
 
 
@@ -34,7 +35,7 @@ class BSL(nn.Module):
                 nn.Linear(channels[0], len(class_labels_TR_sorted))
             )
 
-        self.squeeze_module = BasicBlk(channels[0], channels[0])
+        self.squeeze_module = BasicDecBlk(channels[0], channels[0])
 
         self.decoder = Decoder(channels)
 
@@ -80,36 +81,37 @@ class Decoder(nn.Module):
         super(Decoder, self).__init__()
         self.config = Config()
         DecoderBlock = eval(self.config.dec_blk)
+        LateralBlock = eval(self.config.lat_blk)
 
         self.decoder_block4 = DecoderBlock(channels[0], channels[1])
         self.decoder_block3 = DecoderBlock(channels[1], channels[2])
         self.decoder_block2 = DecoderBlock(channels[2], channels[3])
         self.decoder_block1 = DecoderBlock(channels[3], channels[3]//2)
 
-        self.lat_layer4 = nn.Sequential(nn.Conv2d(channels[1], 1, 1, 1, 0))
-        self.lat_layer3 = nn.Sequential(nn.Conv2d(channels[2], 1, 1, 1, 0))
-        self.lat_layer2 = nn.Sequential(nn.Conv2d(channels[3], 1, 1, 1, 0))
-        self.conv_out1 = nn.Sequential(nn.Conv2d(channels[3]//2, 1, 1, 1, 0))
+        self.lateral_block4 = LateralBlock(channels[1], channels[1])
+        self.lateral_block3 = LateralBlock(channels[2], channels[2])
+        self.lateral_block2 = LateralBlock(channels[3], channels[3])
 
         if self.config.ms_supervision:
             self.conv_ms_spvn_4 = nn.Conv2d(channels[1], 1, 1, 1, 0)
             self.conv_ms_spvn_3 = nn.Conv2d(channels[2], 1, 1, 1, 0)
             self.conv_ms_spvn_2 = nn.Conv2d(channels[3], 1, 1, 1, 0)
+        self.conv_out1 = nn.Sequential(nn.Conv2d(channels[3]//2, 1, 1, 1, 0))
 
     def forward(self, features):
         x, x1, x2, x3, x4 = features
         outs = []
         p4 = self.decoder_block4(x4)
         _p4 = F.interpolate(p4, size=x3.shape[2:], mode='bilinear', align_corners=True)
-        _p3 = _p4 + self.lat_layer4(x3)
+        _p3 = _p4 + self.lateral_block4(x3)
 
         p3 = self.decoder_block3(_p3)
         _p3 = F.interpolate(p3, size=x2.shape[2:], mode='bilinear', align_corners=True)
-        _p2 = _p3 + self.lat_layer3(x2)
+        _p2 = _p3 + self.lateral_block3(x2)
 
         p2 = self.decoder_block2(_p2)
         _p2 = F.interpolate(p2, size=x1.shape[2:], mode='bilinear', align_corners=True)
-        _p1 = _p2 + self.lat_layer2(x1)
+        _p1 = _p2 + self.lateral_block2(x1)
 
         _p1 = self.decoder_block1(_p1)
         _p1 = F.interpolate(_p1, size=x.shape[2:], mode='bilinear', align_corners=True)

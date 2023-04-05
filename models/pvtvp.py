@@ -7,7 +7,7 @@ import torch.nn.functional as F
 from torchvision.models import vgg16, vgg16_bn
 from torchvision.models import resnet50
 
-from models.modules.basic_dec_blk import BasicBlk
+from models.modules.decoder_blocks import BasicDecBlk
 from models.backbones.pvt_v2 import pvt_v2_b2
 from models.dec_pvt_v2 import pvt_v2_b2_decoder
 from config import Config

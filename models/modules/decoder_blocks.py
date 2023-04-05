@@ -1,24 +1,22 @@
-import numpy as np
-import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from functools import partial
-
+from models.modules.aspp import ASPP, ASPPDeformable
 from config import Config
 
 
 config = Config()
 
 
-class BasicBlk(nn.Module):
-    def __init__(self, channel_in=64, channel_out=64, channel_inter=64, dilation=config.dilation):
-        super(BasicBlk, self).__init__()
+class BasicDecBlk(nn.Module):
+    def __init__(self, channel_in=64, channel_out=64, channel_inter=64):
+        super(BasicDecBlk, self).__init__()
         channel_inter = channel_in // 4 if config.dec_channel_inter == 'adap' else 64
-        self.conv_in = nn.Conv2d(channel_in, channel_inter, 3, 1, padding=dilation, dilation=dilation)
+        self.conv_in = nn.Conv2d(channel_in, channel_inter, 3, 1, padding=1)
         self.relu_in = nn.ReLU(inplace=True)
         if config.dec_att == 'ASPP':
             self.dec_att = ASPP(channel_in=channel_inter)
-        self.conv_out = nn.Conv2d(channel_inter, channel_out, 3, 1, padding=dilation, dilation=dilation)
+        elif config.dec_att == 'ASPPDeformable':
+            self.dec_att = ASPPDeformable(channel_in=channel_inter)
+        self.conv_out = nn.Conv2d(channel_inter, channel_out, 3, 1, padding=1)
         self.bn_in = nn.BatchNorm2d(channel_inter)
         self.bn_out = nn.BatchNorm2d(channel_out)
 
