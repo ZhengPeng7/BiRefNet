@@ -6,12 +6,21 @@ import torch
 
 class Config():
     def __init__(self) -> None:
+        self.refine = ['', 'RefUNet', 'Refiner', 'RefinerPVTInChannels4', 'itself'][-1]
         self.ms_supervision = False
-        self.freeze_bb = 1
-        self.load_all = 0
-        self.dec_att = ['', 'ASPP', 'ASPPDeformable'][2]  # Useless for PVTVP
+        self.freeze_bb = True
+        self.load_all = False
+        self.dec_att = ['', 'ASPP', 'ASPPDeformable'][0]  # Useless for PVTVP
         self.model = ['BSL', 'PVTVP'][0]
         self.IoU_finetune_last_epochs = [-20, 0][0]     # choose 0 to skip
+
+        # Components
+        self.auxiliary_classification = True
+        self.dec_blk = ['BasicDecBlk', 'BlockA'][0]
+        self.lat_blk = ['BasicLatBlk'][0]
+        self.dec_channels_inter = ['fixed', 'adap'][0]
+        # self.refine = True
+
         # Backbone
         self.bb = [
             'vgg16', 'vgg16bn', 'resnet50',         # 0, 1, 2
@@ -26,16 +35,9 @@ class Config():
             'swin_v1_l': os.path.join(self.weights_root_dir, 'swin_large_patch4_window12_384_22kto1k.pth'),
         }
 
-        # Components
-        self.auxiliary_classification = False
-        self.dec_blk = ['BasicDecBlk', 'BlockA'][0]
-        self.lat_blk = ['BasicLatBlk'][0]
-        self.dec_channel_inter = ['fixed', 'adap'][0]
-        # self.refine = True
-
         # Training
         self.size = 1024
-        self.batch_size = 10
+        self.batch_size = 5
         self.num_workers = min(10, self.batch_size)
         self.optimizer = ['Adam', 'AdamW'][0]
         self.lr = 1e-4 * math.sqrt(self.batch_size / 5)  # adapt the lr linearly

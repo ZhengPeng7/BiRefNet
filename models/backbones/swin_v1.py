@@ -402,20 +402,20 @@ class PatchEmbed(nn.Module):
 
     Args:
         patch_size (int): Patch token size. Default: 4.
-        in_chans (int): Number of input image channels. Default: 3.
+        in_channels (int): Number of input image channels. Default: 3.
         embed_dim (int): Number of linear projection output channels. Default: 96.
         norm_layer (nn.Module, optional): Normalization layer. Default: None
     """
 
-    def __init__(self, patch_size=4, in_chans=3, embed_dim=96, norm_layer=None):
+    def __init__(self, patch_size=4, in_channels=3, embed_dim=96, norm_layer=None):
         super().__init__()
         patch_size = to_2tuple(patch_size)
         self.patch_size = patch_size
 
-        self.in_chans = in_chans
+        self.in_channels = in_channels
         self.embed_dim = embed_dim
 
-        self.proj = nn.Conv2d(in_chans, embed_dim, kernel_size=patch_size, stride=patch_size)
+        self.proj = nn.Conv2d(in_channels, embed_dim, kernel_size=patch_size, stride=patch_size)
         if norm_layer is not None:
             self.norm = norm_layer(embed_dim)
         else:
@@ -449,7 +449,7 @@ class SwinTransformer(nn.Module):
         pretrain_img_size (int): Input image size for training the pretrained model,
             used in absolute postion embedding. Default 224.
         patch_size (int | tuple(int)): Patch size. Default: 4.
-        in_chans (int): Number of input image channels. Default: 3.
+        in_channels (int): Number of input image channels. Default: 3.
         embed_dim (int): Number of linear projection output channels. Default: 96.
         depths (tuple[int]): Depths of each Swin Transformer stage.
         num_heads (tuple[int]): Number of attention head of each stage.
@@ -472,7 +472,7 @@ class SwinTransformer(nn.Module):
     def __init__(self,
                  pretrain_img_size=224,
                  patch_size=4,
-                 in_chans=3,
+                 in_channels=3,
                  embed_dim=96,
                  depths=[2, 2, 6, 2],
                  num_heads=[3, 6, 12, 24],
@@ -501,7 +501,7 @@ class SwinTransformer(nn.Module):
 
         # split image into non-overlapping patches
         self.patch_embed = PatchEmbed(
-            patch_size=patch_size, in_chans=in_chans, embed_dim=embed_dim,
+            patch_size=patch_size, in_channels=in_channels, embed_dim=embed_dim,
             norm_layer=norm_layer if self.patch_norm else None)
 
         # absolute position embedding

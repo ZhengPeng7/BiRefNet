@@ -7,7 +7,7 @@ from config import Config
 
 config = Config()
 
-def build_backbone(bb_name, pretrained=True):
+def build_backbone(bb_name, pretrained=True, params_settings=''):
     if bb_name == 'vgg16':
         bb_net = list(vgg16(pretrained=VGG16_Weights.DEFAULT if pretrained else None).children())[0]
         bb = nn.Sequential(OrderedDict({'conv1': bb_net[:4], 'conv2': bb_net[4:9], 'conv3': bb_net[9:16], 'conv4': bb_net[16:23]}))
@@ -18,13 +18,16 @@ def build_backbone(bb_name, pretrained=True):
         bb_net = list(resnet50(pretrained=ResNet50_Weights.DEFAULT if pretrained else None).children())
         bb = nn.Sequential(OrderedDict({'conv1': nn.Sequential(*bb_net[0:3]), 'conv2': bb_net[4], 'conv3': bb_net[5], 'conv4': bb_net[6]}))
     else:
-        bb = load_weights(eval('{}()'.format(bb_name)), bb_name) if pretrained else eval('{}()'.format(bb_name))
+        bb = eval('{}({})'.format(bb_name, params_settings))
+        if pretrained:
+            bb = load_weights(bb, bb_name)
     return bb
 
 def load_weights(model, model_name):
     save_model = torch.load(config.weights[model_name])
     model_dict = model.state_dict()
-    state_dict = {k: v for k, v in save_model.items() if k in model_dict.keys()}
+    state_dict = {k: v if v.size() == model_dict[k].size() else model_dict[k] for k, v in save_model.items() if k in model_dict.keys()}
+    # to ignore the weights with mismatched size when I modify the backbone itself.
     model_dict.update(state_dict)
     model.load_state_dict(model_dict)
     return model

@@ -7,18 +7,18 @@ config = Config()
 
 
 class BasicDecBlk(nn.Module):
-    def __init__(self, channel_in=64, channel_out=64, channel_inter=64):
+    def __init__(self, in_channels=64, out_channels=64, inter_channels=64):
         super(BasicDecBlk, self).__init__()
-        channel_inter = channel_in // 4 if config.dec_channel_inter == 'adap' else 64
-        self.conv_in = nn.Conv2d(channel_in, channel_inter, 3, 1, padding=1)
+        inter_channels = in_channels // 4 if config.dec_channels_inter == 'adap' else 64
+        self.conv_in = nn.Conv2d(in_channels, inter_channels, 3, 1, padding=1)
         self.relu_in = nn.ReLU(inplace=True)
         if config.dec_att == 'ASPP':
-            self.dec_att = ASPP(channel_in=channel_inter)
+            self.dec_att = ASPP(in_channels=inter_channels)
         elif config.dec_att == 'ASPPDeformable':
-            self.dec_att = ASPPDeformable(channel_in=channel_inter)
-        self.conv_out = nn.Conv2d(channel_inter, channel_out, 3, 1, padding=1)
-        self.bn_in = nn.BatchNorm2d(channel_inter)
-        self.bn_out = nn.BatchNorm2d(channel_out)
+            self.dec_att = ASPPDeformable(in_channels=inter_channels)
+        self.conv_out = nn.Conv2d(inter_channels, out_channels, 3, 1, padding=1)
+        self.bn_in = nn.BatchNorm2d(inter_channels)
+        self.bn_out = nn.BatchNorm2d(out_channels)
 
     def forward(self, x):
         x = self.conv_in(x)

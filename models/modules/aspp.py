@@ -5,9 +5,9 @@ from models.modules.deform_conv import DeformableConv2d
 
 
 class _ASPPModule(nn.Module):
-    def __init__(self, channel_in, planes, kernel_size, padding, dilation):
+    def __init__(self, in_channels, planes, kernel_size, padding, dilation):
         super(_ASPPModule, self).__init__()
-        self.atrous_conv = nn.Conv2d(channel_in, planes, kernel_size=kernel_size,
+        self.atrous_conv = nn.Conv2d(in_channels, planes, kernel_size=kernel_size,
                                             stride=1, padding=padding, dilation=dilation, bias=False)
         self.bn = nn.BatchNorm2d(planes)
         self.relu = nn.ReLU(inplace=True)
@@ -19,10 +19,10 @@ class _ASPPModule(nn.Module):
         return self.relu(x)
 
 class ASPP(nn.Module):
-    def __init__(self, channel_in=64, output_stride=16):
+    def __init__(self, in_channels=64, output_stride=16):
         super(ASPP, self).__init__()
         self.down_scale = 1
-        self.channel_inter = 256 // self.down_scale
+        self.in_channelster = 256 // self.down_scale
         if output_stride == 16:
             dilations = [1, 6, 12, 18]
         elif output_stride == 8:
@@ -30,17 +30,17 @@ class ASPP(nn.Module):
         else:
             raise NotImplementedError
 
-        self.aspp1 = _ASPPModule(channel_in, self.channel_inter, 1, padding=0, dilation=dilations[0])
-        self.aspp2 = _ASPPModule(channel_in, self.channel_inter, 3, padding=dilations[1], dilation=dilations[1])
-        self.aspp3 = _ASPPModule(channel_in, self.channel_inter, 3, padding=dilations[2], dilation=dilations[2])
-        self.aspp4 = _ASPPModule(channel_in, self.channel_inter, 3, padding=dilations[3], dilation=dilations[3])
+        self.aspp1 = _ASPPModule(in_channels, self.in_channelster, 1, padding=0, dilation=dilations[0])
+        self.aspp2 = _ASPPModule(in_channels, self.in_channelster, 3, padding=dilations[1], dilation=dilations[1])
+        self.aspp3 = _ASPPModule(in_channels, self.in_channelster, 3, padding=dilations[2], dilation=dilations[2])
+        self.aspp4 = _ASPPModule(in_channels, self.in_channelster, 3, padding=dilations[3], dilation=dilations[3])
 
         self.global_avg_pool = nn.Sequential(nn.AdaptiveAvgPool2d((1, 1)),
-                                             nn.Conv2d(channel_in, self.channel_inter, 1, stride=1, bias=False),
-                                             nn.BatchNorm2d(self.channel_inter),
+                                             nn.Conv2d(in_channels, self.in_channelster, 1, stride=1, bias=False),
+                                             nn.BatchNorm2d(self.in_channelster),
                                              nn.ReLU(inplace=True))
-        self.conv1 = nn.Conv2d(self.channel_inter * 5, channel_in, 1, bias=False)
-        self.bn1 = nn.BatchNorm2d(channel_in)
+        self.conv1 = nn.Conv2d(self.in_channelster * 5, in_channels, 1, bias=False)
+        self.bn1 = nn.BatchNorm2d(in_channels)
         self.relu = nn.ReLU(inplace=True)
         self.dropout = nn.Dropout(0.5)
 
@@ -62,9 +62,9 @@ class ASPP(nn.Module):
 
 ##################### Deformable
 class _ASPPModuleDeformable(nn.Module):
-    def __init__(self, channel_in, planes, kernel_size, padding):
+    def __init__(self, in_channels, planes, kernel_size, padding):
         super(_ASPPModuleDeformable, self).__init__()
-        self.atrous_conv = DeformableConv2d(channel_in, planes, kernel_size=kernel_size,
+        self.atrous_conv = DeformableConv2d(in_channels, planes, kernel_size=kernel_size,
                                             stride=1, padding=padding, bias=False)
         self.bn = nn.BatchNorm2d(planes)
         self.relu = nn.ReLU(inplace=True)
@@ -77,22 +77,22 @@ class _ASPPModuleDeformable(nn.Module):
 
 
 class ASPPDeformable(nn.Module):
-    def __init__(self, channel_in=64):
+    def __init__(self, in_channels=64):
         super(ASPPDeformable, self).__init__()
         self.down_scale = 1
-        self.channel_inter = 256 // self.down_scale
+        self.in_channelster = 256 // self.down_scale
 
-        self.aspp1 = _ASPPModuleDeformable(channel_in, self.channel_inter, 1, padding=0)
-        self.aspp2 = _ASPPModuleDeformable(channel_in, self.channel_inter, 3, padding=1)
-        self.aspp3 = _ASPPModuleDeformable(channel_in, self.channel_inter, 3, padding=1)
-        self.aspp4 = _ASPPModuleDeformable(channel_in, self.channel_inter, 3, padding=1)
+        self.aspp1 = _ASPPModuleDeformable(in_channels, self.in_channelster, 1, padding=0)
+        self.aspp2 = _ASPPModuleDeformable(in_channels, self.in_channelster, 3, padding=1)
+        self.aspp3 = _ASPPModuleDeformable(in_channels, self.in_channelster, 3, padding=1)
+        self.aspp4 = _ASPPModuleDeformable(in_channels, self.in_channelster, 3, padding=1)
 
         self.global_avg_pool = nn.Sequential(nn.AdaptiveAvgPool2d((1, 1)),
-                                             nn.Conv2d(channel_in, self.channel_inter, 1, stride=1, bias=False),
-                                             nn.BatchNorm2d(self.channel_inter),
+                                             nn.Conv2d(in_channels, self.in_channelster, 1, stride=1, bias=False),
+                                             nn.BatchNorm2d(self.in_channelster),
                                              nn.ReLU(inplace=True))
-        self.conv1 = nn.Conv2d(self.channel_inter * 5, channel_in, 1, bias=False)
-        self.bn1 = nn.BatchNorm2d(channel_in)
+        self.conv1 = nn.Conv2d(self.in_channelster * 5, in_channels, 1, bias=False)
+        self.bn1 = nn.BatchNorm2d(in_channels)
         self.relu = nn.ReLU(inplace=True)
         self.dropout = nn.Dropout(0.5)
 

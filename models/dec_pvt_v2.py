@@ -152,7 +152,7 @@ class OverlapPatchEmbed(nn.Module):
     """ Image to Patch Embedding
     """
 
-    def __init__(self, img_size=224, patch_size=7, stride=4, in_chans=3, embed_dim=768):
+    def __init__(self, img_size=224, patch_size=7, stride=4, in_channels=3, embed_dim=768):
         super().__init__()
         img_size = to_2tuple(img_size)
         patch_size = to_2tuple(patch_size)
@@ -161,12 +161,12 @@ class OverlapPatchEmbed(nn.Module):
         # self.patch_size = patch_size
         self.H, self.W = img_size[0] // patch_size[0], img_size[1] // patch_size[1]
         self.num_patches = self.H * self.W
-        # self.proj = nn.Conv2d(in_chans, embed_dim, kernel_size=patch_size, stride=stride,
+        # self.proj = nn.Conv2d(in_channels, embed_dim, kernel_size=patch_size, stride=stride,
         #                       padding=(patch_size[0] // 2, patch_size[1] // 2))
         # Add Upsampling layers
         self.proj = nn.Sequential(
             nn.UpsamplingBilinear2d(scale_factor=stride),
-            nn.Conv2d(in_chans, embed_dim, kernel_size=patch_size, stride=1, padding=((patch_size[0]-1)//2, (patch_size[1]-1)//2))
+            nn.Conv2d(in_channels, embed_dim, kernel_size=patch_size, stride=1, padding=((patch_size[0]-1)//2, (patch_size[1]-1)//2))
         )
         self.norm = nn.LayerNorm(embed_dim)
 
@@ -197,7 +197,7 @@ class OverlapPatchEmbed(nn.Module):
 
 
 class PyramidVisionTransformerImprDecoder(nn.Module):
-    def __init__(self, img_size=224, patch_size=16, in_chans=3, num_classes=1000, embed_dims=[64, 128, 256, 512],
+    def __init__(self, img_size=224, patch_size=16, in_channels=3, num_classes=1000, embed_dims=[64, 128, 256, 512],
                  num_heads=[1, 2, 4, 8], mlp_ratios=[4, 4, 4, 4], qkv_bias=False, qk_scale=None, drop_rate=0.,
                  attn_drop_rate=0., drop_path_rate=0., norm_layer=nn.LayerNorm,
                  depths=[3, 4, 6, 3], sr_ratios=[8, 4, 2, 1]):
@@ -207,17 +207,17 @@ class PyramidVisionTransformerImprDecoder(nn.Module):
         self.strides = [4, 2, 2, 2][::-1]
         self.patch_sizes = [7, 3, 3, 3][::-1]
         self.lateral_connections = [
-            nn.Conv2d(lateral_chans, lateral_chans, 1, 1, 0) for lateral_chans in embed_dims[1:-1]
+            nn.Conv2d(inter_channels, inter_channels, 1, 1, 0) for inter_channels in embed_dims[1:-1]
         ]
 
         # patch_embed
-        self.patch_embed1 = OverlapPatchEmbed(img_size=img_size, patch_size=self.patch_sizes[0], stride=self.strides[0], in_chans=embed_dims[0],
+        self.patch_embed1 = OverlapPatchEmbed(img_size=img_size, patch_size=self.patch_sizes[0], stride=self.strides[0], in_channels=embed_dims[0],
                                               embed_dim=embed_dims[1])
-        self.patch_embed2 = OverlapPatchEmbed(img_size=img_size // 4, patch_size=self.patch_sizes[0], stride=self.strides[0], in_chans=embed_dims[1],
+        self.patch_embed2 = OverlapPatchEmbed(img_size=img_size // 4, patch_size=self.patch_sizes[0], stride=self.strides[0], in_channels=embed_dims[1],
                                               embed_dim=embed_dims[2])
-        self.patch_embed3 = OverlapPatchEmbed(img_size=img_size // 8, patch_size=self.patch_sizes[0], stride=self.strides[0], in_chans=embed_dims[2],
+        self.patch_embed3 = OverlapPatchEmbed(img_size=img_size // 8, patch_size=self.patch_sizes[0], stride=self.strides[0], in_channels=embed_dims[2],
                                               embed_dim=embed_dims[3])
-        self.patch_embed4 = OverlapPatchEmbed(img_size=img_size // 16, patch_size=self.patch_sizes[0], stride=self.strides[0], in_chans=embed_dims[3],
+        self.patch_embed4 = OverlapPatchEmbed(img_size=img_size // 16, patch_size=self.patch_sizes[0], stride=self.strides[0], in_channels=embed_dims[3],
                                               embed_dim=embed_dims[4])
 
         # transformer encoder

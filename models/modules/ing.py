@@ -3,16 +3,16 @@ from models.modules.mlp import MLPLayer
 
 
 class BlockA(nn.Module):
-    def __init__(self, channel_in=64, channel_out=64, channel_inter=64, mlp_ratio=4.):
+    def __init__(self, in_channels=64, out_channels=64, inter_channels=64, mlp_ratio=4.):
         super(BlockA, self).__init__()
-        channel_inter = channel_in
-        self.conv = nn.Conv2d(channel_in, channel_inter, 3, 1, 1)
-        self.norm1 = nn.LayerNorm(channel_inter)
-        self.ffn = MLPLayer(in_features=channel_inter,
-                            hidden_features=int(channel_inter * mlp_ratio),
+        inter_channels = in_channels
+        self.conv = nn.Conv2d(in_channels, inter_channels, 3, 1, 1)
+        self.norm1 = nn.LayerNorm(inter_channels)
+        self.ffn = MLPLayer(in_features=inter_channels,
+                            hidden_features=int(inter_channels * mlp_ratio),
                             act_layer=nn.GELU,
                             drop=0.)
-        self.norm2 = nn.LayerNorm(channel_inter)
+        self.norm2 = nn.LayerNorm(inter_channels)
 
     def forward(self, x):
         B, C, H, W = x.shape

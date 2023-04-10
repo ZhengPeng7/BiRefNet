@@ -110,8 +110,8 @@ if config.freeze_bb:
 
 
 # log model and optimizer params
-logger.info("Model details:")
-logger.info(model)
+# logger.info("Model details:")
+# logger.info(model)
 logger.info("Optimizer details:")
 logger.info(optimizer)
 logger.info("Scheduler details:")
@@ -181,6 +181,7 @@ def train(epoch):
     loss_log = AverageMeter()
     global logger_loss_idx
     model.train()
+    loss_dict = {}
     if epoch > args.epochs + config.IoU_finetune_last_epochs:
         pix_loss.lambdas_pix_last['bce'] = 0
         pix_loss.lambdas_pix_last['iou'] = 2
@@ -192,21 +193,24 @@ def train(epoch):
 
         if config.auxiliary_classification:
             scaled_preds, class_preds = model(inputs)
-            loss_cls = F.cross_entropy(class_preds, class_labels)
+            loss_cls = F.cross_entropy(class_preds, class_labels) * 5.0
+            loss_dict['loss_cls'] = loss_cls.item()
         else:
             scaled_preds = model(inputs)
             loss_cls = 0.
 
         # Loss
-        loss_pix = pix_loss(scaled_preds, gts)
+        loss_pix = pix_loss(scaled_preds, gts) * 1.0
+        loss_dict['loss_pix'] = loss_pix.item()
         # since there may be several losses for sal, the lambdas for them (lambdas_pix) are inside the loss.py
-        loss = loss_pix * 1.0 + loss_cls * 1.0
+        loss = loss_pix + loss_cls
 
         if config.lambda_adv_g:
             # gen
             valid = Variable(Tensor(scaled_preds[-1].shape[0], 1).fill_(1.0), requires_grad=False)
-            adv_loss_g = adv_criterion(disc(scaled_preds[-1] * inputs), valid)
-            loss += adv_loss_g * config.lambda_adv_g
+            adv_loss_g = adv_criterion(disc(scaled_preds[-1] * inputs), valid) * config.lambda_adv_g
+            loss += adv_loss_g
+            loss_dict['loss_adv'] = adv_loss_g.item()
         loss_log.update(loss, inputs.size(0))
         optimizer.zero_grad()
         loss.backward()
@@ -219,6 +223,7 @@ def train(epoch):
             adv_loss_real = adv_criterion(disc(gts * inputs), valid)
             adv_loss_fake = adv_criterion(disc(scaled_preds[-1].detach() * inputs.detach()), fake)
             adv_loss_d = (adv_loss_real + adv_loss_fake) / 2 * config.lambda_adv_d
+            loss_dict['loss_adv_d'] = adv_loss_d.item()
             adv_loss_d.backward()
             optimizer_d.step()
 
@@ -226,9 +231,9 @@ def train(epoch):
         if batch_idx % 20 == 0:
             # NOTE: Top2Down; [0] is the grobal slamap and [5] is the final output
             info_progress = 'Epoch[{0}/{1}] Iter[{2}/{3}]'.format(epoch, args.epochs, batch_idx, len(data_loader_train))
-            info_loss = 'Training Loss: loss_pix: {:.3f}'.format(loss_pix)
-            if config.lambda_adv_g:
-                info_loss += ', loss_adv: {:.3f}, loss_adv_disc: {:.3f}'.format(adv_loss_g * config.lambda_adv_g, adv_loss_d * config.lambda_adv_d)
+            info_loss = 'Training Losses'
+            for loss_name, loss_value in loss_dict.items():
+                info_loss += ', {}: {:.3f}'.format(loss_name, loss_value)
             logger.info(''.join((info_progress, info_loss)))
     info_loss = '@==Final== Epoch[{0}/{1}]  Training Loss: {loss.avg:.3f}  '.format(epoch, args.epochs, loss=loss_log)
     logger.info(info_loss)

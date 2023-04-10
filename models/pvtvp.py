@@ -98,7 +98,7 @@ class PVTVP(nn.Module):
         # if self.config.refine:
         #     p0 = self.refiner(p1_out)
 
-        if self.config.auxiliary_classification:
+        if self.training and self.config.auxiliary_classification:
             return scaled_preds, class_preds
         else:
             return scaled_preds

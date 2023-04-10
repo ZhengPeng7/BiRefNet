@@ -13,6 +13,8 @@ from models.backbones.build_backbone import build_backbone
 from models.modules.decoder_blocks import BasicDecBlk
 from models.modules.lateral_blocks import BasicLatBlk
 from models.modules.ing import *
+from models.refinement.refiner import Refiner, RefinerPVTInChannels4, RefUNet
+from models.refinement.stem_layer import StemLayer
 
 
 class BSL(nn.Module):
@@ -39,10 +41,17 @@ class BSL(nn.Module):
 
         self.decoder = Decoder(channels)
 
+        # refine patch-level segmentation
+        if self.config.refine:
+            if self.config.refine == 'itself':
+                self.stem_layer = StemLayer(in_channels=3+1, inter_channels=48, out_channels=3)
+            else:
+                self.refiner = eval('{}({})'.format(self.config.refine, 'in_channels=3+1'))
+
         if self.config.freeze_bb:
             print(self.named_parameters())
             for key, value in self.named_parameters():
-                if 'bb.' in key:
+                if 'bb.' in key and 'refiner.' not in key:
                     value.requires_grad = False
 
     def forward(self, x):
@@ -58,6 +67,7 @@ class BSL(nn.Module):
 
         if self.training and self.config.auxiliary_classification:
             class_preds = self.cls_head(self.avgpool(x4).view(x4.shape[0], -1))
+            # print(class_preds.shape)
 
         x4 = self.squeeze_module(x4)
 
@@ -66,11 +76,26 @@ class BSL(nn.Module):
         features = [x, x1, x2, x3, x4]
         scaled_preds = self.decoder(features)
 
-        # # refine patch-level segmentation
-        # if self.config.refine:
-        #     p0 = self.refiner(p1_out)
+        # refine patch-level segmentation
+        if self.config.refine:
+            if self.config.refine == 'itself':
+                print(x.shape, scaled_preds[-1].shape)
+                x = self.stem_layer(torch.cat([x, scaled_preds[-1]], dim=1))
+                ########## Encoder ##########
+                if self.config.bb in ['vgg16', 'vgg16bn', 'resnet50']:
+                    x1 = self.bb.conv1(x); x2 = self.bb.conv2(x1); x3 = self.bb.conv3(x2); x4 = self.bb.conv4(x3)
+                else:
+                    x1, x2, x3, x4 = self.bb(x)
+                if self.training and self.config.auxiliary_classification:
+                    class_preds = self.cls_head(self.avgpool(x4).view(x4.shape[0], -1))
+                x4 = self.squeeze_module(x4)
+                ########## Decoder ##########
+                features = [x, x1, x2, x3, x4]
+                scaled_preds += self.decoder(features)
+            else:
+                scaled_preds += self.refiner([x, scaled_preds[-1]])
 
-        if self.config.auxiliary_classification:
+        if self.training and self.config.auxiliary_classification:
             return scaled_preds, class_preds
         else:
             return scaled_preds

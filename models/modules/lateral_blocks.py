@@ -11,10 +11,10 @@ config = Config()
 
 
 class BasicLatBlk(nn.Module):
-    def __init__(self, channel_in=64, channel_out=64, channel_inter=64):
+    def __init__(self, in_channels=64, out_channels=64, inter_channels=64):
         super(BasicLatBlk, self).__init__()
-        channel_inter = channel_in // 4 if config.dec_channel_inter == 'adap' else 64
-        self.conv = nn.Conv2d(channel_in, channel_out, 1, 1, 0)
+        inter_channels = in_channels // 4 if config.dec_channels_inter == 'adap' else 64
+        self.conv = nn.Conv2d(in_channels, out_channels, 1, 1, 0)
 
     def forward(self, x):
         x = self.conv(x)
