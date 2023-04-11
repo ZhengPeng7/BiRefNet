@@ -18,21 +18,12 @@ from evaluation.valid import valid
 
 # Parameter from command line
 parser = argparse.ArgumentParser(description='')
-parser.add_argument('--resume',
-                    default=None,
-                    type=str,
-                    help='path to latest checkpoint')
-parser.add_argument('--epochs', default=100, type=int)
-parser.add_argument('--trainset',
-                    default='DIS5K',
-                    type=str,
-                    help="Options: 'DIS5K'")
+parser.add_argument('--resume', default=None, type=str, help='path to latest checkpoint')
+parser.add_argument('--epochs', default=120, type=int)
+parser.add_argument('--trainset', default='DIS5K', type=str, help="Options: 'DIS5K'")
 parser.add_argument('--ckpt_dir', default=None, help='Temporary folder')
 
-parser.add_argument('--testsets',
-                    default='DIS-VD',
-                    type=str,
-                    help="Options: 'DIS-VD+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4'")
+parser.add_argument('--testsets', default='DIS-VD+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4', type=str)
 
 args = parser.parse_args()
 
@@ -74,6 +65,7 @@ if config.model == 'BSL':
     model = BSL().to(device)
 elif config.model == 'PVTVP':
     model = PVTVP().to(device)
+model = torch.compile(model)
 
 # Setting optimizer
 if config.optimizer == 'AdamW':
@@ -132,10 +124,13 @@ def main():
         if os.path.isfile(args.resume):
             logger.info("=> loading checkpoint '{}'".format(args.resume))
             model.load_state_dict(torch.load(args.resume))
+            epoch_st = args.resume.lstrip('.pth').split('ep')[-1]
         else:
             logger.info("=> no checkpoint found at '{}'".format(args.resume))
+    else:
+        epoch_st = 1
 
-    for epoch in range(model.epoch, args.epochs+1):
+    for epoch in range(epoch_st, args.epochs+1):
         train_loss = train(epoch)
         model.epoch = epoch
         # Save checkpoint
@@ -230,11 +225,11 @@ def train(epoch):
         # Logger
         if batch_idx % 20 == 0:
             # NOTE: Top2Down; [0] is the grobal slamap and [5] is the final output
-            info_progress = 'Epoch[{0}/{1}] Iter[{2}/{3}]'.format(epoch, args.epochs, batch_idx, len(data_loader_train))
+            info_progress = 'Epoch[{0}/{1}] Iter[{2}/{3}].'.format(epoch, args.epochs, batch_idx, len(data_loader_train))
             info_loss = 'Training Losses'
             for loss_name, loss_value in loss_dict.items():
                 info_loss += ', {}: {:.3f}'.format(loss_name, loss_value)
-            logger.info(''.join((info_progress, info_loss)))
+            logger.info(' '.join((info_progress, info_loss)))
     info_loss = '@==Final== Epoch[{0}/{1}]  Training Loss: {loss.avg:.3f}  '.format(epoch, args.epochs, loss=loss_log)
     logger.info(info_loss)
 
