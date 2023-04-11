@@ -23,7 +23,7 @@ class MyData(data.Dataset):
         self.data_size = (config.size, config.size)
         self.is_train = is_train
         self.load_all = config.load_all
-        self.device = torch.device(config.device)
+        self.device = config.device
         self.dataset = data_root.replace('\\', '/').split('/')[-1]
         if self.is_train and config.auxiliary_classification:
             self.cls_name2id = {_name: _id for _id, _name in enumerate(class_labels_TR_sorted)}

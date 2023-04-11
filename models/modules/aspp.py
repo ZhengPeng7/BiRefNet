@@ -2,6 +2,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from models.modules.deform_conv import DeformableConv2d
+from config import Config
+
+
+config = Config()
 
 
 class _ASPPModule(nn.Module):
@@ -85,13 +89,15 @@ class ASPPDeformable(nn.Module):
         self.in_channelster = 256 // self.down_scale
 
         self.aspp1 = _ASPPModuleDeformable(in_channels, self.in_channelster, 1, padding=0)
-        self.aspp_deforms = [_ASPPModuleDeformable(in_channels, self.in_channelster, 3, padding=1) for _ in range(num_parallel_block)]
+        self.aspp_deforms = nn.ModuleList([
+            _ASPPModuleDeformable(in_channels, self.in_channelster, 3, padding=1) for _ in range(num_parallel_block)
+        ])
 
         self.global_avg_pool = nn.Sequential(nn.AdaptiveAvgPool2d((1, 1)),
                                              nn.Conv2d(in_channels, self.in_channelster, 1, stride=1, bias=False),
                                              nn.BatchNorm2d(self.in_channelster),
                                              nn.ReLU(inplace=True))
-        self.conv1 = nn.Conv2d(self.in_channelster * (2 + len(aspp_deforms)), out_channels, 1, bias=False)
+        self.conv1 = nn.Conv2d(self.in_channelster * (2 + len(self.aspp_deforms)), out_channels, 1, bias=False)
         self.bn1 = nn.BatchNorm2d(out_channels)
         self.relu = nn.ReLU(inplace=True)
         self.dropout = nn.Dropout(0.5)

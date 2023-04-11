@@ -21,8 +21,8 @@ def inference(model, data_loader_test, pred_dir, method, testset):
         model.eval()
     for batch in data_loader_test:
     # for batch in tqdm(data_loader_test, total=len(data_loader_test)//config.batch_size_valid):
-        inputs = batch[0].to(torch.device(config.device))
-        # gts = batch[1].to(torch.device(config.device))
+        inputs = batch[0].to(config.device)
+        # gts = batch[1].to(config.device)
         label_paths = batch[-1]
         with torch.no_grad():
             scaled_preds = model(inputs)[-1].sigmoid()
@@ -45,7 +45,7 @@ def inference(model, data_loader_test, pred_dir, method, testset):
 def main(args):
     # Init model
 
-    device = torch.device(config.device)
+    device = config.device
     print('Testing with model {}'.format(args.ckpt))
 
     if config.model == 'BSL':

@@ -55,50 +55,38 @@ class BSL(nn.Module):
                 if 'bb.' in key and 'refiner.' not in key:
                     value.requires_grad = False
 
-    def forward(self, x):
+    def forward_ori(self, x):
         ########## Encoder ##########
-
         if self.config.bb in ['vgg16', 'vgg16bn', 'resnet50']:
-            x1 = self.bb.conv1(x)
-            x2 = self.bb.conv2(x1)
-            x3 = self.bb.conv3(x2)
-            x4 = self.bb.conv4(x3)
+            x1 = self.bb.conv1(x); x2 = self.bb.conv2(x1); x3 = self.bb.conv3(x2); x4 = self.bb.conv4(x3)
         else:
             x1, x2, x3, x4 = self.bb(x)
-
-        if self.training and self.config.auxiliary_classification:
-            class_preds = self.cls_head(self.avgpool(x4).view(x4.shape[0], -1))
-            # print(class_preds.shape)
-
+        class_preds = self.cls_head(self.avgpool(x4).view(x4.shape[0], -1)) if self.training and self.config.auxiliary_classification else None
         x4 = self.squeeze_module(x4)
-
         ########## Decoder ##########
-
         features = [x, x1, x2, x3, x4]
         scaled_preds = self.decoder(features)
+        return scaled_preds, class_preds
 
+    def forward_ref(self, x, pred):
         # refine patch-level segmentation
-        if self.config.refine:
-            if self.config.refine == 'itself':
-                x = self.stem_layer(torch.cat([x, scaled_preds[-1]], dim=1))
-                ########## Encoder ##########
-                if self.config.bb in ['vgg16', 'vgg16bn', 'resnet50']:
-                    x1 = self.bb.conv1(x); x2 = self.bb.conv2(x1); x3 = self.bb.conv3(x2); x4 = self.bb.conv4(x3)
-                else:
-                    x1, x2, x3, x4 = self.bb(x)
-                if self.training and self.config.auxiliary_classification:
-                    class_preds = self.cls_head(self.avgpool(x4).view(x4.shape[0], -1))
-                x4 = self.squeeze_module(x4)
-                ########## Decoder ##########
-                features = [x, x1, x2, x3, x4]
-                scaled_preds += self.decoder(features)
-            else:
-                scaled_preds += self.refiner([x, scaled_preds[-1]])
-
-        if self.training and self.config.auxiliary_classification:
-            return scaled_preds, class_preds
+        if self.config.refine == 'itself':
+            x = self.stem_layer(torch.cat([x, pred], dim=1))
+            scaled_preds, class_preds = self.forward_ori(x)
         else:
-            return scaled_preds
+            scaled_preds = self.refiner([x, scaled_preds[-1]])
+            class_preds = None
+        return scaled_preds, class_preds
+
+    def forward(self, x):
+        if self.config.refine:
+            scaled_preds_ori, class_preds_ori = self.forward_ori(x)
+            scaled_preds_ref, class_preds_ref = self.forward_ref(x, scaled_preds_ori[-1])
+            scaled_preds = scaled_preds_ori + scaled_preds_ref
+            class_preds = class_preds_ref if class_preds_ref is not None else class_preds_ori
+        else:
+            scaled_preds, class_preds = self.forward_ori(x)
+        return scaled_preds, class_preds
 
 
 class Decoder(nn.Module):

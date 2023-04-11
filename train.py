@@ -68,7 +68,7 @@ logger_loss_file = os.path.join(args.ckpt_dir, "log_loss.txt")
 logger_loss_idx = 1
 
 # Init model
-device = torch.device(config.device)
+device = config.device
 
 if config.model == 'BSL':
     model = BSL().to(device)
@@ -187,17 +187,17 @@ def train(epoch):
         pix_loss.lambdas_pix_last['iou'] = 2
 
     for batch_idx, batch in enumerate(data_loader_train):
-        inputs = batch[0].to(torch.device(config.device))
-        gts = batch[1].squeeze(0).to(torch.device(config.device))
-        class_labels = batch[2].to(torch.device(config.device))
+        inputs = batch[0].to(config.device)
+        gts = batch[1].squeeze(0).to(config.device)
+        class_labels = batch[2].to(config.device)
 
-        if config.auxiliary_classification:
-            scaled_preds, class_preds = model(inputs)
-            loss_cls = F.cross_entropy(class_preds, class_labels) * 5.0
-            loss_dict['loss_cls'] = loss_cls.item()
-        else:
+        scaled_preds, class_preds = model(inputs)
+        if class_preds is None:
             scaled_preds = model(inputs)
             loss_cls = 0.
+        else:
+            loss_cls = F.cross_entropy(class_preds, class_labels) * 5.0
+            loss_dict['loss_cls'] = loss_cls.item()
 
         # Loss
         loss_pix = pix_loss(scaled_preds, gts) * 1.0
