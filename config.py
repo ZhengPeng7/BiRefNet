@@ -8,15 +8,16 @@ class Config():
     def __init__(self) -> None:
         self.refine = ['', 'RefUNet', 'Refiner', 'RefinerPVTInChannels4', 'itself'][-1]
         self.ms_supervision = False
-        self.freeze_bb = True
+        self.freeze_bb = False
         self.load_all = False
-        self.dec_att = ['', 'ASPP', 'ASPPDeformable'][0]  # Useless for PVTVP
+        self.dec_att = ['', 'ASPP', 'ASPPDeformable'][1]  # Useless for PVTVP
         self.model = ['BSL', 'PVTVP'][0]
         self.IoU_finetune_last_epochs = [-20, 0][0]     # choose 0 to skip
 
         # Components
         self.auxiliary_classification = True
-        self.dec_blk = ['BasicDecBlk', 'BlockA'][0]
+        self.squeeze_block = ['ResBlk', 'ASPP', 'ASPPDeformable'][-1]
+        self.dec_blk = ['BasicDecBlk', 'ResBlk'][0]
         self.lat_blk = ['BasicLatBlk'][0]
         self.dec_channels_inter = ['fixed', 'adap'][0]
         # self.refine = True

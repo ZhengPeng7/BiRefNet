@@ -10,8 +10,9 @@ from torchvision.models import resnet50
 from config import Config
 from dataset import class_labels_TR_sorted
 from models.backbones.build_backbone import build_backbone
-from models.modules.decoder_blocks import BasicDecBlk
+from models.modules.decoder_blocks import BasicDecBlk, ResBlk
 from models.modules.lateral_blocks import BasicLatBlk
+from models.modules.aspp import ASPP, ASPPDeformable
 from models.modules.ing import *
 from models.refinement.refiner import Refiner, RefinerPVTInChannels4, RefUNet
 from models.refinement.stem_layer import StemLayer
@@ -37,7 +38,7 @@ class BSL(nn.Module):
                 nn.Linear(channels[0], len(class_labels_TR_sorted))
             )
 
-        self.squeeze_module = BasicDecBlk(channels[0], channels[0])
+        self.squeeze_module = nn.Sequential(*[eval(self.config.squeeze_block)(channels[0], channels[0]) for _ in range(3)])
 
         self.decoder = Decoder(channels)
 
@@ -79,7 +80,6 @@ class BSL(nn.Module):
         # refine patch-level segmentation
         if self.config.refine:
             if self.config.refine == 'itself':
-                print(x.shape, scaled_preds[-1].shape)
                 x = self.stem_layer(torch.cat([x, scaled_preds[-1]], dim=1))
                 ########## Encoder ##########
                 if self.config.bb in ['vgg16', 'vgg16bn', 'resnet50']:

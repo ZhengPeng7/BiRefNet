@@ -19,9 +19,11 @@ class _ASPPModule(nn.Module):
         return self.relu(x)
 
 class ASPP(nn.Module):
-    def __init__(self, in_channels=64, output_stride=16):
+    def __init__(self, in_channels=64, out_channels=None, output_stride=16):
         super(ASPP, self).__init__()
         self.down_scale = 1
+        if out_channels is None:
+            out_channels = in_channels
         self.in_channelster = 256 // self.down_scale
         if output_stride == 16:
             dilations = [1, 6, 12, 18]
@@ -39,8 +41,8 @@ class ASPP(nn.Module):
                                              nn.Conv2d(in_channels, self.in_channelster, 1, stride=1, bias=False),
                                              nn.BatchNorm2d(self.in_channelster),
                                              nn.ReLU(inplace=True))
-        self.conv1 = nn.Conv2d(self.in_channelster * 5, in_channels, 1, bias=False)
-        self.bn1 = nn.BatchNorm2d(in_channels)
+        self.conv1 = nn.Conv2d(self.in_channelster * 5, out_channels, 1, bias=False)
+        self.bn1 = nn.BatchNorm2d(out_channels)
         self.relu = nn.ReLU(inplace=True)
         self.dropout = nn.Dropout(0.5)
 
@@ -50,7 +52,7 @@ class ASPP(nn.Module):
         x3 = self.aspp3(x)
         x4 = self.aspp4(x)
         x5 = self.global_avg_pool(x)
-        x5 = F.interpolate(x5, size=x4.size()[2:], mode='bilinear', align_corners=True)
+        x5 = F.interpolate(x5, size=x1.size()[2:], mode='bilinear', align_corners=True)
         x = torch.cat((x1, x2, x3, x4, x5), dim=1)
 
         x = self.conv1(x)
@@ -77,33 +79,29 @@ class _ASPPModuleDeformable(nn.Module):
 
 
 class ASPPDeformable(nn.Module):
-    def __init__(self, in_channels=64):
+    def __init__(self, in_channels, out_channels, num_parallel_block=1):
         super(ASPPDeformable, self).__init__()
         self.down_scale = 1
         self.in_channelster = 256 // self.down_scale
 
         self.aspp1 = _ASPPModuleDeformable(in_channels, self.in_channelster, 1, padding=0)
-        self.aspp2 = _ASPPModuleDeformable(in_channels, self.in_channelster, 3, padding=1)
-        self.aspp3 = _ASPPModuleDeformable(in_channels, self.in_channelster, 3, padding=1)
-        self.aspp4 = _ASPPModuleDeformable(in_channels, self.in_channelster, 3, padding=1)
+        self.aspp_deforms = [_ASPPModuleDeformable(in_channels, self.in_channelster, 3, padding=1) for _ in range(num_parallel_block)]
 
         self.global_avg_pool = nn.Sequential(nn.AdaptiveAvgPool2d((1, 1)),
                                              nn.Conv2d(in_channels, self.in_channelster, 1, stride=1, bias=False),
                                              nn.BatchNorm2d(self.in_channelster),
                                              nn.ReLU(inplace=True))
-        self.conv1 = nn.Conv2d(self.in_channelster * 5, in_channels, 1, bias=False)
-        self.bn1 = nn.BatchNorm2d(in_channels)
+        self.conv1 = nn.Conv2d(self.in_channelster * (2 + len(aspp_deforms)), out_channels, 1, bias=False)
+        self.bn1 = nn.BatchNorm2d(out_channels)
         self.relu = nn.ReLU(inplace=True)
         self.dropout = nn.Dropout(0.5)
 
     def forward(self, x):
         x1 = self.aspp1(x)
-        x2 = self.aspp2(x)
-        x3 = self.aspp3(x)
-        x4 = self.aspp4(x)
+        x_aspp_deforms = [aspp_deform(x) for aspp_deform in self.aspp_deforms]
         x5 = self.global_avg_pool(x)
-        x5 = F.interpolate(x5, size=x4.size()[2:], mode='bilinear', align_corners=True)
-        x = torch.cat((x1, x2, x3, x4, x5), dim=1)
+        x5 = F.interpolate(x5, size=x1.size()[2:], mode='bilinear', align_corners=True)
+        x = torch.cat((x1, *x_aspp_deforms, x5), dim=1)
 
         x = self.conv1(x)
         x = self.bn1(x)
