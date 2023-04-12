@@ -7,7 +7,7 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 
 from config import Config
-from loss import saliency_structure_consistency, PixLoss
+from loss import saliency_structure_consistency, PixLoss, ClsLoss
 from utils import generate_smoothed_gt
 from dataset import MyData
 from models.baseline import BSL
@@ -65,7 +65,8 @@ if config.model == 'BSL':
     model = BSL().to(device)
 elif config.model == 'PVTVP':
     model = PVTVP().to(device)
-model = torch.compile(model)
+# model = torch.compile(model)
+# torch.set_float32_matmul_precision('high')
 
 # Setting optimizer
 if config.optimizer == 'AdamW':
@@ -116,6 +117,7 @@ print('batch size:', config.batch_size)
 
 # Setting Loss
 pix_loss = PixLoss()
+cls_loss = ClsLoss()
 
 
 def main():
@@ -188,10 +190,9 @@ def train(epoch):
 
         scaled_preds, class_preds = model(inputs)
         if class_preds is None:
-            scaled_preds = model(inputs)
             loss_cls = 0.
         else:
-            loss_cls = F.cross_entropy(class_preds, class_labels) * 5.0
+            loss_cls = pix_loss(scaled_preds, gts) * 1.0
             loss_dict['loss_cls'] = loss_cls.item()
 
         # Loss

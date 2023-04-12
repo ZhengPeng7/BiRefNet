@@ -7,6 +7,7 @@ import torch
 class Config():
     def __init__(self) -> None:
         self.refine = ['', 'RefUNet', 'Refiner', 'RefinerPVTInChannels4', 'itself'][-1]
+        self.refine_iteration = 3
         self.ms_supervision = False
         self.freeze_bb = False
         self.load_all = False
@@ -16,7 +17,7 @@ class Config():
 
         # Components
         self.auxiliary_classification = True
-        self.squeeze_block = ['ResBlk', 'ASPP', 'ASPPDeformable'][-1]
+        self.squeeze_block = ['ResBlk', 'ASPP', 'ASPPDeformable'][1]
         self.dec_blk = ['BasicDecBlk', 'ResBlk'][0]
         self.lat_blk = ['BasicLatBlk'][0]
         self.dec_channels_inter = ['fixed', 'adap'][0]
@@ -38,7 +39,7 @@ class Config():
 
         # Training
         self.size = 1024
-        self.batch_size = 5
+        self.batch_size = 2
         self.num_workers = min(10, self.batch_size)
         self.optimizer = ['Adam', 'AdamW'][0]
         self.lr = 1e-4 * math.sqrt(self.batch_size / 5)  # adapt the lr linearly
@@ -60,6 +61,9 @@ class Config():
             'triplet': 3 * 0,
             'reg': 100 * 0,
             'ssim': 5 * 0,          # help contours
+        }
+        self.lambdas_cls = {
+            'ce': 5.0
         }
         # Adv
         self.lambda_adv_g = 10. * 0        # turn to 0 to avoid adv training

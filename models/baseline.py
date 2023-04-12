@@ -80,13 +80,16 @@ class BSL(nn.Module):
 
     def forward(self, x):
         if self.config.refine:
-            scaled_preds_ori, class_preds_ori = self.forward_ori(x)
-            scaled_preds_ref, class_preds_ref = self.forward_ref(x, scaled_preds_ori[-1])
-            scaled_preds = scaled_preds_ori + scaled_preds_ref
-            class_preds = class_preds_ref if class_preds_ref is not None else class_preds_ori
+            scaled_preds, class_preds_ori = self.forward_ori(x)
+            class_preds_lst = [class_preds_ori]
+            for _ in range(self.config.refine_iteration):
+                scaled_preds_ref, class_preds_ref = self.forward_ref(x, scaled_preds[-1])
+                scaled_preds += scaled_preds_ref
+                class_preds_lst.append(class_preds_ref)
         else:
             scaled_preds, class_preds = self.forward_ori(x)
-        return scaled_preds, class_preds
+            class_preds_lst = [class_preds]
+        return scaled_preds, class_preds_lst
 
 
 class Decoder(nn.Module):

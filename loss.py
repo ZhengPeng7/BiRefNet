@@ -61,9 +61,32 @@ class ThrReg_loss(torch.nn.Module):
         return torch.mean(1 - ((pred - 0) ** 2 + (pred - 1) ** 2))
 
 
+class ClsLoss(nn.Module):
+    """
+    Auxiliary classification loss for each refined class output.
+    """
+    def __init__(self):
+        super(ClsLoss, self).__init__()
+        self.config = Config()
+        self.lambdas_cls = self.config.lambdas_cls
+
+        self.criterions_last = {
+            'ce': nn.CrossEntropyLoss()
+        }
+
+    def forward(self, preds, gt):
+        loss = 0.
+        for _, pred_lvl in enumerate(preds):
+            if pred_lvl is None:
+                continue
+            for criterion_name, criterion in self.criterions_last.items():
+                loss += criterion(pred_lvl, gt) * self.lambdas_cls[criterion_name]
+        return loss
+
+
 class PixLoss(nn.Module):
     """
-    IoU loss for outputs in [1:] scales.
+    Pixel loss for each refined map output.
     """
     def __init__(self):
         super(PixLoss, self).__init__()
@@ -82,9 +105,8 @@ class PixLoss(nn.Module):
         if 'reg' in self.lambdas_pix_last and self.lambdas_pix_last['reg']:
             self.criterions_last['reg'] = ThrReg_loss()
 
-
     def forward(self, scaled_preds, gt):
-        loss = 0
+        loss = 0.
         for _, pred_lvl in enumerate(scaled_preds):
             if pred_lvl.shape != gt.shape:
                 pred_lvl = nn.functional.interpolate(pred_lvl, size=gt.shape[2:], mode='bilinear', align_corners=True)
