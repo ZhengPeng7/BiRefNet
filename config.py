@@ -61,7 +61,7 @@ class Config():
             'triplet': 3 * 0,
             'reg': 100 * 0,
             'ssim': 5 * 0,          # help contours,
-            'cnt': 5 * 1,          # help contours
+            'cnt': 5 * 0,          # help contours
         }
         self.lambdas_cls = {
             'ce': 5.0
