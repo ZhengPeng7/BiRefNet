@@ -126,7 +126,7 @@ def main():
         if os.path.isfile(args.resume):
             logger.info("=> loading checkpoint '{}'".format(args.resume))
             model.load_state_dict(torch.load(args.resume))
-            epoch_st = args.resume.lstrip('.pth').split('ep')[-1]
+            epoch_st = int(args.resume.rstrip('.pth').split('ep')[-1]) + 1
         else:
             logger.info("=> no checkpoint found at '{}'".format(args.resume))
     else:
@@ -181,7 +181,7 @@ def train(epoch):
     loss_dict = {}
     if epoch > args.epochs + config.IoU_finetune_last_epochs:
         pix_loss.lambdas_pix_last['bce'] = 0
-        pix_loss.lambdas_pix_last['iou'] = 2
+        pix_loss.lambdas_pix_last['iou'] = 1
 
     for batch_idx, batch in enumerate(data_loader_train):
         inputs = batch[0].to(config.device)

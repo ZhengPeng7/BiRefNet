@@ -38,7 +38,11 @@ class BSL(nn.Module):
                 nn.Linear(channels[0], len(class_labels_TR_sorted))
             )
 
-        self.squeeze_module = nn.Sequential(*[eval(self.config.squeeze_block)(channels[0], channels[0]) for _ in range(3)])
+        if self.config.squeeze_block:
+            self.squeeze_module = nn.Sequential(*[
+                eval(self.config.squeeze_block.split('_x')[0])(channels[0], channels[0])
+                for _ in range(eval(self.config.squeeze_block.split('_x')[1]))
+            ])
 
         self.decoder = Decoder(channels)
 
@@ -62,7 +66,8 @@ class BSL(nn.Module):
         else:
             x1, x2, x3, x4 = self.bb(x)
         class_preds = self.cls_head(self.avgpool(x4).view(x4.shape[0], -1)) if self.training and self.config.auxiliary_classification else None
-        x4 = self.squeeze_module(x4)
+        if self.config.squeeze_block:
+            x4 = self.squeeze_module(x4)
         ########## Decoder ##########
         features = [x, x1, x2, x3, x4]
         scaled_preds = self.decoder(features)
@@ -89,7 +94,7 @@ class BSL(nn.Module):
         else:
             scaled_preds, class_preds = self.forward_ori(x)
             class_preds_lst = [class_preds]
-        return scaled_preds, class_preds_lst
+        return [scaled_preds, class_preds_lst] if self.training else scaled_preds
 
 
 class Decoder(nn.Module):
