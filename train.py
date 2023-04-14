@@ -161,9 +161,10 @@ def main():
                 # print('Fmax: {:.4f}, Smeasure: {:.4f}, MAE: {:.4f}'.format(
                 #     performance_dict['f_max'], performance_dict['sm'], performance_dict['mae'])
                 # )
-                for metric in ['sm', 'mae']:
-                    weighted_scores[metric] += performance_dict[metric] * len(data_loader_test)
-                len_all_data_loaders += len(data_loader_test)
+                if '-TE' in testset:
+                    for metric in ['sm', 'mae']:
+                        weighted_scores[metric] += performance_dict[metric] * len(data_loader_test)
+                    len_all_data_loaders += len(data_loader_test)
             print('Weighted Scores:')
             for metric, score in weighted_scores.items():
                 if score:

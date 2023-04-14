@@ -10,7 +10,7 @@ from torchvision.models import resnet50
 from config import Config
 from dataset import class_labels_TR_sorted
 from models.backbones.build_backbone import build_backbone
-from models.modules.decoder_blocks import BasicDecBlk, ResBlk
+from models.modules.decoder_blocks import BasicDecBlk, ResBlk, HierarAttDecBlk
 from models.modules.lateral_blocks import BasicLatBlk
 from models.modules.aspp import ASPP, ASPPDeformable
 from models.modules.ing import *
@@ -25,12 +25,7 @@ class BSL(nn.Module):
         self.epoch = 1
         self.bb = build_backbone(self.config.bb)
 
-        lateral_channels_in_collection = {
-            'vgg16': [512, 256, 128, 64], 'vgg16bn': [512, 256, 128, 64], 'resnet50': [1024, 512, 256, 64],
-            'pvt_v2_b2': [512, 320, 128, 64], 'pvt_v2_b5': [512, 320, 128, 64],
-            'swin_v1_b': [1024, 512, 256, 128], 'swin_v1_l': [1536, 768, 384, 192],
-        }
-        channels = lateral_channels_in_collection[self.config.bb]
+        channels = self.config.lateral_channels_in_collection
 
         if self.config.auxiliary_classification:
             self.avgpool = nn.AdaptiveAvgPool2d((1, 1))

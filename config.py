@@ -6,19 +6,22 @@ import torch
 
 class Config():
     def __init__(self) -> None:
-        self.refine = ['', 'RefUNet', 'Refiner', 'RefinerPVTInChannels4', 'itself'][0]
+        self.refine = ['', 'RefUNet', 'Refiner', 'RefinerPVTInChannels4', 'itself'][-1]
         self.refine_iteration = 1
-        self.freeze_bb = True
-        self.squeeze_block = ['', 'BasicDecBlk_x1', 'ResBlk_x8', 'ASPP_x3', 'ASPPDeformable_x3'][1]
+        self.freeze_bb = False
+        self.squeeze_block = ['', 'BasicDecBlk_x1', 'ResBlk_x8', 'ASPP_x3', 'ASPPDeformable_x3'][2]
+        self.dec_blk = ['BasicDecBlk', 'ResBlk', 'HierarAttDecBlk'][-1]
         self.dec_att = ['', 'ASPP', 'ASPPDeformable'][0]  # Useless for PVTVP
-        self.dec_blk = ['BasicDecBlk', 'ResBlk'][0]
-        self.auxiliary_classification = False
-        self.model = ['BSL', 'PVTVP'][0]
-        self.IoU_finetune_last_epochs = [-20, 0][1]     # choose 0 to skip
-        self.load_all = False
+        self.auxiliary_classification = True
+
         self.ms_supervision = False
+        self.load_all = False
+        self.IoU_finetune_last_epochs = [-20, 0][1]     # choose 0 to skip
         self.size = 1024
         self.batch_size = 5
+        if self.dec_blk == 'HierarAttDecBlk':
+            self.batch_size = 2 ** [0, 1, 2, 3, 4][2]
+        self.model = ['BSL', 'PVTVP'][0]
 
         # Components
         self.lat_blk = ['BasicLatBlk'][0]
@@ -30,6 +33,11 @@ class Config():
             'pvt_v2_b2', 'pvt_v2_b5',               # 3-bs10, 4-bs5
             'swin_v1_b', 'swin_v1_l'                # 5-bs9, 6-bs6
         ][3]
+        self.lateral_channels_in_collection = {
+            'vgg16': [512, 256, 128, 64], 'vgg16bn': [512, 256, 128, 64], 'resnet50': [1024, 512, 256, 64],
+            'pvt_v2_b2': [512, 320, 128, 64], 'pvt_v2_b5': [512, 320, 128, 64],
+            'swin_v1_b': [1024, 512, 256, 128], 'swin_v1_l': [1536, 768, 384, 192],
+        }[self.bb]
         self.weights_root_dir = '/mnt/workspace/workgroup/mohe/weights'
         self.weights = {
             'pvt_v2_b2': os.path.join(self.weights_root_dir, 'pvt_v2_b2.pth'),
