@@ -10,13 +10,13 @@ class Config():
         self.refine_iteration = 1
         self.freeze_bb = False
         self.squeeze_block = ['', 'BasicDecBlk_x1', 'ResBlk_x8', 'ASPP_x3', 'ASPPDeformable_x3'][2]
-        self.dec_blk = ['BasicDecBlk', 'ResBlk', 'HierarAttDecBlk'][-1]
-        self.dec_att = ['', 'ASPP', 'ASPPDeformable'][0]  # Useless for PVTVP
+        self.dec_blk = ['BasicDecBlk', 'ResBlk', 'HierarAttDecBlk'][0]
+        self.dec_att = ['', 'ASPP', 'ASPPDeformable'][1]  # Useless for PVTVP
         self.auxiliary_classification = True
 
         self.ms_supervision = False
         self.load_all = False
-        self.IoU_finetune_last_epochs = [-20, 0][1]     # choose 0 to skip
+        self.IoU_finetune_last_epochs = [-20, 0][0]     # choose 0 to skip
         self.size = 1024
         self.batch_size = 5
         if self.dec_blk == 'HierarAttDecBlk':
@@ -79,7 +79,7 @@ class Config():
         self.lambda_adv_d = 3. * (self.lambda_adv_g > 0)
 
         # others
-        self.device = ['cuda', 'cpu'][0]
+        self.device = [0, 'cpu'][0]     # .to(0) = .to('cuda:0')
 
         self.batch_size_valid = 1
         self.rand_seed = 7

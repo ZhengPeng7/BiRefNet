@@ -23,7 +23,7 @@ class BSL(nn.Module):
         super(BSL, self).__init__()
         self.config = Config()
         self.epoch = 1
-        self.bb = build_backbone(self.config.bb)
+        self.bb = build_backbone(self.config.bb, pretrained=True)
 
         channels = self.config.lateral_channels_in_collection
 

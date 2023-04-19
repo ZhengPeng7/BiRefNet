@@ -167,7 +167,9 @@ class PixLoss(nn.Module):
                 pred_lvl = nn.functional.interpolate(pred_lvl, size=gt.shape[2:], mode='bilinear', align_corners=True)
             pred_lvl = pred_lvl.sigmoid()
             for criterion_name, criterion in self.criterions_last.items():
-                loss += criterion(pred_lvl, gt) * self.lambdas_pix_last[criterion_name]
+                _loss = criterion(pred_lvl, gt) * self.lambdas_pix_last[criterion_name]
+                loss += _loss
+                # print(criterion_name, _loss.item())
         return loss
 
 

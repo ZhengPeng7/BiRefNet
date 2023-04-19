@@ -15,14 +15,14 @@ from config import Config
 config = Config()
 
 
-def inference(model, data_loader_test, pred_dir, method, testset):
+def inference(model, data_loader_test, pred_dir, method, testset, device=0):
     model_training = model.training
     if model_training:
         model.eval()
     for batch in data_loader_test:
     # for batch in tqdm(data_loader_test, total=len(data_loader_test)//config.batch_size_valid):
-        inputs = batch[0].to(config.device)
-        # gts = batch[1].to(config.device)
+        inputs = batch[0].to(device)
+        # gts = batch[1].to(device)
         label_paths = batch[-1]
         with torch.no_grad():
             scaled_preds = model(inputs)[-1].sigmoid()

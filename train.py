@@ -62,11 +62,12 @@ logger_loss_idx = 1
 device = config.device
 
 if config.model == 'BSL':
-    model = BSL().to(device)
+    model = BSL()
 elif config.model == 'PVTVP':
-    model = PVTVP().to(device)
-# model = torch.compile(model)
-# torch.set_float32_matmul_precision('high')
+    model = PVTVP()
+model = model.to(device)
+model = torch.compile(model, mode=['default', 'reduce-overhead', 'max-autotune'][0])
+torch.set_float32_matmul_precision('high')
 
 # Setting optimizer
 if config.optimizer == 'AdamW':
@@ -125,7 +126,8 @@ def main():
     if args.resume:
         if os.path.isfile(args.resume):
             logger.info("=> loading checkpoint '{}'".format(args.resume))
-            model.load_state_dict(torch.load(args.resume))
+            state_dict = torch.load(args.resume)
+            model.load_state_dict(state_dict)
             epoch_st = int(args.resume.rstrip('.pth').split('ep')[-1]) + 1
         else:
             logger.info("=> no checkpoint found at '{}'".format(args.resume))
@@ -193,7 +195,7 @@ def train(epoch):
         if class_preds is None:
             loss_cls = 0.
         else:
-            loss_cls = pix_loss(scaled_preds, gts) * 1.0
+            loss_cls = cls_loss(class_preds, class_labels) * 1.0
             loss_dict['loss_cls'] = loss_cls.item()
 
         # Loss

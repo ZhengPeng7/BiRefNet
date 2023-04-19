@@ -44,14 +44,23 @@ class ResBlk(nn.Module):
         self.bn_in = nn.BatchNorm2d(inter_channels)
         self.relu_in = nn.ReLU(inplace=True)
 
+        if config.dec_att == 'ASPP':
+            self.dec_att = ASPP(in_channels=inter_channels)
+        elif config.dec_att == 'ASPPDeformable':
+            self.dec_att = ASPPDeformable(in_channels=inter_channels)
+
         self.conv_out = nn.Conv2d(inter_channels, out_channels, 3, 1, padding=1)
         self.bn_out = nn.BatchNorm2d(out_channels)
+        
+        self.conv_resi = nn.Conv2d(in_channels, out_channels, 1, 1, 0)
 
     def forward(self, x):
-        _x = x
+        _x = self.conv_resi(x)
         x = self.conv_in(x)
         x = self.bn_in(x)
         x = self.relu_in(x)
+        if hasattr(self, 'dec_att'):
+            x = self.dec_att(x)
         x = self.conv_out(x)
         x = self.bn_out(x)
         return x + _x
