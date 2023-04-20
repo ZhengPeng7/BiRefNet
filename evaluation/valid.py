@@ -6,12 +6,4 @@ def valid(model, data_loader_test, pred_dir, method='tmp_val', testset='DIS-VD',
     model.eval()
     inference(model, data_loader_test, pred_dir, method, testset, device=device)
     performance_dict = evaluate(pred_dir, method, testset, only_S_MAE=only_S_MAE, epoch=model.epoch)
-    model.train()
     return performance_dict
-
-def main():
-    from models.baseline import BSL
-    model = BSL().to()
-
-if __name__ == '__main__':
-    main()

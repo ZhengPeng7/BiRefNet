@@ -13,10 +13,10 @@ def evaluate(pred_dir, method, testset, only_S_MAE=False, epoch=0):
     filename = os.path.join('evaluation', 'eval-{}.txt'.format(method))
     if os.path.exists(filename):
         id_suffix = 1
-        filename += '.{}'.format(id_suffix)
+        filename = filename.rstrip('.txt') + '_{}.txt'.format(id_suffix)
         while os.path.exists(filename):
             id_suffix += 1
-            filename = '.'.join(filename.split('.')[:-1] + ['{}'.format(id_suffix)])
+            filename = filename.replace('_{}.txt'.format(id_suffix-1), '_{}.txt'.format(id_suffix))
     gt_paths = [
         os.path.join(config.data_root_dir, config.dataset, testset, 'gt', p)
         for p in os.listdir(os.path.join(config.data_root_dir, config.dataset, testset, 'gt'))

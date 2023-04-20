@@ -3,9 +3,10 @@
 ckpt
 preds
 evaluation/eval-*
-*.out
+nohup.out*
 tmp*
 *.pth
+core-*-python-*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

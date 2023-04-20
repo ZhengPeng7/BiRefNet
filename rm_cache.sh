@@ -7,7 +7,10 @@ rm -r tmp*
 # Train
 rm slurm*
 rm -r ckpt
-rm *.out
+rm nohup.out*
 
 # Eval
 rm -r evaluation/eval-*
+
+# System
+rm core-*-python-*
