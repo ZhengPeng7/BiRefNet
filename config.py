@@ -17,7 +17,7 @@ class Config():
         self.ms_supervision = False
         self.load_all = False
         self.IoU_finetune_last_epochs = [-20, 0][0]     # choose 0 to skip
-        self.size = 1024
+        self.size = 512
         self.batch_size = 5
         if self.dec_blk == 'HierarAttDecBlk':
             self.batch_size = 2 ** [0, 1, 2, 3, 4][2]
@@ -38,7 +38,8 @@ class Config():
             'pvt_v2_b2': [512, 320, 128, 64], 'pvt_v2_b5': [512, 320, 128, 64],
             'swin_v1_b': [1024, 512, 256, 128], 'swin_v1_l': [1536, 768, 384, 192],
         }[self.bb]
-        self.weights_root_dir = '/mnt/workspace/workgroup/mohe/weights'
+        self.sys_home_dir = '/root/autodl-tmp'
+        self.weights_root_dir = os.path.join(self.sys_home_dir, 'weights')
         self.weights = {
             'pvt_v2_b2': os.path.join(self.weights_root_dir, 'pvt_v2_b2.pth'),
             'pvt_v2_b5': os.path.join(self.weights_root_dir, 'pvt_v2_b5.pth'),
@@ -54,7 +55,7 @@ class Config():
         self.only_S_MAE = False
 
         # Data
-        self.data_root_dir = '/mnt/workspace/workgroup/mohe/datasets/dis'
+        self.data_root_dir = os.path.join(self.sys_home_dir, 'datasets/dis')
         self.dataset = 'DIS5K'
         self.preproc_methods = ['flip', 'enhance', 'rotate', 'crop', 'pepper'][:1]
 

@@ -145,6 +145,7 @@ class Trainer:
         self.loss_log = AverageMeter()
         if config.lambda_adv_g:
             self.optimizer_d, self.lr_scheduler_d, self.disc, self.adv_criterion = self._load_adv_components()
+            self.disc_update_for_odd = 0
 
     def _load_adv_components(self):
         # AIL
@@ -182,20 +183,21 @@ class Trainer:
         if config.lambda_adv_g:
             # gen
             valid = Variable(torch.cuda.FloatTensor(scaled_preds[-1].shape[0], 1).fill_(1.0), requires_grad=False)
-            adv_loss_g = adv_criterion(disc(scaled_preds[-1] * inputs), valid) * config.lambda_adv_g
+            adv_loss_g = self.adv_criterion(self.disc(scaled_preds[-1] * inputs), valid) * config.lambda_adv_g
             loss += adv_loss_g
             self.loss_dict['loss_adv'] = adv_loss_g.item()
+            self.disc_update_for_odd += 1
         self.loss_log.update(loss, inputs.size(0))
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
 
-        if config.lambda_adv_g and batch_idx % 2 == 0:
+        if config.lambda_adv_g and self.disc_update_for_odd % 2 == 0:
             # disc
             fake = Variable(torch.cuda.FloatTensor(scaled_preds[-1].shape[0], 1).fill_(0.0), requires_grad=False)
             self.optimizer_d.zero_grad()
-            adv_loss_real = adv_criterion(disc(gts * inputs), valid)
-            adv_loss_fake = adv_criterion(disc(scaled_preds[-1].detach() * inputs.detach()), fake)
+            adv_loss_real = self.adv_criterion(self.disc(gts * inputs), valid)
+            adv_loss_fake = self.adv_criterion(self.disc(scaled_preds[-1].detach() * inputs.detach()), fake)
             adv_loss_d = (adv_loss_real + adv_loss_fake) / 2 * config.lambda_adv_d
             self.loss_dict['loss_adv_d'] = adv_loss_d.item()
             adv_loss_d.backward()
