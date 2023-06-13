@@ -12,13 +12,13 @@ class Config():
         self.dec_att = ['', 'ASPP', 'ASPPDeformable'][1]  # Useless for PVTVP
         self.auxiliary_classification = False
         self.refine_iteration = 1
-        self.freeze_bb = True
-        self.compile_and_precisionHigh = False
+        self.freeze_bb = False
+        self.compile_and_precisionHigh = True
 
         self.ms_supervision = False
-        self.load_all = False
+        self.load_all = True
         self.IoU_finetune_last_epochs = [-20, 0][0]     # choose 0 to skip
-        self.size = 512
+        self.size = 256
         self.batch_size = 8
         if self.dec_blk == 'HierarAttDecBlk':
             self.batch_size = 2 ** [0, 1, 2, 3, 4][2]

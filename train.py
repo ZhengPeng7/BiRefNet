@@ -128,7 +128,7 @@ def init_models_optimizers(epochs, to_be_distributed):
 
 class Trainer:
     def __init__(
-        self, model_opt_lrsch, data_loaders,
+        self, data_loaders, model_opt_lrsch,
     ):
         self.model, self.optimizer, self.lr_scheduler = model_opt_lrsch
         self.train_loader, self.test_loaders = data_loaders
@@ -266,15 +266,15 @@ class Trainer:
 def main():
 
     trainer = Trainer(
-        model_opt_lrsch=init_models_optimizers(args.epochs, to_be_distributed),
-        data_loaders=init_data_loaders(to_be_distributed)
+        data_loaders=init_data_loaders(to_be_distributed),
+        model_opt_lrsch=init_models_optimizers(args.epochs, to_be_distributed)
     )
 
     for epoch in range(epoch_st, args.epochs+1):
         train_loss = trainer.train_epoch(epoch)
         # Save checkpoint
         # DDP
-        if epoch > args.epochs - 50:
+        if epoch > args.epochs - 30:
             torch.save(
                 trainer.model.module.state_dict() if to_be_distributed else trainer.model.state_dict(),
                 os.path.join(args.ckpt_dir, 'ep{}.pth'.format(epoch))
