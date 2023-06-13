@@ -49,6 +49,7 @@ class BSL(nn.Module):
                 self.refiner = eval('{}({})'.format(self.config.refine, 'in_channels=3+1'))
 
         if self.config.freeze_bb:
+            # Freeze the backbone...
             print(self.named_parameters())
             for key, value in self.named_parameters():
                 if 'bb.' in key and 'refiner.' not in key:

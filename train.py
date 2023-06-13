@@ -12,7 +12,7 @@ from loss import saliency_structure_consistency, PixLoss, ClsLoss
 from utils import generate_smoothed_gt
 from dataset import MyData
 from models.baseline import BSL
-from models.pvtvp import PVTVP
+# from models.pvtvp import PVTVP
 from utils import Logger, AverageMeter, set_seed
 from evaluation.valid import valid
 
@@ -105,14 +105,10 @@ def init_models_optimizers(epochs, to_be_distributed):
         model = DDP(model, device_ids=[device])
     else:
         model = model.to(device)
-    model = torch.compile(model, mode=['default', 'reduce-overhead', 'max-autotune'][0])
-    torch.set_float32_matmul_precision('high')
+    if config.compile_and_precisionHigh:
+        model = torch.compile(model, mode=['default', 'reduce-overhead', 'max-autotune'][0])
+        torch.set_float32_matmul_precision('high')
 
-    # Freeze the backbone...
-    if config.freeze_bb:
-        for key, value in model.named_parameters():
-            if 'bb.' in key:
-                value.requires_grad = False
 
     # Setting optimizer
     if config.optimizer == 'AdamW':
@@ -167,11 +163,11 @@ class Trainer:
         inputs = batch[0].to(device)
         gts = batch[1].squeeze(0).to(device)
         class_labels = batch[2].to(device)
-        scaled_preds, class_preds = self.model(inputs)
-        if class_preds is None:
+        scaled_preds, class_preds_lst = self.model(inputs)
+        if None in class_preds_lst:
             loss_cls = 0.
         else:
-            loss_cls = self.cls_loss(class_preds, class_labels) * 1.0
+            loss_cls = self.cls_loss(class_preds_lst, class_labels) * 1.0
             self.loss_dict['loss_cls'] = loss_cls.item()
 
         # Loss
@@ -278,12 +274,20 @@ def main():
         train_loss = trainer.train_epoch(epoch)
         # Save checkpoint
         # DDP
-        if epoch > args.epochs - (50 + config.val_last//100):
-            torch.save(trainer.model.module.state_dict(), os.path.join(args.ckpt_dir, 'ep{}.pth'.format(epoch)))
-        # if ((to_be_distributed and get_rank() == 0) or not to_be_distributed) and (epoch >= args.epochs - config.val_last and (args.epochs - epoch) % config.save_step == 0):
-        #     print('Validating at rank-{}...'.format(get_rank()))
-        #     trainer.validate_model(epoch)
-    destroy_process_group()
+        if epoch > args.epochs - 50:
+            torch.save(
+                trainer.model.module.state_dict() if to_be_distributed else trainer.model.state_dict(),
+                os.path.join(args.ckpt_dir, 'ep{}.pth'.format(epoch))
+            )
+        if epoch >= args.epochs - config.val_last and (args.epochs - epoch) % config.save_step == 0:
+            if to_be_distributed:
+                if get_rank() == 0:
+                    print('Validating at rank-{}...'.format(get_rank()))
+                    trainer.validate_model(epoch)
+            else:
+                trainer.validate_model(epoch)
+    if to_be_distributed:
+        destroy_process_group()
 
 if __name__ == '__main__':
     main()

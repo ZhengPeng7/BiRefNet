@@ -56,7 +56,6 @@ class ContourLoss(torch.nn.Module):
         epsilon = 1e-8 # where is a parameter to avoid square root is zero in practice.
         length = torch.mean(torch.sqrt(delta_pred + epsilon)) # eq.(11) in the paper, mean is used instead of sum.
 
-        # region term
         c_in  = torch.ones_like(pred)
         c_out = torch.zeros_like(pred)
 

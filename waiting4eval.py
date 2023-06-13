@@ -22,7 +22,7 @@ parser.add_argument('--program_id', default=0, type=int)
 # id-th one of this program will evaluate  val_step * N + program_id -th epoch model.
 # Test more models, number of programs == number of GPUs: [models[num_all - program_id_1], models[num_all - program_id_max(n, val_step-1)], ...] programs with id>val_step will speed up the evaluation on (val_step - id)%val_step -th epoch models.
 # Test fastest, only sequentially searched val_step*N -th models -- set all program_id as the same.
-parser.add_argument('--testsets', default='DIS-VD+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4'.split('+')[0], type=str)
+parser.add_argument('--testsets', default='DIS-VD+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4', type=str)
 args_eval = parser.parse_args()
 
 args_eval.program_id = (args_eval.val_step - args_eval.program_id) % args_eval.val_step

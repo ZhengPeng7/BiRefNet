@@ -71,6 +71,7 @@ class PVTVP(nn.Module):
         self.decoder = pvt_v2_b2_decoder()
 
         if self.config.freeze_bb:
+            # Freeze the backbone...
             print(self.named_parameters())
             for key, value in self.named_parameters():
                 if 'bb.' in key:

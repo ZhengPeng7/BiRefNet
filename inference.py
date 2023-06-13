@@ -7,7 +7,7 @@ from torch import nn
 
 from dataset import MyData
 from models.baseline import BSL
-from models.pvtvp import PVTVP
+# from models.pvtvp import PVTVP
 from utils import save_tensor_img
 from config import Config
 
@@ -50,8 +50,8 @@ def main(args):
 
     if config.model == 'BSL':
         model = BSL().to(device)
-    elif config.model == 'PVTVP':
-        model = PVTVP().to(device)
+    # elif config.model == 'PVTVP':
+    #     model = PVTVP().to(device)
     model.load_state_dict(torch.load(args.ckpt))
     for testset in args.testsets.split('+'):
         data_loader_test = torch.utils.data.DataLoader(

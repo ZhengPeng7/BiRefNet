@@ -11,6 +11,7 @@ rm nohup.out*
 
 # Eval
 rm -r evaluation/eval-*
+rm -r tmp*
 
 # System
 rm core-*-python-*

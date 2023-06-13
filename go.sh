@@ -25,7 +25,8 @@ else
     CUDA_VISIBLE_DEVICES=${devices} \
     python train.py --ckpt_dir ckpt/${method} --epochs ${epochs} \
         --testsets DIS-VD+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4 \
-        --dist ${to_be_distributed} --resume ckpt/tmp/ep1.pth
+        --dist ${to_be_distributed} \
+        # --resume ckpt/tmp/ep1.pth
 fi
 
 echo Finished at $(date)
