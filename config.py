@@ -4,20 +4,20 @@ import math
 
 class Config():
     def __init__(self) -> None:
-        self.refine = ['', 'RefUNet', 'Refiner', 'RefinerPVTInChannels4', 'itself'][0]
+        self.refine = ['', 'itself', 'RefUNet', 'Refiner', 'RefinerPVTInChannels4'][1]
         self.dec_att = ['', 'ASPP', 'ASPPDeformable'][1]
         self.squeeze_block = ['', 'BasicDecBlk_x1', 'ResBlk_x8', 'ASPP_x3', 'ASPPDeformable_x3'][1]
         self.dec_blk = ['BasicDecBlk', 'ResBlk', 'HierarAttDecBlk'][0]
         self.auxiliary_classification = False
         self.refine_iteration = 1
-        self.freeze_bb = False
+        self.freeze_bb = True
         self.compile_and_precisionHigh = True
-
-        self.ms_supervision = False
         self.load_all = True
-        self.IoU_finetune_last_epochs = [-20, 0][0]     # choose 0 to skip
+
         self.size = 256
         self.batch_size = 8
+        self.IoU_finetune_last_epochs = [-20, 0][1]     # choose 0 to skip
+        self.ms_supervision = False
         if self.dec_blk == 'HierarAttDecBlk':
             self.batch_size = 2 ** [0, 1, 2, 3, 4][2]
         self.model = [

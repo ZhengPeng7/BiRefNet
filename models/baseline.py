@@ -71,11 +71,14 @@ class BSL(nn.Module):
 
     def forward_ref(self, x, pred):
         # refine patch-level segmentation
+        if pred.shape[2:] != x.shape[2:]:
+            pred = nn.functional.interpolate(pred, size=x.shape[2:], mode='bilinear', align_corners=True)
+        pred = pred.sigmoid()
         if self.config.refine == 'itself':
             x = self.stem_layer(torch.cat([x, pred], dim=1))
             scaled_preds, class_preds = self.forward_ori(x)
         else:
-            scaled_preds = self.refiner([x, scaled_preds[-1]])
+            scaled_preds = self.refiner([x, pred])
             class_preds = None
         return scaled_preds, class_preds
 

@@ -96,6 +96,10 @@ def init_models_optimizers(epochs, to_be_distributed):
         if os.path.isfile(args.resume):
             logger.info("=> loading checkpoint '{}'".format(args.resume))
             state_dict = torch.load(args.resume)
+            unwanted_prefix = '_orig_mod.'
+            for k, v in list(state_dict.items()):
+                if k.startswith(unwanted_prefix):
+                    state_dict[k[len(unwanted_prefix):]] = state_dict.pop(k)
             model.load_state_dict(state_dict)
             epoch_st = int(args.resume.rstrip('.pth').split('ep')[-1]) + 1
         else:
@@ -230,7 +234,7 @@ class Trainer:
         for testset in args.testsets.split('+'):
             if 'DIS-TE' in testset:
                 num_image_testset[testset] = num_image_testset_all[testset]
-        weighted_scores = {'f_max': 0, 'sm': 0, 'e_max': 0, 'mae': 0}
+        weighted_scores = {'f_max': 0, 'f_mean': 0, 'f_wfm': 0, 'sm': 0, 'e_max': 0, 'e_mean': 0, 'mae': 0}
         len_all_data_loaders = 0
         self.model.epoch = epoch
         for testset, data_loader_test in self.test_loaders.items():
@@ -254,7 +258,7 @@ class Trainer:
                     performance_dict['f_max'], performance_dict['f_wfm'], performance_dict['sm'], performance_dict['e_mean'], performance_dict['mae']
                 ))
             if '-TE' in testset:
-                for metric in ['sm', 'mae'] if config.only_S_MAE else ['f_max', 'f_wfm', 'sm', 'e_mean', 'mae']:
+                for metric in ['sm', 'mae'] if config.only_S_MAE else ['f_max', 'f_mean', 'f_wfm', 'sm', 'e_max', 'e_mean', 'mae']:
                     weighted_scores[metric] += performance_dict[metric] * len(data_loader_test)
                 len_all_data_loaders += len(data_loader_test)
         print('Weighted Scores:')

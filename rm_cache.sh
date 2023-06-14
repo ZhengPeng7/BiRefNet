@@ -15,3 +15,5 @@ rm -r tmp*
 
 # System
 rm core-*-python-*
+
+clear
