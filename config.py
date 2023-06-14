@@ -1,15 +1,13 @@
 import os
 import math
-import psutil
-import torch
 
 
 class Config():
     def __init__(self) -> None:
-        self.refine = ['', 'RefUNet', 'Refiner', 'RefinerPVTInChannels4', 'itself'][-1]
+        self.refine = ['', 'RefUNet', 'Refiner', 'RefinerPVTInChannels4', 'itself'][0]
+        self.dec_att = ['', 'ASPP', 'ASPPDeformable'][1]
         self.squeeze_block = ['', 'BasicDecBlk_x1', 'ResBlk_x8', 'ASPP_x3', 'ASPPDeformable_x3'][1]
         self.dec_blk = ['BasicDecBlk', 'ResBlk', 'HierarAttDecBlk'][0]
-        self.dec_att = ['', 'ASPP', 'ASPPDeformable'][1]  # Useless for PVTVP
         self.auxiliary_classification = False
         self.refine_iteration = 1
         self.freeze_bb = False
@@ -52,7 +50,7 @@ class Config():
         }
 
         # Training
-        self.num_workers = min(10, self.batch_size)
+        self.num_workers = min(8, self.batch_size)
         self.optimizer = ['Adam', 'AdamW'][0]
         self.lr = 1e-5 * math.sqrt(self.batch_size / 8)  # adapt the lr linearly
         self.lr_decay_epochs = [1e4]    # Set to negative N to decay the lr in the last N-th epoch.

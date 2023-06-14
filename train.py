@@ -254,7 +254,7 @@ class Trainer:
                     performance_dict['f_max'], performance_dict['f_wfm'], performance_dict['sm'], performance_dict['e_mean'], performance_dict['mae']
                 ))
             if '-TE' in testset:
-                for metric in ['sm', 'mae'] if config.only_S_MAE else ['fmax', 'f_wfm', 'sm', 'e_mean', 'mae']:
+                for metric in ['sm', 'mae'] if config.only_S_MAE else ['f_max', 'f_wfm', 'sm', 'e_mean', 'mae']:
                     weighted_scores[metric] += performance_dict[metric] * len(data_loader_test)
                 len_all_data_loaders += len(data_loader_test)
         print('Weighted Scores:')

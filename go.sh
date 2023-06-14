@@ -2,7 +2,7 @@
 # Run script
 method="$1"
 epochs=120
-val_last=30
+val_last=0
 step=10
 
 # Train
