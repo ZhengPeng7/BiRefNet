@@ -1,9 +1,11 @@
 #!/bin/bash
 # Run script
 method="$1"
-epochs=120
+epochs=100
 val_last=0
 step=10
+testsets=DIS-VD
+#+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4
 
 # Train
 devices=$2
@@ -18,13 +20,13 @@ then
     CUDA_VISIBLE_DEVICES=${devices} \
     torchrun --nproc_per_node $((nproc_per_node+1)) --master_port=$((29500+${3:-0})) \
     train.py --ckpt_dir ckpt/${method} --epochs ${epochs} \
-        --testsets DIS-VD+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4 \
+        --testsets ${testsets} \
         --dist ${to_be_distributed}
 else
     echo "Single-GPU mode received..."
     CUDA_VISIBLE_DEVICES=${devices} \
     python train.py --ckpt_dir ckpt/${method} --epochs ${epochs} \
-        --testsets DIS-VD+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4 \
+        --testsets ${testsets} \
         --dist ${to_be_distributed} \
         # --resume ckpt/tmp/ep1.pth
 fi

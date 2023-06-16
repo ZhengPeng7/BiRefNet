@@ -84,7 +84,7 @@ class BSL(nn.Module):
 
     def forward(self, x):
         if self.config.refine:
-            scaled_preds, class_preds_ori = self.forward_ori(x)
+            scaled_preds, class_preds_ori = self.forward_ori(nn.functional.interpolate(x, size=(x.shape[2]//4, x.shape[3]//4), mode='bilinear', align_corners=True))
             class_preds_lst = [class_preds_ori]
             for _ in range(self.config.refine_iteration):
                 scaled_preds_ref, class_preds_ref = self.forward_ref(x, scaled_preds[-1])

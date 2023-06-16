@@ -4,7 +4,7 @@ import math
 
 class Config():
     def __init__(self) -> None:
-        self.refine = ['', 'itself', 'RefUNet', 'Refiner', 'RefinerPVTInChannels4'][1]
+        self.refine = ['', 'itself', 'RefUNet', 'Refiner', 'RefinerPVTInChannels4'][0]
         self.dec_att = ['', 'ASPP', 'ASPPDeformable'][1]
         self.squeeze_block = ['', 'BasicDecBlk_x1', 'ResBlk_x8', 'ASPP_x3', 'ASPPDeformable_x3'][1]
         self.dec_blk = ['BasicDecBlk', 'ResBlk', 'HierarAttDecBlk'][0]
@@ -14,8 +14,8 @@ class Config():
         self.compile_and_precisionHigh = True
         self.load_all = True
 
-        self.size = 256
-        self.batch_size = 8
+        self.size = 512
+        self.batch_size = 5
         self.IoU_finetune_last_epochs = [-20, 0][1]     # choose 0 to skip
         self.ms_supervision = False
         if self.dec_blk == 'HierarAttDecBlk':
@@ -50,7 +50,7 @@ class Config():
         }
 
         # Training
-        self.num_workers = min(8, self.batch_size)
+        self.num_workers = min(5, self.batch_size)
         self.optimizer = ['Adam', 'AdamW'][0]
         self.lr = 1e-5 * math.sqrt(self.batch_size / 8)  # adapt the lr linearly
         self.lr_decay_epochs = [1e4]    # Set to negative N to decay the lr in the last N-th epoch.
