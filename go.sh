@@ -1,7 +1,7 @@
 #!/bin/bash
 # Run script
 method="$1"
-epochs=100
+epochs=50
 val_last=0
 step=10
 testsets=DIS-VD

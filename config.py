@@ -4,13 +4,14 @@ import math
 
 class Config():
     def __init__(self) -> None:
+        self.cxt_num = 2    # multi-scale skip connections from encoder
         self.refine = ['', 'itself', 'RefUNet', 'Refiner', 'RefinerPVTInChannels4'][0]
         self.dec_att = ['', 'ASPP', 'ASPPDeformable'][1]
-        self.squeeze_block = ['', 'BasicDecBlk_x1', 'ResBlk_x8', 'ASPP_x3', 'ASPPDeformable_x3'][1]
+        self.squeeze_block = ['', 'BasicDecBlk_x1', 'ResBlk_x4', 'ASPP_x3', 'ASPPDeformable_x3'][1]
         self.dec_blk = ['BasicDecBlk', 'ResBlk', 'HierarAttDecBlk'][0]
         self.auxiliary_classification = False
         self.refine_iteration = 1
-        self.freeze_bb = True
+        self.freeze_bb = False
         self.compile_and_precisionHigh = True
         self.load_all = True
 
@@ -40,6 +41,7 @@ class Config():
             'pvt_v2_b2': [512, 320, 128, 64], 'pvt_v2_b5': [512, 320, 128, 64],
             'swin_v1_b': [1024, 512, 256, 128], 'swin_v1_l': [1536, 768, 384, 192],
         }[self.bb]
+        self.cxt = self.lateral_channels_in_collection[1:][::-1][-self.cxt_num:] if self.cxt_num else []
         self.sys_home_dir = '/root/autodl-tmp'
         self.weights_root_dir = os.path.join(self.sys_home_dir, 'weights')
         self.weights = {
@@ -52,7 +54,7 @@ class Config():
         # Training
         self.num_workers = min(5, self.batch_size)
         self.optimizer = ['Adam', 'AdamW'][0]
-        self.lr = 1e-5 * math.sqrt(self.batch_size / 8)  # adapt the lr linearly
+        self.lr = 1e-5 * math.sqrt(self.batch_size / 5)  # adapt the lr linearly
         self.lr_decay_epochs = [1e4]    # Set to negative N to decay the lr in the last N-th epoch.
         self.only_S_MAE = False
 

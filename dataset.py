@@ -54,15 +54,15 @@ class MyData(data.Dataset):
             self.class_labels_loaded = []
             # for image_path, label_path in zip(self.image_paths, self.label_paths):
             for image_path, label_path in tqdm(zip(self.image_paths, self.label_paths), total=len(self.image_paths)):
+                _image = cv2.imread(image_path)
+                _label = cv2.imread(label_path, cv2.IMREAD_GRAYSCALE)
+                _image_rs = cv2.resize(_image, (config.size, config.size), interpolation=cv2.INTER_LINEAR)
+                _label_rs = cv2.resize(_label, (config.size, config.size), interpolation=cv2.INTER_LINEAR)
                 self.images_loaded.append(
-                    Image.fromarray(
-                        cv2.cvtColor(cv2.resize(cv2.imread(image_path), (config.size, config.size), interpolation=cv2.INTER_LINEAR), cv2.COLOR_BGR2RGB)
-                    ).convert('RGB')
+                    Image.fromarray(cv2.cvtColor(_image_rs, cv2.COLOR_BGR2RGB)).convert('RGB')
                 )
                 self.labels_loaded.append(
-                    Image.fromarray(
-                        cv2.resize(cv2.imread(label_path, cv2.IMREAD_GRAYSCALE), (config.size, config.size), interpolation=cv2.INTER_LINEAR)
-                    ).convert('L')
+                    Image.fromarray(_label_rs).convert('L')
                 )
                 self.class_labels_loaded.append(
                     self.cls_name2id[label_path.split('/')[-1].split('#')[3]] if self.is_train and config.auxiliary_classification else -1

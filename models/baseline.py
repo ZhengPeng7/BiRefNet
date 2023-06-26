@@ -35,7 +35,7 @@ class BSL(nn.Module):
 
         if self.config.squeeze_block:
             self.squeeze_module = nn.Sequential(*[
-                eval(self.config.squeeze_block.split('_x')[0])(channels[0], channels[0])
+                eval(self.config.squeeze_block.split('_x')[0])(channels[0]+sum(self.config.cxt), channels[0])
                 for _ in range(eval(self.config.squeeze_block.split('_x')[1]))
             ])
 
@@ -62,6 +62,18 @@ class BSL(nn.Module):
         else:
             x1, x2, x3, x4 = self.bb(x)
         class_preds = self.cls_head(self.avgpool(x4).view(x4.shape[0], -1)) if self.training and self.config.auxiliary_classification else None
+        if self.config.cxt:
+            x4 = torch.cat(
+                (
+                    *[
+                        nn.functional.interpolate(x1, size=x4.shape[2:], mode='bilinear', align_corners=True),
+                        nn.functional.interpolate(x2, size=x4.shape[2:], mode='bilinear', align_corners=True),
+                        nn.functional.interpolate(x3, size=x4.shape[2:], mode='bilinear', align_corners=True),
+                    ][-len(self.config.cxt):],
+                    x4
+                ),
+                dim=1
+            )
         if self.config.squeeze_block:
             x4 = self.squeeze_module(x4)
         ########## Decoder ##########
@@ -73,7 +85,7 @@ class BSL(nn.Module):
         # refine patch-level segmentation
         if pred.shape[2:] != x.shape[2:]:
             pred = nn.functional.interpolate(pred, size=x.shape[2:], mode='bilinear', align_corners=True)
-        pred = pred.sigmoid()
+        # pred = pred.sigmoid()
         if self.config.refine == 'itself':
             x = self.stem_layer(torch.cat([x, pred], dim=1))
             scaled_preds, class_preds = self.forward_ori(x)
@@ -94,6 +106,33 @@ class BSL(nn.Module):
             scaled_preds, class_preds = self.forward_ori(x)
             class_preds_lst = [class_preds]
         return [scaled_preds, class_preds_lst] if self.training else scaled_preds
+
+    # def forward(self, x):
+    #     scale = 4
+    #     if self.config.refine:
+    #         scaled_preds, class_preds_ori = self.forward_ori(
+    #             nn.functional.interpolate(x, size=(x.shape[2]//scale, x.shape[3]//scale), mode='bilinear', align_corners=True)
+    #         )
+    #         class_preds_lst = [class_preds_ori]
+    #         for _ in range(self.config.refine_iteration):
+    #             _size_w, _size_h = x.shape[2] // scale, x.shape[3] // scale
+    #             x_lst, pred_lst = [], []
+    #             for idx_h in range(scale):
+    #                 for idx_w in range(scale):
+    #                     x_lst.append(x[:, :, _size_h * idx_h : _size_h * (idx_h + 1), _size_w * idx_w : _size_w * (idx_w + 1)])
+    #                     pred_lst.append(scaled_preds[-1][:, :, _size_h * idx_h : _size_h * (idx_h + 1), _size_w * idx_w : _size_w * (idx_w + 1)])
+    #             x_lst = torch.cat(x_lst)
+    #             scaled_preds_ref, class_preds_ref = self.forward_ref(
+    #                 torch.cat(x_lst, dim=0),
+    #                 torch.cat(pred_lst, dim=0),
+    #             )
+    #             scaled_preds_ref_recovered = []
+    #             scaled_preds += scaled_preds_ref
+    #             # class_preds_lst.append(class_preds_ref)
+    #     else:
+    #         scaled_preds, class_preds = self.forward_ori(x)
+    #         class_preds_lst = [class_preds]
+    #     return [scaled_preds, class_preds_lst] if self.training else scaled_preds
 
 
 class Decoder(nn.Module):

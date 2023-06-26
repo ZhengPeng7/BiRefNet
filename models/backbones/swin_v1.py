@@ -622,18 +622,18 @@ class SwinTransformer(nn.Module):
         super(SwinTransformer, self).train(mode)
         self._freeze_stages()
 
-def swin_v1_t(pretrained=True):
+def swin_v1_t():
     model = SwinTransformer(embed_dim=96, depths=[2, 2, 6, 2], num_heads=[3, 6, 12, 24], window_size=7)
     return model
 
-def swin_v1_s(pretrained=True):
+def swin_v1_s():
     model = SwinTransformer(embed_dim=96, depths=[2, 2, 18, 2], num_heads=[3, 6, 12, 24], window_size=7)
     return model
 
-def swin_v1_b(pretrained=True):
+def swin_v1_b():
     model = SwinTransformer(embed_dim=128, depths=[2, 2, 18, 2], num_heads=[4, 8, 16, 32], window_size=12)
     return model
 
-def swin_v1_l(pretrained=True):
+def swin_v1_l():
     model = SwinTransformer(embed_dim=192, depths=[2, 2, 18, 2], num_heads=[6, 12, 24, 48], window_size=12)
     return model
