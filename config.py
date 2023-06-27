@@ -4,7 +4,7 @@ import math
 
 class Config():
     def __init__(self) -> None:
-        self.cxt_num = 2    # multi-scale skip connections from encoder
+        self.cxt_num = 0    # multi-scale skip connections from encoder
         self.refine = ['', 'itself', 'RefUNet', 'Refiner', 'RefinerPVTInChannels4'][0]
         self.dec_att = ['', 'ASPP', 'ASPPDeformable'][1]
         self.squeeze_block = ['', 'BasicDecBlk_x1', 'ResBlk_x4', 'ASPP_x3', 'ASPPDeformable_x3'][1]
@@ -15,7 +15,7 @@ class Config():
         self.compile_and_precisionHigh = True
         self.load_all = True
 
-        self.size = 512
+        self.size = 384
         self.batch_size = 5
         self.IoU_finetune_last_epochs = [-20, 0][1]     # choose 0 to skip
         self.ms_supervision = False
@@ -46,9 +46,9 @@ class Config():
         self.weights_root_dir = os.path.join(self.sys_home_dir, 'weights')
         self.weights = {
             'pvt_v2_b2': os.path.join(self.weights_root_dir, 'pvt_v2_b2.pth'),
-            'pvt_v2_b5': os.path.join(self.weights_root_dir, 'pvt_v2_b5.pth'),
-            'swin_v1_b': os.path.join(self.weights_root_dir, 'swin_base_patch4_window12_384_22kto1k.pth'),
-            'swin_v1_l': os.path.join(self.weights_root_dir, 'swin_large_patch4_window12_384_22kto1k.pth'),
+            'pvt_v2_b5': os.path.join(self.weights_root_dir, ['pvt_v2_b5.pth', 'pvt_v2_b5_22k.pth'][0]),
+            'swin_v1_b': os.path.join(self.weights_root_dir, ['swin_base_patch4_window12_384_22kto1k.pth', 'swin_base_patch4_window12_384_22k.pth'][0]),
+            'swin_v1_l': os.path.join(self.weights_root_dir, ['swin_large_patch4_window12_384_22kto1k.pth', 'swin_large_patch4_window12_384_22k.pth'][0]),
         }
 
         # Training
