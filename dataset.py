@@ -83,6 +83,10 @@ class MyData(data.Dataset):
         # loading image and label
         if self.is_train:
             image, label = preproc(image, label, preproc_methods=config.preproc_methods)
+        # else:
+        #     if _label.shape[0] > 2048 or _label.shape[1] > 2048:
+        #         _image = cv2.resize(_image, (2048, 2048), interpolation=cv2.INTER_LINEAR)
+        #         _label = cv2.resize(_label, (2048, 2048), interpolation=cv2.INTER_LINEAR)
 
         image, label = self.transform_image(image), self.transform_label(label)
 

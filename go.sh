@@ -1,11 +1,10 @@
 #!/bin/bash
 # Run script
 method="$1"
-epochs=50
-val_last=0
-step=10
-testsets=DIS-VD
-#+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4
+epochs=120
+val_last=80
+step=20
+testsets=DIS-VD+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4
 
 # Train
 devices=$2
@@ -28,7 +27,7 @@ else
     python train.py --ckpt_dir ckpt/${method} --epochs ${epochs} \
         --testsets ${testsets} \
         --dist ${to_be_distributed} \
-        # --resume ckpt/tmp/ep1.pth
+        --resume ckpt/swin_rs1024/ep150.pth
 fi
 
 echo Finished at $(date)
