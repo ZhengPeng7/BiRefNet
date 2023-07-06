@@ -210,7 +210,7 @@ class Trainer:
         self.loss_dict = {}
         if epoch > args.epochs + config.IoU_finetune_last_epochs:
             self.pix_loss.lambdas_pix_last['bce'] = 0
-            self.pix_loss.lambdas_pix_last['iou'] = 1
+            self.pix_loss.lambdas_pix_last['iou'] = 0.5
 
         for batch_idx, batch in enumerate(self.train_loader):
             self._train_batch(batch)

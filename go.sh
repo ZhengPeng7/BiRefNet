@@ -1,8 +1,8 @@
 #!/bin/bash
 # Run script
 method="$1"
-epochs=120
-val_last=80
+epochs=80
+val_last=20
 step=20
 testsets=DIS-VD+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4
 

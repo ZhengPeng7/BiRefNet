@@ -7,7 +7,7 @@ class Config():
         self.cxt_num = 0    # multi-scale skip connections from encoder
         self.refine = ['', 'itself', 'RefUNet', 'Refiner', 'RefinerPVTInChannels4'][0]
         self.dec_att = ['', 'ASPP', 'ASPPDeformable'][1]
-        self.squeeze_block = ['', 'BasicDecBlk_x1', 'ResBlk_x4', 'ASPP_x3', 'ASPPDeformable_x3'][1]
+        self.squeeze_block = ['', 'BasicDecBlk_x1', 'ResBlk_x4', 'ASPP_x3', 'ASPPDeformable_x3'][2]
         self.dec_blk = ['BasicDecBlk', 'ResBlk', 'HierarAttDecBlk'][0]
         self.auxiliary_classification = False
         self.refine_iteration = 1
@@ -15,9 +15,9 @@ class Config():
         self.compile_and_precisionHigh = True
         self.load_all = True
 
-        self.size = 1024
+        self.size = 512
         self.batch_size = 5
-        self.IoU_finetune_last_epochs = [-20, 0][0]     # choose 0 to skip
+        self.IoU_finetune_last_epochs = [-20, 0][1]     # choose 0 to skip
         self.ms_supervision = False
         if self.dec_blk == 'HierarAttDecBlk':
             self.batch_size = 2 ** [0, 1, 2, 3, 4][2]

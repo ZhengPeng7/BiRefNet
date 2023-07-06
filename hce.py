@@ -1,7 +1,5 @@
 import numpy as np
 import cv2
-from skimage import io
-import matplotlib.pyplot as plt
 from skimage.morphology import skeletonize
 from skimage.morphology import erosion, dilation, disk
 from skimage.measure import label

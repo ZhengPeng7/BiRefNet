@@ -2,7 +2,6 @@ import os
 import cv2
 from tqdm import tqdm
 from PIL import Image
-import torch
 from torch.utils import data
 from torchvision import transforms
 
