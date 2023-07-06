@@ -4,7 +4,7 @@ method="$1"
 epochs=80
 val_last=20
 step=20
-testsets=DIS-VD+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4
+testsets=DIS-VD+DIS-TE4
 
 # Train
 devices=$2
