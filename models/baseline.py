@@ -94,45 +94,75 @@ class BSL(nn.Module):
             class_preds = None
         return scaled_preds, class_preds
 
-    def forward(self, x):
-        if self.config.refine:
-            scaled_preds, class_preds_ori = self.forward_ori(nn.functional.interpolate(x, size=(x.shape[2]//4, x.shape[3]//4), mode='bilinear', align_corners=True))
-            class_preds_lst = [class_preds_ori]
-            for _ in range(self.config.refine_iteration):
-                scaled_preds_ref, class_preds_ref = self.forward_ref(x, scaled_preds[-1])
-                scaled_preds += scaled_preds_ref
-                class_preds_lst.append(class_preds_ref)
-        else:
-            scaled_preds, class_preds = self.forward_ori(x)
-            class_preds_lst = [class_preds]
-        return [scaled_preds, class_preds_lst] if self.training else scaled_preds
-
     # def forward(self, x):
-    #     scale = 4
     #     if self.config.refine:
-    #         scaled_preds, class_preds_ori = self.forward_ori(
-    #             nn.functional.interpolate(x, size=(x.shape[2]//scale, x.shape[3]//scale), mode='bilinear', align_corners=True)
-    #         )
+    #         scaled_preds, class_preds_ori = self.forward_ori(nn.functional.interpolate(x, size=(x.shape[2]//4, x.shape[3]//4), mode='bilinear', align_corners=True))
     #         class_preds_lst = [class_preds_ori]
     #         for _ in range(self.config.refine_iteration):
-    #             _size_w, _size_h = x.shape[2] // scale, x.shape[3] // scale
-    #             x_lst, pred_lst = [], []
-    #             for idx_h in range(scale):
-    #                 for idx_w in range(scale):
-    #                     x_lst.append(x[:, :, _size_h * idx_h : _size_h * (idx_h + 1), _size_w * idx_w : _size_w * (idx_w + 1)])
-    #                     pred_lst.append(scaled_preds[-1][:, :, _size_h * idx_h : _size_h * (idx_h + 1), _size_w * idx_w : _size_w * (idx_w + 1)])
-    #             x_lst = torch.cat(x_lst)
-    #             scaled_preds_ref, class_preds_ref = self.forward_ref(
-    #                 torch.cat(x_lst, dim=0),
-    #                 torch.cat(pred_lst, dim=0),
-    #             )
-    #             scaled_preds_ref_recovered = []
+    #             scaled_preds_ref, class_preds_ref = self.forward_ref(x, scaled_preds[-1])
     #             scaled_preds += scaled_preds_ref
-    #             # class_preds_lst.append(class_preds_ref)
+    #             class_preds_lst.append(class_preds_ref)
     #     else:
     #         scaled_preds, class_preds = self.forward_ori(x)
     #         class_preds_lst = [class_preds]
     #     return [scaled_preds, class_preds_lst] if self.training else scaled_preds
+
+    def forward(self, x):
+        if self.config.refine:
+            if self.config.progressive_ref:
+                scale = 4
+                scaled_preds, class_preds_ori = self.forward_ori(
+                    nn.functional.interpolate(x, size=(x.shape[2]//scale, x.shape[3]//scale), mode='bilinear', align_corners=True)
+                )
+                class_preds_lst = [class_preds_ori]
+                for _ in range(self.config.refine_iteration):
+                    _size_w, _size_h = x.shape[2] // scale, x.shape[3] // scale
+                    x_lst, pred_lst = [], []
+                    y = nn.functional.interpolate(
+                        scaled_preds[-1],
+                        size=(x.shape[2], x.shape[3]),
+                        mode='bilinear',
+                        align_corners=True
+                    )
+                    for idx in range(x.shape[0]):
+                        columns_x = torch.split(x[idx], split_size_or_sections=_size_w, dim=-1)
+                        columns_pred = torch.split(y[idx], split_size_or_sections=_size_w, dim=-1)
+                        patches_x, patches_pred = [], []
+                        for column_x in columns_x:
+                            patches_x += [p.unsqueeze(0) for p in torch.split(column_x, split_size_or_sections=_size_h, dim=-2)]
+                        for column_pred in columns_pred:
+                            patches_pred += [p.unsqueeze(0) for p in torch.split(column_pred, split_size_or_sections=_size_h, dim=-2)]
+                        x_lst += patches_x
+                        pred_lst += patches_pred
+                    scaled_preds_ref, class_preds_ref = self.forward_ref(
+                        torch.cat(x_lst, dim=0),
+                        torch.cat(pred_lst, dim=0),
+                    )
+                    scaled_preds_ref_recovered = []
+                    for idx_end_of_sample in range(0, self.config.batch_size*(scale**2), scale**2):
+                        preds_one_sample = scaled_preds_ref[-1][idx_end_of_sample:idx_end_of_sample+scale**2]
+                        one_sample = []
+                        for idx_pred in range(preds_one_sample.shape[0]):
+                            if idx_pred % scale == 0:
+                                one_column = []
+                            one_column.append(preds_one_sample[idx_pred])
+                            if len(one_column) == scale:
+                                one_sample.append(torch.cat(one_column, dim=-2))
+                        one_sample = torch.cat(one_sample, dim=-1)
+                        scaled_preds_ref_recovered.append(one_sample.unsqueeze(0))
+                    scaled_preds.append(torch.cat(scaled_preds_ref_recovered, dim=0))
+                    # class_preds_lst.append(class_preds_ref)
+            else:
+                scaled_preds, class_preds_ori = self.forward_ori(x)
+                class_preds_lst = [class_preds_ori]
+                for _ in range(self.config.refine_iteration):
+                    scaled_preds_ref, class_preds_ref = self.forward_ref(x, scaled_preds[-1])
+                    scaled_preds += scaled_preds_ref
+                    class_preds_lst.append(class_preds_ref)
+        else:
+            scaled_preds, class_preds = self.forward_ori(x)
+            class_preds_lst = [class_preds]
+        return [scaled_preds, class_preds_lst] if self.training else scaled_preds
 
 
 class Decoder(nn.Module):

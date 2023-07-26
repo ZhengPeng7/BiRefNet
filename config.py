@@ -5,9 +5,10 @@ import math
 class Config():
     def __init__(self) -> None:
         self.cxt_num = 0    # multi-scale skip connections from encoder
-        self.refine = ['', 'itself', 'RefUNet', 'Refiner', 'RefinerPVTInChannels4'][0]
+        self.refine = ['', 'itself', 'RefUNet', 'Refiner', 'RefinerPVTInChannels4'][1]
+        self.progressive_ref = self.refine and True
         self.dec_att = ['', 'ASPP', 'ASPPDeformable'][1]
-        self.squeeze_block = ['', 'BasicDecBlk_x1', 'ResBlk_x4', 'ASPP_x3', 'ASPPDeformable_x3'][2]
+        self.squeeze_block = ['', 'BasicDecBlk_x1', 'ResBlk_x4', 'ASPP_x3', 'ASPPDeformable_x3'][1]
         self.dec_blk = ['BasicDecBlk', 'ResBlk', 'HierarAttDecBlk'][0]
         self.auxiliary_classification = False
         self.refine_iteration = 1
@@ -17,7 +18,7 @@ class Config():
 
         self.size = 512
         self.batch_size = 5
-        self.IoU_finetune_last_epochs = [-20, 0][0]     # choose 0 to skip
+        self.IoU_finetune_last_epochs = [-20, 0][1]     # choose 0 to skip
         self.ms_supervision = False
         if self.dec_blk == 'HierarAttDecBlk':
             self.batch_size = 2 ** [0, 1, 2, 3, 4][2]
@@ -35,7 +36,7 @@ class Config():
             'vgg16', 'vgg16bn', 'resnet50',         # 0, 1, 2
             'pvt_v2_b2', 'pvt_v2_b5',               # 3-bs10, 4-bs5
             'swin_v1_b', 'swin_v1_l'                # 5-bs9, 6-bs6
-        ][3]
+        ][5]
         self.lateral_channels_in_collection = {
             'vgg16': [512, 256, 128, 64], 'vgg16bn': [512, 256, 128, 64], 'resnet50': [1024, 512, 256, 64],
             'pvt_v2_b2': [512, 320, 128, 64], 'pvt_v2_b5': [512, 320, 128, 64],
