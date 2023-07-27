@@ -139,7 +139,7 @@ class BSL(nn.Module):
                         torch.cat(pred_lst, dim=0),
                     )
                     scaled_preds_ref_recovered = []
-                    for idx_end_of_sample in range(0, self.config.batch_size*(scale**2), scale**2):
+                    for idx_end_of_sample in range(0, (self.config.batch_size if self.training else self.config.batch_size_valid)*(scale**2), scale**2):
                         preds_one_sample = scaled_preds_ref[-1][idx_end_of_sample:idx_end_of_sample+scale**2]
                         one_sample = []
                         for idx_pred in range(preds_one_sample.shape[0]):

@@ -4,7 +4,7 @@ import math
 
 class Config():
     def __init__(self) -> None:
-        self.cxt_num = 0    # multi-scale skip connections from encoder
+        self.cxt_num = [0, 3][0]    # multi-scale skip connections from encoder
         self.refine = ['', 'itself', 'RefUNet', 'Refiner', 'RefinerPVTInChannels4'][1]
         self.progressive_ref = self.refine and True
         self.dec_att = ['', 'ASPP', 'ASPPDeformable'][1]
