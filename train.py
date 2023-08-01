@@ -279,7 +279,7 @@ def main():
         train_loss = trainer.train_epoch(epoch)
         # Save checkpoint
         # DDP
-        if epoch > args.epochs - 30:
+        if epoch >= args.epochs - config.val_last and (args.epochs - epoch) % config.save_step == 0:
             torch.save(
                 trainer.model.module.state_dict() if to_be_distributed else trainer.model.state_dict(),
                 os.path.join(args.ckpt_dir, 'ep{}.pth'.format(epoch))

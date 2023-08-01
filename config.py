@@ -4,7 +4,7 @@ import math
 
 class Config():
     def __init__(self) -> None:
-        self.cxt_num = [0, 3][0]    # multi-scale skip connections from encoder
+        self.cxt_num = [0, 3][1]    # multi-scale skip connections from encoder
         self.refine = ['', 'itself', 'RefUNet', 'Refiner', 'RefinerPVTInChannels4'][1]
         self.progressive_ref = self.refine and True
         self.dec_att = ['', 'ASPP', 'ASPPDeformable'][1]
@@ -16,8 +16,8 @@ class Config():
         self.compile_and_precisionHigh = True
         self.load_all = True
 
-        self.size = 512
-        self.batch_size = 5
+        self.size = 1024
+        self.batch_size = 6
         self.IoU_finetune_last_epochs = [-20, 0][1]     # choose 0 to skip
         self.ms_supervision = False
         if self.dec_blk == 'HierarAttDecBlk':

@@ -1,10 +1,10 @@
 #!/bin/bash
 # Run script
 method="$1"
-epochs=120
+epochs=100
 val_last=20
 step=20
-testsets=DIS-VD+DIS-TE4
+testsets=DIS-TE4
 
 # Train
 devices=$2
