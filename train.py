@@ -166,7 +166,7 @@ class Trainer:
 
     def _train_batch(self, batch):
         inputs = batch[0].to(device)
-        gts = batch[1].squeeze(0).to(device)
+        gts = batch[1].to(device)
         class_labels = batch[2].to(device)
         scaled_preds, class_preds_lst = self.model(inputs)
         if None in class_preds_lst:

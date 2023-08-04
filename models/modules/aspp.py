@@ -29,7 +29,7 @@ class ASPPComplex(nn.Module):
 
         self.global_avg_pool = nn.Sequential(nn.AdaptiveAvgPool2d((1, 1)),
                                              nn.Conv2d(in_channels, self.in_channelster, 1, stride=1, bias=False),
-                                             nn.BatchNorm2d(self.in_channelster),
+                                             nn.BatchNorm2d(self.in_channelster) if config.batch_size > 1 else nn.Identity(),
                                              nn.ReLU(inplace=True))
         self.conv1 = nn.Conv2d(self.in_channelster * 5, out_channels, 1, bias=False)
         self.bn1 = nn.BatchNorm2d(out_channels)
@@ -87,7 +87,7 @@ class ASPP(nn.Module):
 
         self.global_avg_pool = nn.Sequential(nn.AdaptiveAvgPool2d((1, 1)),
                                              nn.Conv2d(in_channels, self.in_channelster, 1, stride=1, bias=False),
-                                             nn.BatchNorm2d(self.in_channelster),
+                                             nn.BatchNorm2d(self.in_channelster) if config.batch_size > 1 else nn.Identity(),
                                              nn.ReLU(inplace=True))
         self.conv1 = nn.Conv2d(self.in_channelster * 5, out_channels, 1, bias=False)
         self.bn1 = nn.BatchNorm2d(out_channels)
@@ -139,7 +139,7 @@ class ASPPDeformable(nn.Module):
 
         self.global_avg_pool = nn.Sequential(nn.AdaptiveAvgPool2d((1, 1)),
                                              nn.Conv2d(in_channels, self.in_channelster, 1, stride=1, bias=False),
-                                             nn.BatchNorm2d(self.in_channelster),
+                                             nn.BatchNorm2d(self.in_channelster) if config.batch_size > 1 else nn.Identity(),
                                              nn.ReLU(inplace=True))
         self.conv1 = nn.Conv2d(self.in_channelster * (2 + len(self.aspp_deforms)), out_channels, 1, bias=False)
         self.bn1 = nn.BatchNorm2d(out_channels)
