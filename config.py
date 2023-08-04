@@ -5,8 +5,10 @@ import math
 class Config():
     def __init__(self) -> None:
         self.cxt_num = [0, 3][1]    # multi-scale skip connections from encoder
+        self.mul_scl_ipt = ['', 'add', 'cat'][0]
         self.refine = ['', 'itself', 'RefUNet', 'Refiner', 'RefinerPVTInChannels4'][1]
         self.progressive_ref = self.refine and True
+        self.scale = 2
         self.dec_att = ['', 'ASPP', 'ASPPDeformable'][1]
         self.squeeze_block = ['', 'BasicDecBlk_x1', 'ResBlk_x4', 'ASPP_x3', 'ASPPDeformable_x3'][1]
         self.dec_blk = ['BasicDecBlk', 'ResBlk', 'HierarAttDecBlk'][0]
@@ -16,8 +18,8 @@ class Config():
         self.compile_and_precisionHigh = True
         self.load_all = True
 
-        self.size = 1024
-        self.batch_size = 6
+        self.size = 768
+        self.batch_size = 3
         self.IoU_finetune_last_epochs = [-20, 0][1]     # choose 0 to skip
         self.ms_supervision = False
         if self.dec_blk == 'HierarAttDecBlk':
@@ -42,6 +44,8 @@ class Config():
             'pvt_v2_b2': [512, 320, 128, 64], 'pvt_v2_b5': [512, 320, 128, 64],
             'swin_v1_b': [1024, 512, 256, 128], 'swin_v1_l': [1536, 768, 384, 192],
         }[self.bb]
+        if self.mul_scl_int == 'cat':
+            self.lateral_channels_in_collection = [channel * 2 for channel in self.lateral_channels_in_collection]
         self.cxt = self.lateral_channels_in_collection[1:][::-1][-self.cxt_num:] if self.cxt_num else []
         self.sys_home_dir = '/root/autodl-tmp'
         self.weights_root_dir = os.path.join(self.sys_home_dir, 'weights')
