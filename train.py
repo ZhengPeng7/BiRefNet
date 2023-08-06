@@ -62,12 +62,12 @@ print('batch size:', config.batch_size)
 def prepare_dataloader(dataset: torch.utils.data.Dataset, batch_size: int, to_be_distributed=False, is_train=True):
     if to_be_distributed:
         return torch.utils.data.DataLoader(
-            dataset=dataset, batch_size=batch_size, num_workers=config.num_workers, pin_memory=True,
+            dataset=dataset, batch_size=batch_size, num_workers=min(config.num_workers, batch_size), pin_memory=True,
             shuffle=False, sampler=DistributedSampler(dataset)
         )
     else:
         return torch.utils.data.DataLoader(
-            dataset=dataset, batch_size=batch_size, num_workers=min(config.num_workers, batch_size), pin_memory=True,
+            dataset=dataset, batch_size=batch_size, num_workers=min(config.num_workers, batch_size, 0), pin_memory=True,
             shuffle=is_train,
         )
 
@@ -188,7 +188,7 @@ class Trainer:
             loss += adv_loss_g
             self.loss_dict['loss_adv'] = adv_loss_g.item()
             self.disc_update_for_odd += 1
-        self.loss_log.update(loss, inputs.size(0))
+        self.loss_log.update(loss.item(), inputs.size(0))
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()

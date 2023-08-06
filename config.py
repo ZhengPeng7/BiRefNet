@@ -57,7 +57,7 @@ class Config():
         }
 
         # Training
-        self.num_workers = min(5, self.batch_size)
+        self.num_workers = 5        # will be decrease to min(it, batch_size) at the initialization of the data_loader 
         self.optimizer = ['Adam', 'AdamW'][0]
         self.lr = 1e-5 * math.sqrt(self.batch_size / 5)  # adapt the lr linearly
         self.lr_decay_epochs = [1e4]    # Set to negative N to decay the lr in the last N-th epoch.
