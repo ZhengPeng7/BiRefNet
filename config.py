@@ -8,6 +8,7 @@ class Config():
         self.mul_scl_ipt = ['', 'add', 'cat'][2]
         self.refine = ['', 'itself', 'RefUNet', 'Refiner', 'RefinerPVTInChannels4'][1]
         self.progressive_ref = self.refine and True
+        self.ender = False
         self.scale = 2
         self.dec_att = ['', 'ASPP', 'ASPPDeformable'][1]
         self.squeeze_block = ['', 'BasicDecBlk_x1', 'ResBlk_x4', 'ASPP_x3', 'ASPPDeformable_x3'][1]

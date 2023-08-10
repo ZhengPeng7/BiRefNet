@@ -41,6 +41,13 @@ class BSL(nn.Module):
 
         self.decoder = Decoder(channels)
 
+        if self.config.ender:
+            self.dec_end = nn.Sequential(
+                nn.Conv2d(1, 16, 3, 1, 1),
+                nn.Conv2d(16, 1, 3, 1, 1),
+                nn.ReLU(inplace=True),
+            )
+
         # refine patch-level segmentation
         if self.config.refine:
             if self.config.refine == 'itself':
@@ -108,6 +115,11 @@ class BSL(nn.Module):
             class_preds = None
         return scaled_preds, class_preds
 
+    def forward_ref_end(self, x):
+        # remove the grids of concatenated preds
+        return self.dec_end(x) if self.config.ender else x
+
+
     # def forward(self, x):
     #     if self.config.refine:
     #         scaled_preds, class_preds_ori = self.forward_ori(nn.functional.interpolate(x, size=(x.shape[2]//4, x.shape[3]//4), mode='bilinear', align_corners=True))
@@ -164,7 +176,10 @@ class BSL(nn.Module):
                                 one_sample.append(torch.cat(one_column, dim=-2))
                         one_sample = torch.cat(one_sample, dim=-1)
                         scaled_preds_ref_recovered.append(one_sample.unsqueeze(0))
-                    scaled_preds.append(torch.cat(scaled_preds_ref_recovered, dim=0))
+                    scaled_preds_ref_recovered_cat = torch.cat(scaled_preds_ref_recovered, dim=0)
+                    if self.config.ender:
+                        scaled_preds_ref_recovered_cat = self.forward_ref_end(scaled_preds_ref_recovered_cat)
+                    scaled_preds.append(scaled_preds_ref_recovered_cat)
                     # class_preds_lst.append(class_preds_ref)
             else:
                 scaled_preds, class_preds_ori = self.forward_ori(x)
