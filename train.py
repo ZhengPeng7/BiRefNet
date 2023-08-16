@@ -151,7 +151,14 @@ class Trainer:
     def _load_adv_components(self):
         # AIL
         from loss import Discriminator
-        disc = Discriminator(channels=3, img_size=config.size).to(device)
+        disc = Discriminator(channels=3, img_size=config.size)
+        if to_be_distributed:
+            disc = disc.to(device)
+            disc = DDP(disc, device_ids=[device], broadcast_buffers=False)
+        else:
+            disc = disc.to(device)
+        if config.compile_and_precisionHigh:
+            disc = torch.compile(disc, mode=['default', 'reduce-overhead', 'max-autotune'][0])
         adv_criterion = nn.BCELoss()
         if config.optimizer == 'AdamW':
             optimizer_d = optim.AdamW(params=disc.parameters(), lr=config.lr, weight_decay=1e-2)
@@ -183,7 +190,7 @@ class Trainer:
 
         if config.lambda_adv_g:
             # gen
-            valid = Variable(torch.cuda.FloatTensor(scaled_preds[-1].shape[0], 1).fill_(1.0), requires_grad=False)
+            valid = Variable(torch.cuda.FloatTensor(scaled_preds[-1].shape[0], 1).fill_(1.0), requires_grad=False).to(device)
             adv_loss_g = self.adv_criterion(self.disc(scaled_preds[-1] * inputs), valid) * config.lambda_adv_g
             loss += adv_loss_g
             self.loss_dict['loss_adv'] = adv_loss_g.item()
@@ -195,7 +202,7 @@ class Trainer:
 
         if config.lambda_adv_g and self.disc_update_for_odd % 2 == 0:
             # disc
-            fake = Variable(torch.cuda.FloatTensor(scaled_preds[-1].shape[0], 1).fill_(0.0), requires_grad=False)
+            fake = Variable(torch.cuda.FloatTensor(scaled_preds[-1].shape[0], 1).fill_(0.0), requires_grad=False).to(device)
             self.optimizer_d.zero_grad()
             adv_loss_real = self.adv_criterion(self.disc(gts * inputs), valid)
             adv_loss_fake = self.adv_criterion(self.disc(scaled_preds[-1].detach() * inputs.detach()), fake)

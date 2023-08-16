@@ -6,10 +6,10 @@ class Config():
     def __init__(self) -> None:
         self.cxt_num = [0, 3][1]    # multi-scale skip connections from encoder
         self.mul_scl_ipt = ['', 'add', 'cat'][2]
-        self.refine = ['', 'itself', 'RefUNet', 'Refiner', 'RefinerPVTInChannels4'][1]
+        self.refine = ['', 'itself', 'RefUNet', 'Refiner', 'RefinerPVTInChannels4'][0]
         self.progressive_ref = self.refine and True
-        self.ender = False
-        self.scale = 2
+        self.ender = self.progressive_ref and False
+        self.scale = self.progressive_ref and 2
         self.dec_att = ['', 'ASPP', 'ASPPDeformable'][1]
         self.squeeze_block = ['', 'BasicDecBlk_x1', 'ResBlk_x4', 'ASPP_x3', 'ASPPDeformable_x3'][1]
         self.dec_blk = ['BasicDecBlk', 'ResBlk', 'HierarAttDecBlk'][0]
@@ -20,8 +20,8 @@ class Config():
         self.load_all = True
 
         self.size = 1024
-        self.batch_size = 1
-        self.IoU_finetune_last_epochs = [-20, 0][1]     # choose 0 to skip
+        self.batch_size = 5
+        self.IoU_finetune_last_epochs = [-20, 0][0]     # choose 0 to skip
         self.ms_supervision = False
         if self.dec_blk == 'HierarAttDecBlk':
             self.batch_size = 2 ** [0, 1, 2, 3, 4][2]
@@ -48,7 +48,7 @@ class Config():
         if self.mul_scl_ipt == 'cat':
             self.lateral_channels_in_collection = [channel * 2 for channel in self.lateral_channels_in_collection]
         self.cxt = self.lateral_channels_in_collection[1:][::-1][-self.cxt_num:] if self.cxt_num else []
-        self.sys_home_dir = '/home/admin/workspace'
+        self.sys_home_dir = '/home/user2'
         self.weights_root_dir = os.path.join(self.sys_home_dir, 'weights')
         self.weights = {
             'pvt_v2_b2': os.path.join(self.weights_root_dir, 'pvt_v2_b2.pth'),
