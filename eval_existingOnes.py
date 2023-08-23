@@ -32,7 +32,7 @@ def do_eval(opt):
                         pred_pth_lst=pred_paths
                     )
                 except:
-                    em, sm, fm, mae, wfm = {'curve': np.array([np.float64(-1)]), 'adp': np.float64(-1)}, np.float64(-1), np.float64(-1), {'curve': np.array([np.float64(-1)]), 'adp': np.float64(-1)}, np.float64(-1)
+                    em, sm, fm, mae, wfm = {'curve': np.array([np.float64(-1)]), 'adp': np.float64(-1)}, np.float64(-1), {'curve': np.array([np.float64(-1)]), 'adp': np.float64(-1)}, np.float64(-1), np.float64(-1)
                 tb.add_row([_data_name, _model_name, sm.round(3), wfm.round(3), mae.round(3), em['adp'].round(3),
                             em['curve'].mean().round(3), em['curve'].max().round(3), fm['adp'].round(3),
                             fm['curve'].mean().round(3), fm['curve'].max().round(3)])
