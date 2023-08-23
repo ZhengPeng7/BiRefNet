@@ -22,6 +22,7 @@ def do_eval(opt):
             tb = pt.PrettyTable()
             tb.field_names = ["Dataset", "Method", "Smeasure", "wFmeasure", "MAE", "adpEm", "meanEm", "maxEm", "adpFm", "meanFm", "maxFm"]
             for _model_name in opt.model_lst[:]:
+                print('\t', 'Evaluating model: {}...'.format(_model_name))
                 gt_src = os.path.join(opt.gt_root, _data_name)
                 gt_paths = glob(os.path.join(gt_src, 'gt', '*'))
                 pred_paths = [p.replace(opt.gt_root, os.path.join(opt.pred_root, _model_name)).replace('/gt/', '/') for p in gt_paths]
