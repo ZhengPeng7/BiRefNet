@@ -25,11 +25,13 @@ def do_eval(opt):
                 gt_src = os.path.join(opt.gt_root, _data_name)
                 gt_paths = glob(os.path.join(gt_src, 'gt', '*'))
                 pred_paths = [p.replace(opt.gt_root, os.path.join(opt.pred_root, _model_name)).replace('/gt/', '/') for p in gt_paths]
-                # print(pred_paths[:2])
+                # print(pred_paths[:1], gt_paths[:1])
                 try:
                     em, sm, fm, mae, wfm = evaluator(
-                        gt_pth_lst=gt_paths,
-                        pred_pth_lst=pred_paths
+                        gt_paths=gt_paths,
+                        pred_paths=pred_paths,
+                        metrics=['S', 'MAE', 'E', 'F', 'WF'],
+                        verbose=True
                     )
                 except:
                     em, sm, fm, mae, wfm = {'curve': np.array([np.float64(-1)]), 'adp': np.float64(-1)}, np.float64(-1), {'curve': np.array([np.float64(-1)]), 'adp': np.float64(-1)}, np.float64(-1), np.float64(-1)
