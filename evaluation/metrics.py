@@ -9,7 +9,7 @@ _EPS = np.spacing(1)
 _TYPE = np.float64
 
 
-def evaluator(gt_paths, pred_paths, metrics=['S', 'MAE', 'E', 'F', 'WF']):
+def evaluator(gt_paths, pred_paths, metrics=['S', 'MAE', 'E', 'F', 'WF'], verbose=False):
     # define measures
     if 'E' in metrics:
         EM = Emeasure()
@@ -26,8 +26,7 @@ def evaluator(gt_paths, pred_paths, metrics=['S', 'MAE', 'E', 'F', 'WF']):
         print(len(gt_paths), len(pred_paths))
         assert len(gt_paths) == len(pred_paths)
 
-    for idx_sample in range(len(gt_paths)):
-    # for idx_sample in tqdm(range(len(gt_paths)), total=len(gt_paths)):
+    for idx_sample in tqdm(range(len(gt_paths)), total=len(gt_paths)) if verbose else range(len(gt_paths)):
         gt = gt_paths[idx_sample]
         pred = pred_paths[idx_sample]
 

@@ -4,15 +4,12 @@ import argparse
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import torch.nn.functional as F
 from torch.autograd import Variable
 
 from config import Config
-from loss import saliency_structure_consistency, PixLoss, ClsLoss
-from utils import generate_smoothed_gt
+from loss import PixLoss, ClsLoss
 from dataset import MyData
 from models.baseline import BSL
-# from models.pvtvp import PVTVP
 from utils import Logger, AverageMeter, set_seed
 from evaluation.valid import valid
 
@@ -54,6 +51,7 @@ logger_loss_idx = 1
 
 # log model and optimizer params
 # logger.info("Model details:"); logger.info(model)
+logger.info("datasets: load_all={}, compile={}.".format(config.load_all, config.compile_and_precisionHigh))
 logger.info("Other hyperparameters:"); logger.info(args)
 print('batch size:', config.batch_size)
 
@@ -63,7 +61,7 @@ def prepare_dataloader(dataset: torch.utils.data.Dataset, batch_size: int, to_be
     if to_be_distributed:
         return torch.utils.data.DataLoader(
             dataset=dataset, batch_size=batch_size, num_workers=min(config.num_workers, batch_size), pin_memory=True,
-            shuffle=False, sampler=DistributedSampler(dataset)
+            shuffle=False, sampler=DistributedSampler(dataset), drop_last=True
         )
     else:
         return torch.utils.data.DataLoader(
@@ -74,7 +72,7 @@ def prepare_dataloader(dataset: torch.utils.data.Dataset, batch_size: int, to_be
 
 def init_data_loaders(to_be_distributed):
     # Prepare dataset
-    training_set = 'DIS-TR'
+    training_set = {'DIS5K': 'DIS-TR', 'COD10K-v3_CAMO-v1': 'train'}[config.dataset]
     train_loader = prepare_dataloader(
         MyData(data_root=os.path.join(config.data_root_dir, config.dataset, training_set), image_size=config.size, is_train=True),
         config.batch_size, to_be_distributed=to_be_distributed, is_train=True
@@ -96,7 +94,7 @@ def init_models_optimizers(epochs, to_be_distributed):
     if args.resume:
         if os.path.isfile(args.resume):
             logger.info("=> loading checkpoint '{}'".format(args.resume))
-            state_dict = torch.load(args.resume)
+            state_dict = torch.load(args.resume, map_location='cpu')
             unwanted_prefix = '_orig_mod.'
             for k, v in list(state_dict.items()):
                 if k.startswith(unwanted_prefix):
@@ -217,7 +215,7 @@ class Trainer:
         self.loss_dict = {}
         if epoch > args.epochs + config.IoU_finetune_last_epochs:
             self.pix_loss.lambdas_pix_last['bce'] = 0
-            self.pix_loss.lambdas_pix_last['iou'] = 0.5
+            self.pix_loss.lambdas_pix_last['iou'] *= 0.5
 
         for batch_idx, batch in enumerate(self.train_loader):
             self._train_batch(batch)
@@ -286,12 +284,12 @@ def main():
         train_loss = trainer.train_epoch(epoch)
         # Save checkpoint
         # DDP
-        if epoch >= args.epochs - config.val_last and (args.epochs - epoch) % config.save_step == 0:
+        if epoch >= args.epochs - config.save_last:
             torch.save(
                 trainer.model.module.state_dict() if to_be_distributed else trainer.model.state_dict(),
                 os.path.join(args.ckpt_dir, 'ep{}.pth'.format(epoch))
             )
-        if epoch >= args.epochs - config.val_last and (args.epochs - epoch) % config.save_step == 0:
+        if config.val_step and epoch >= args.epochs - config.save_last and (args.epochs - epoch) % config.val_step == 0:
             if to_be_distributed:
                 if get_rank() == 0:
                     print('Validating at rank-{}...'.format(get_rank()))

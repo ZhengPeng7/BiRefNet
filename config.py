@@ -18,16 +18,16 @@ class Config():
         self.freeze_bb = False
         self.compile_and_precisionHigh = True
         self.load_all = True
+        self.verbose_eval = False
 
         self.size = 1024
-        self.batch_size = 5
+        self.batch_size = 6
         self.IoU_finetune_last_epochs = [-20, 0][0]     # choose 0 to skip
         self.ms_supervision = False
         if self.dec_blk == 'HierarAttDecBlk':
             self.batch_size = 2 ** [0, 1, 2, 3, 4][2]
         self.model = [
             'BSL',
-            # 'PVTVP',
         ][0]
 
         # Components
@@ -66,7 +66,7 @@ class Config():
 
         # Data
         self.data_root_dir = os.path.join(self.sys_home_dir, 'datasets/dis')
-        self.dataset = 'DIS5K'
+        self.dataset = ['DIS5K', 'COD10K-v3_CAMO-v1'][0]
         self.preproc_methods = ['flip', 'enhance', 'rotate', 'crop', 'pepper'][:1]
 
         # Loss
@@ -97,5 +97,6 @@ class Config():
         run_sh_file = [f for f in os.listdir('.') if 'go.sh' == f] + [os.path.join('..', f) for f in os.listdir('..') if 'go.sh' == f]
         with open(run_sh_file[0], 'r') as f:
             lines = f.readlines()
-            self.val_last = int([l.strip() for l in lines if 'val_last=' in l][0].split('=')[-1])
+            self.save_last = int([l.strip() for l in lines if 'val_last=' in l][0].split('=')[-1])
             self.save_step = int([l.strip() for l in lines if 'step=' in l][0].split('=')[-1])
+        self.val_step = [0, self.save_step][0]

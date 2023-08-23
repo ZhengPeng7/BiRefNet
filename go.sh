@@ -1,10 +1,11 @@
 #!/bin/bash
 # Run script
 method="$1"
-epochs=300
-val_last=120
-step=20
+epochs=120
+val_last=50
+step=10
 testsets=DIS-VD
+# testsets=COD10K   # for COD
 
 # Train
 devices=$2
