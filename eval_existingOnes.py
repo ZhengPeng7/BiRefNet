@@ -31,7 +31,7 @@ def do_eval(opt):
                         gt_paths=gt_paths,
                         pred_paths=pred_paths,
                         metrics=['S', 'MAE', 'E', 'F', 'WF'],
-                        verbose=True
+                        verbose=config.verbose_eval
                     )
                 except:
                     em, sm, fm, mae, wfm = {'curve': np.array([np.float64(-1)]), 'adp': np.float64(-1)}, np.float64(-1), {'curve': np.array([np.float64(-1)]), 'adp': np.float64(-1)}, np.float64(-1), np.float64(-1)
