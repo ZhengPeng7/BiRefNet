@@ -8,3 +8,6 @@ srun --nodes=1 --nodelist=Slave1,Slave2,Slave3,Slave4,Slave5 \
 bash go.sh ${method} ${devices}
 
 hostname
+
+devices_test=$3
+bash test.sh ${devices_test}

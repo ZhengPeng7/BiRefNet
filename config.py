@@ -17,13 +17,13 @@ class Config():
         self.auxiliary_classification = False
         self.refine_iteration = 1
         self.freeze_bb = False
-        self.compile_and_precisionHigh = 0
-        self.load_all = 0
+        self.compile_and_precisionHigh = True
+        self.load_all = True
         self.verbose_eval = False
 
         self.size = 1024
         self.batch_size = 6
-        self.IoU_finetune_last_epochs = [-20, 0][1]     # choose 0 to skip
+        self.IoU_finetune_last_epochs = [-20, 0][0]     # choose 0 to skip
         self.ms_supervision = False
         if self.dec_blk == 'HierarAttDecBlk':
             self.batch_size = 2 ** [0, 1, 2, 3, 4][2]
