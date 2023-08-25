@@ -40,6 +40,14 @@ class BSL(nn.Module):
             ])
 
         self.decoder = Decoder(channels)
+        
+        if self.config.locate_head:
+            self.locate_header = nn.ModuleList([
+                BasicDecBlk(channels[0], channels[-1]),
+                nn.Sequential(
+                    nn.Conv2d(channels[-1], 1, 1, 1, 0),
+                )
+            ])
 
         if self.config.ender:
             self.dec_end = nn.Sequential(
@@ -62,39 +70,57 @@ class BSL(nn.Module):
                 if 'bb.' in key and 'refiner.' not in key:
                     value.requires_grad = False
 
-    def forward_ori(self, x):
-        ########## Encoder ##########
+    def forward_enc(self, x):
         if self.config.bb in ['vgg16', 'vgg16bn', 'resnet50']:
             x1 = self.bb.conv1(x); x2 = self.bb.conv2(x1); x3 = self.bb.conv3(x2); x4 = self.bb.conv4(x3)
         else:
             x1, x2, x3, x4 = self.bb(x)
             if self.config.mul_scl_ipt == 'cat':
                 B, C, H, W = x.shape
-                x1_, x2_, x3_, x4_ = self.bb(torch.nn.functional.interpolate(x, size=(H//2, W//2), mode='bilinear', align_corners=True))
-                x1 = torch.cat([x1, torch.nn.functional.interpolate(x1_, size=x1.shape[2:], mode='bilinear', align_corners=True)], dim=1)
-                x2 = torch.cat([x2, torch.nn.functional.interpolate(x2_, size=x2.shape[2:], mode='bilinear', align_corners=True)], dim=1)
-                x3 = torch.cat([x3, torch.nn.functional.interpolate(x3_, size=x3.shape[2:], mode='bilinear', align_corners=True)], dim=1)
-                x4 = torch.cat([x4, torch.nn.functional.interpolate(x4_, size=x4.shape[2:], mode='bilinear', align_corners=True)], dim=1)
+                x1_, x2_, x3_, x4_ = self.bb(torch.F.interpolate(x, size=(H//2, W//2), mode='bilinear', align_corners=True))
+                x1 = torch.cat([x1, torch.F.interpolate(x1_, size=x1.shape[2:], mode='bilinear', align_corners=True)], dim=1)
+                x2 = torch.cat([x2, torch.F.interpolate(x2_, size=x2.shape[2:], mode='bilinear', align_corners=True)], dim=1)
+                x3 = torch.cat([x3, torch.F.interpolate(x3_, size=x3.shape[2:], mode='bilinear', align_corners=True)], dim=1)
+                x4 = torch.cat([x4, torch.F.interpolate(x4_, size=x4.shape[2:], mode='bilinear', align_corners=True)], dim=1)
             elif self.config.mul_scl_ipt == 'add':
                 B, C, H, W = x.shape
-                x1_, x2_, x3_, x4_ = self.bb(torch.nn.functional.interpolate(x, size=(H//2, W//2), mode='bilinear', align_corners=True))
-                x1 = x1 + torch.nn.functional.interpolate(x1_, size=x1.shape[2:], mode='bilinear', align_corners=True)
-                x2 = x2 + torch.nn.functional.interpolate(x2_, size=x2.shape[2:], mode='bilinear', align_corners=True)
-                x3 = x3 + torch.nn.functional.interpolate(x3_, size=x3.shape[2:], mode='bilinear', align_corners=True)
-                x4 = x4 + torch.nn.functional.interpolate(x4_, size=x4.shape[2:], mode='bilinear', align_corners=True)
+                x1_, x2_, x3_, x4_ = self.bb(torch.F.interpolate(x, size=(H//2, W//2), mode='bilinear', align_corners=True))
+                x1 = x1 + torch.F.interpolate(x1_, size=x1.shape[2:], mode='bilinear', align_corners=True)
+                x2 = x2 + torch.F.interpolate(x2_, size=x2.shape[2:], mode='bilinear', align_corners=True)
+                x3 = x3 + torch.F.interpolate(x3_, size=x3.shape[2:], mode='bilinear', align_corners=True)
+                x4 = x4 + torch.F.interpolate(x4_, size=x4.shape[2:], mode='bilinear', align_corners=True)
         class_preds = self.cls_head(self.avgpool(x4).view(x4.shape[0], -1)) if self.training and self.config.auxiliary_classification else None
         if self.config.cxt:
             x4 = torch.cat(
                 (
                     *[
-                        nn.functional.interpolate(x1, size=x4.shape[2:], mode='bilinear', align_corners=True),
-                        nn.functional.interpolate(x2, size=x4.shape[2:], mode='bilinear', align_corners=True),
-                        nn.functional.interpolate(x3, size=x4.shape[2:], mode='bilinear', align_corners=True),
+                        F.interpolate(x1, size=x4.shape[2:], mode='bilinear', align_corners=True),
+                        F.interpolate(x2, size=x4.shape[2:], mode='bilinear', align_corners=True),
+                        F.interpolate(x3, size=x4.shape[2:], mode='bilinear', align_corners=True),
                     ][-len(self.config.cxt):],
                     x4
                 ),
                 dim=1
             )
+        return (x1, x2, x3, x4), class_preds
+
+    def forward_loc(self, x):
+        ########## Encoder ##########
+        (x1, x2, x3, x4), class_preds = self.forward_enc(x)
+        if self.config.squeeze_block:
+            x4 = self.squeeze_module(x4)
+        if self.config.locate_head:
+            locate_preds = self.locate_header[1](
+                F.interpolate(
+                    self.locate_header[0](
+                        F.interpolate(x4, size=x2.shape[2:], mode='bilinear', align_corners=True)
+                    ), size=x.shape[2:], mode='bilinear', align_corners=True
+                )
+            )
+
+    def forward_ori(self, x):
+        ########## Encoder ##########
+        (x1, x2, x3, x4), class_preds = self.forward_enc(x)
         if self.config.squeeze_block:
             x4 = self.squeeze_module(x4)
         ########## Decoder ##########
@@ -105,7 +131,7 @@ class BSL(nn.Module):
     def forward_ref(self, x, pred):
         # refine patch-level segmentation
         if pred.shape[2:] != x.shape[2:]:
-            pred = nn.functional.interpolate(pred, size=x.shape[2:], mode='bilinear', align_corners=True)
+            pred = F.interpolate(pred, size=x.shape[2:], mode='bilinear', align_corners=True)
         # pred = pred.sigmoid()
         if self.config.refine == 'itself':
             x = self.stem_layer(torch.cat([x, pred], dim=1))
@@ -122,7 +148,7 @@ class BSL(nn.Module):
 
     # def forward(self, x):
     #     if self.config.refine:
-    #         scaled_preds, class_preds_ori = self.forward_ori(nn.functional.interpolate(x, size=(x.shape[2]//4, x.shape[3]//4), mode='bilinear', align_corners=True))
+    #         scaled_preds, class_preds_ori = self.forward_ori(F.interpolate(x, size=(x.shape[2]//4, x.shape[3]//4), mode='bilinear', align_corners=True))
     #         class_preds_lst = [class_preds_ori]
     #         for _ in range(self.config.refine_iteration):
     #             scaled_preds_ref, class_preds_ref = self.forward_ref(x, scaled_preds[-1])
@@ -138,13 +164,13 @@ class BSL(nn.Module):
             if self.config.progressive_ref:
                 scale = self.config.scale
                 scaled_preds, class_preds_ori = self.forward_ori(
-                    nn.functional.interpolate(x, size=(x.shape[2]//scale, x.shape[3]//scale), mode='bilinear', align_corners=True)
+                    F.interpolate(x, size=(x.shape[2]//scale, x.shape[3]//scale), mode='bilinear', align_corners=True)
                 )
                 class_preds_lst = [class_preds_ori]
                 for _ in range(self.config.refine_iteration):
                     _size_w, _size_h = x.shape[2] // scale, x.shape[3] // scale
                     x_lst, pred_lst = [], []
-                    y = nn.functional.interpolate(
+                    y = F.interpolate(
                         scaled_preds[-1],
                         size=(x.shape[2], x.shape[3]),
                         mode='bilinear',

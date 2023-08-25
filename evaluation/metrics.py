@@ -23,7 +23,7 @@ def evaluator(gt_paths, pred_paths, metrics=['S', 'MAE', 'E', 'F', 'WF'], verbos
         WFM = WeightedFmeasure()
 
     if isinstance(gt_paths, list) and isinstance(pred_paths, list):
-        print(len(gt_paths), len(pred_paths))
+        # print(len(gt_paths), len(pred_paths))
         assert len(gt_paths) == len(pred_paths)
 
     for idx_sample in tqdm(range(len(gt_paths)), total=len(gt_paths)) if verbose else range(len(gt_paths)):

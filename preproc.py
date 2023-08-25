@@ -29,6 +29,7 @@ def random_crop(image, label):
     border = 30
     image_width = image.size[0]
     image_height = image.size[1]
+    border = int(min(image_width, image_height) * 0.1)
     crop_win_width = np.random.randint(image_width - border, image_width)
     crop_win_height = np.random.randint(image_height - border, image_height)
     random_region = (

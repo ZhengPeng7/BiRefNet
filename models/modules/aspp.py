@@ -127,9 +127,11 @@ class _ASPPModuleDeformable(nn.Module):
 
 
 class ASPPDeformable(nn.Module):
-    def __init__(self, in_channels, out_channels, num_parallel_block=1):
+    def __init__(self, in_channels, out_channels=None, num_parallel_block=1):
         super(ASPPDeformable, self).__init__()
         self.down_scale = 1
+        if out_channels is None:
+            out_channels = in_channels
         self.in_channelster = 256 // self.down_scale
 
         self.aspp1 = _ASPPModuleDeformable(in_channels, self.in_channelster, 1, padding=0)
@@ -158,4 +160,3 @@ class ASPPDeformable(nn.Module):
         x = self.relu(x)
 
         return self.dropout(x)
-

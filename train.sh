@@ -1,8 +1,8 @@
 #!/bin/bash
 # Run script
 method="$1"
-epochs=120
-val_last=50
+epochs=500
+val_last=350
 step=10
 testsets=DIS-VD
 # testsets=COD10K   # for COD
@@ -13,6 +13,7 @@ nproc_per_node=$(echo ${devices%%,} | grep -o "," | wc -l)
 
 to_be_distributed=`echo ${nproc_per_node} | awk '{if($e > 0) print "True"; else print "False";}'`
 
+echo Training starts at $(date)
 if [ ${to_be_distributed} == "True" ]
 then
     # Adapt the nproc_per_node by the number of GPUs. Give 29500 as the default value of master_port.
@@ -31,4 +32,4 @@ else
         --resume ckpt/xx/ep100.pth
 fi
 
-echo Finished at $(date)
+echo Training is finished at $(date)
