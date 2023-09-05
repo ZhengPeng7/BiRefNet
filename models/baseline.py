@@ -77,18 +77,18 @@ class BSL(nn.Module):
             x1, x2, x3, x4 = self.bb(x)
             if self.config.mul_scl_ipt == 'cat':
                 B, C, H, W = x.shape
-                x1_, x2_, x3_, x4_ = self.bb(torch.F.interpolate(x, size=(H//2, W//2), mode='bilinear', align_corners=True))
-                x1 = torch.cat([x1, torch.F.interpolate(x1_, size=x1.shape[2:], mode='bilinear', align_corners=True)], dim=1)
-                x2 = torch.cat([x2, torch.F.interpolate(x2_, size=x2.shape[2:], mode='bilinear', align_corners=True)], dim=1)
-                x3 = torch.cat([x3, torch.F.interpolate(x3_, size=x3.shape[2:], mode='bilinear', align_corners=True)], dim=1)
-                x4 = torch.cat([x4, torch.F.interpolate(x4_, size=x4.shape[2:], mode='bilinear', align_corners=True)], dim=1)
+                x1_, x2_, x3_, x4_ = self.bb(F.interpolate(x, size=(H//2, W//2), mode='bilinear', align_corners=True))
+                x1 = torch.cat([x1, F.interpolate(x1_, size=x1.shape[2:], mode='bilinear', align_corners=True)], dim=1)
+                x2 = torch.cat([x2, F.interpolate(x2_, size=x2.shape[2:], mode='bilinear', align_corners=True)], dim=1)
+                x3 = torch.cat([x3, F.interpolate(x3_, size=x3.shape[2:], mode='bilinear', align_corners=True)], dim=1)
+                x4 = torch.cat([x4, F.interpolate(x4_, size=x4.shape[2:], mode='bilinear', align_corners=True)], dim=1)
             elif self.config.mul_scl_ipt == 'add':
                 B, C, H, W = x.shape
-                x1_, x2_, x3_, x4_ = self.bb(torch.F.interpolate(x, size=(H//2, W//2), mode='bilinear', align_corners=True))
-                x1 = x1 + torch.F.interpolate(x1_, size=x1.shape[2:], mode='bilinear', align_corners=True)
-                x2 = x2 + torch.F.interpolate(x2_, size=x2.shape[2:], mode='bilinear', align_corners=True)
-                x3 = x3 + torch.F.interpolate(x3_, size=x3.shape[2:], mode='bilinear', align_corners=True)
-                x4 = x4 + torch.F.interpolate(x4_, size=x4.shape[2:], mode='bilinear', align_corners=True)
+                x1_, x2_, x3_, x4_ = self.bb(F.interpolate(x, size=(H//2, W//2), mode='bilinear', align_corners=True))
+                x1 = x1 + F.interpolate(x1_, size=x1.shape[2:], mode='bilinear', align_corners=True)
+                x2 = x2 + F.interpolate(x2_, size=x2.shape[2:], mode='bilinear', align_corners=True)
+                x3 = x3 + F.interpolate(x3_, size=x3.shape[2:], mode='bilinear', align_corners=True)
+                x4 = x4 + F.interpolate(x4_, size=x4.shape[2:], mode='bilinear', align_corners=True)
         class_preds = self.cls_head(self.avgpool(x4).view(x4.shape[0], -1)) if self.training and self.config.auxiliary_classification else None
         if self.config.cxt:
             x4 = torch.cat(
@@ -104,19 +104,19 @@ class BSL(nn.Module):
             )
         return (x1, x2, x3, x4), class_preds
 
-    def forward_loc(self, x):
-        ########## Encoder ##########
-        (x1, x2, x3, x4), class_preds = self.forward_enc(x)
-        if self.config.squeeze_block:
-            x4 = self.squeeze_module(x4)
-        if self.config.locate_head:
-            locate_preds = self.locate_header[1](
-                F.interpolate(
-                    self.locate_header[0](
-                        F.interpolate(x4, size=x2.shape[2:], mode='bilinear', align_corners=True)
-                    ), size=x.shape[2:], mode='bilinear', align_corners=True
-                )
-            )
+    # def forward_loc(self, x):
+    #     ########## Encoder ##########
+    #     (x1, x2, x3, x4), class_preds = self.forward_enc(x)
+    #     if self.config.squeeze_block:
+    #         x4 = self.squeeze_module(x4)
+    #     if self.config.locate_head:
+    #         locate_preds = self.locate_header[1](
+    #             F.interpolate(
+    #                 self.locate_header[0](
+    #                     F.interpolate(x4, size=x2.shape[2:], mode='bilinear', align_corners=True)
+    #                 ), size=x.shape[2:], mode='bilinear', align_corners=True
+    #             )
+    #         )
 
     def forward_ori(self, x):
         ########## Encoder ##########

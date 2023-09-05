@@ -19,6 +19,7 @@ class MyData(data.Dataset):
     def __init__(self, data_root, image_size, is_train=True):
         self.size_train = image_size
         self.size_test = image_size
+        self.keep_size = not config.size
         self.data_size = (config.size, config.size)
         self.is_train = is_train
         self.load_all = config.load_all
@@ -26,24 +27,15 @@ class MyData(data.Dataset):
         self.dataset = data_root.replace('\\', '/').split('/')[-1]
         if self.is_train and config.auxiliary_classification:
             self.cls_name2id = {_name: _id for _id, _name in enumerate(class_labels_TR_sorted)}
-        if self.load_all:
-            self.transform_image = transforms.Compose([
-                transforms.ToTensor(),
-                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-            ])
-            self.transform_label = transforms.Compose([
-                transforms.ToTensor(),
-            ])
-        else:
-            self.transform_image = transforms.Compose([
-                transforms.Resize(self.data_size),
-                transforms.ToTensor(),
-                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-            ])
-            self.transform_label = transforms.Compose([
-                transforms.Resize(self.data_size),
-                transforms.ToTensor(),
-            ])
+        self.transform_image = transforms.Compose([
+            transforms.Resize(self.data_size),
+            transforms.ToTensor(),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+        ][self.load_all or self.keep_size:])
+        self.transform_label = transforms.Compose([
+            transforms.Resize(self.data_size),
+            transforms.ToTensor(),
+        ][self.load_all or self.keep_size:])
         ## 'im' and 'gt' need modifying
         image_root = os.path.join(data_root, 'im')
         self.image_paths = [os.path.join(image_root, p) for p in os.listdir(image_root)]
@@ -55,8 +47,9 @@ class MyData(data.Dataset):
             for image_path, label_path in tqdm(zip(self.image_paths, self.label_paths), total=len(self.image_paths)):
                 _image = cv2.imread(image_path)
                 _label = cv2.imread(label_path, cv2.IMREAD_GRAYSCALE)
-                _image_rs = cv2.resize(_image, (config.size, config.size), interpolation=cv2.INTER_LINEAR)
-                _label_rs = cv2.resize(_label, (config.size, config.size), interpolation=cv2.INTER_LINEAR)
+                if not self.keep_size:
+                    _image_rs = cv2.resize(_image, (config.size, config.size), interpolation=cv2.INTER_LINEAR)
+                    _label_rs = cv2.resize(_label, (config.size, config.size), interpolation=cv2.INTER_LINEAR)
                 self.images_loaded.append(
                     Image.fromarray(cv2.cvtColor(_image_rs, cv2.COLOR_BGR2RGB)).convert('RGB')
                 )

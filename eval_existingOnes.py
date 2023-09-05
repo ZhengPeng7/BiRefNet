@@ -17,14 +17,16 @@ def do_eval(opt):
     # evaluation for whole dataset
     # dataset first in evaluation
     for _data_name in opt.data_lst:
+        gt_src = os.path.join(opt.gt_root, _data_name)
+        gt_paths = glob(os.path.join(gt_src, 'gt', '*'))
+        if not gt_paths:
+            continue
         print('#' * 20, _data_name, '#' * 20)
         filename = os.path.join(opt.save_dir, '{}_eval.txt'.format(_data_name))
         tb = pt.PrettyTable()
         tb.field_names = ["Dataset", "Method", "Smeasure", "MAE", "maxEm", "meanEm", "maxFm", "meanFm", "wFmeasure", "adpEm", "adpFm"]
         for _model_name in opt.model_lst[:]:
             print('\t', 'Evaluating model: {}...'.format(_model_name))
-            gt_src = os.path.join(opt.gt_root, _data_name)
-            gt_paths = glob(os.path.join(gt_src, 'gt', '*'))
             pred_paths = [p.replace(opt.gt_root, os.path.join(opt.pred_root, _model_name)).replace('/gt/', '/') for p in gt_paths]
             # print(pred_paths[:1], gt_paths[:1])
             em, sm, fm, mae, wfm = evaluator(
@@ -61,7 +63,8 @@ if __name__ == '__main__':
         '--data_lst', type=list, help='test dataset',
         default={
             'DIS5K': ['DIS-VD', 'DIS-TE1', 'DIS-TE2', 'DIS-TE3', 'DIS-TE4'][:],
-            'COD10K-v3_CAMO-v1': ['COD10K', 'NC4K', 'CAMO', 'CHAMELEON'][:]
+            'COD': ['COD10K', 'NC4K', 'CAMO', 'CHAMELEON'][:],
+            'SOD': ['DAVIS-S', 'HRSOD-TE', 'UHRSD-TE', 'DUTS-TE', 'DUT-OMRON'][:]
         }[config.dataset])
     parser.add_argument(
         '--model_lst', type=str, help='candidate competitors',
@@ -74,11 +77,11 @@ if __name__ == '__main__':
         default=False)
     parser.add_argument(
         '--metrics', type=str, help='candidate competitors',
-        default='+'.join(['S', 'MAE', 'E', 'F', 'WF'][:2]))
+        default='+'.join(['S', 'MAE', 'E', 'F', 'WF'][:]))
     opt = parser.parse_args()
 
     os.makedirs(opt.save_dir, exist_ok=True)
-    opt.model_lst = sorted(['--'.join(m.rstrip('.pth').split(os.sep)[-2:]) for m in glob(os.path.join(opt.model_lst, '*.pth'))], key=lambda x: int(x.split('ep')[-1]), reverse=True)
+    opt.model_lst = [m for m in sorted(os.listdir(opt.pred_root), key=lambda x: int(x.split('ep')[-1]), reverse=True) if int(m.split('ep')[-1]) % 1 == 0]
 
     # check the integrity of each candidates
     if opt.check_integrity:

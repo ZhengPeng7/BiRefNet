@@ -1,10 +1,10 @@
 #!/bin/bash
 # Run script
 method="$1"
-epochs=500
-val_last=350
-step=10
-testsets=DIS-VD
+epochs=140
+val_last=40
+step=5
+testsets=NO     # Non-existing folder to skip.
 # testsets=COD10K   # for COD
 
 # Train

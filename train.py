@@ -56,6 +56,11 @@ logger.info("Other hyperparameters:"); logger.info(args)
 print('batch size:', config.batch_size)
 
 
+if os.path.exists(os.path.join(config.data_root_dir, config.dataset, args.testsets.strip('+').split('+')[0])):
+    args.testsets = args.testsets.strip('+').split('+')
+else:
+    args.testsets = []
+
 # Init model
 def prepare_dataloader(dataset: torch.utils.data.Dataset, batch_size: int, to_be_distributed=False, is_train=True):
     if to_be_distributed:
@@ -72,14 +77,14 @@ def prepare_dataloader(dataset: torch.utils.data.Dataset, batch_size: int, to_be
 
 def init_data_loaders(to_be_distributed):
     # Prepare dataset
-    training_set = {'DIS5K': 'DIS-TR', 'COD10K-v3_CAMO-v1': 'train'}[config.dataset]
+    training_set = {'DIS5K': 'DIS-TR', 'COD': 'train', 'SOD': 'train_DHU'}[config.dataset]
     train_loader = prepare_dataloader(
         MyData(data_root=os.path.join(config.data_root_dir, config.dataset, training_set), image_size=config.size, is_train=True),
         config.batch_size, to_be_distributed=to_be_distributed, is_train=True
     )
     print(len(train_loader), "batches of train dataloader {} have been created.".format(training_set))
     test_loaders = {}
-    for testset in args.testsets.split('+'):
+    for testset in args.testsets:
         _data_loader_test = prepare_dataloader(
             MyData(data_root=os.path.join(config.data_root_dir, config.dataset, testset), image_size=config.size, is_train=False),
             config.batch_size_valid, is_train=False
@@ -121,7 +126,7 @@ def init_models_optimizers(epochs, to_be_distributed):
     lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(
         optimizer,
         milestones=[lde if lde > 0 else epochs + lde + 1 for lde in config.lr_decay_epochs],
-        gamma=0.1
+        gamma=config.lr_decay_rate
     )
     logger.info("Optimizer details:"); logger.info(optimizer)
     logger.info("Scheduler details:"); logger.info(lr_scheduler)
@@ -165,7 +170,7 @@ class Trainer:
         lr_scheduler_d = torch.optim.lr_scheduler.MultiStepLR(
             optimizer_d,
             milestones=[lde if lde > 0 else args.epochs + lde + 1 for lde in config.lr_decay_epochs],
-            gamma=0.1
+            gamma=config.lr_decay_rate
         )
         return optimizer_d, lr_scheduler_d, disc, adv_criterion
 
@@ -237,7 +242,7 @@ class Trainer:
     def validate_model(self, epoch):
         num_image_testset_all = {'DIS-VD': 470, 'DIS-TE1': 500, 'DIS-TE2': 500, 'DIS-TE3': 500, 'DIS-TE4': 500}
         num_image_testset = {}
-        for testset in args.testsets.split('+'):
+        for testset in args.testsets:
             if 'DIS-TE' in testset:
                 num_image_testset[testset] = num_image_testset_all[testset]
         weighted_scores = {'f_max': 0, 'f_mean': 0, 'f_wfm': 0, 'sm': 0, 'e_max': 0, 'e_mean': 0, 'mae': 0}
@@ -284,7 +289,7 @@ def main():
         train_loss = trainer.train_epoch(epoch)
         # Save checkpoint
         # DDP
-        if epoch >= args.epochs - config.save_last:
+        if epoch >= args.epochs - config.save_last and epoch % config.save_step == 0:
             torch.save(
                 trainer.model.module.state_dict() if to_be_distributed else trainer.model.state_dict(),
                 os.path.join(args.ckpt_dir, 'ep{}.pth'.format(epoch))

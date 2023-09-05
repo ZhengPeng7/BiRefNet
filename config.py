@@ -4,14 +4,14 @@ import math
 
 class Config():
     def __init__(self) -> None:
-        self.locate_head = True
+        self.locate_head = False
         self.cxt_num = [0, 3][1]    # multi-scale skip connections from encoder
         self.mul_scl_ipt = ['', 'add', 'cat'][2]
         self.refine = ['', 'itself', 'RefUNet', 'Refiner', 'RefinerPVTInChannels4'][0]
         self.progressive_ref = self.refine and True
         self.ender = self.progressive_ref and False
         self.scale = self.progressive_ref and 2
-        self.dec_att = ['', 'ASPP', 'ASPPDeformable'][1]
+        self.dec_att = ['', 'ASPP', 'ASPPDeformable'][2]
         self.squeeze_block = ['', 'BasicDecBlk_x1', 'ResBlk_x4', 'ASPP_x3', 'ASPPDeformable_x3'][1]
         self.dec_blk = ['BasicDecBlk', 'ResBlk', 'HierarAttDecBlk'][0]
         self.auxiliary_classification = False
@@ -19,10 +19,11 @@ class Config():
         self.freeze_bb = False
         self.compile_and_precisionHigh = True
         self.load_all = True
-        self.verbose_eval = False
+        self.verbose_eval = True
+        self.flash_attention_enabled = True
 
         self.size = 1024
-        self.batch_size = 6
+        self.batch_size = 4
         self.IoU_finetune_last_epochs = [-20, 0][0]     # choose 0 to skip
         self.ms_supervision = False
         if self.dec_blk == 'HierarAttDecBlk':
@@ -40,7 +41,7 @@ class Config():
             'vgg16', 'vgg16bn', 'resnet50',         # 0, 1, 2
             'pvt_v2_b2', 'pvt_v2_b5',               # 3-bs10, 4-bs5
             'swin_v1_b', 'swin_v1_l'                # 5-bs9, 6-bs6
-        ][5]
+        ][6]
         self.lateral_channels_in_collection = {
             'vgg16': [512, 256, 128, 64], 'vgg16bn': [512, 256, 128, 64], 'resnet50': [1024, 512, 256, 64],
             'pvt_v2_b2': [512, 320, 128, 64], 'pvt_v2_b5': [512, 320, 128, 64],
@@ -63,12 +64,13 @@ class Config():
         self.optimizer = ['Adam', 'AdamW'][0]
         self.lr = 1e-5 * math.sqrt(self.batch_size / 5)  # adapt the lr linearly
         self.lr_decay_epochs = [1e4]    # Set to negative N to decay the lr in the last N-th epoch.
+        self.lr_decay_rate = 0.5
         self.only_S_MAE = False
 
         # Data
         self.data_root_dir = os.path.join(self.sys_home_dir, 'datasets/dis')
-        self.dataset = ['DIS5K', 'COD10K-v3_CAMO-v1'][0]
-        self.preproc_methods = ['flip', 'enhance', 'rotate', 'crop', 'pepper'][:1]
+        self.dataset = ['DIS5K', 'COD', 'SOD'][2]
+        self.preproc_methods = ['flip', 'enhance', 'rotate', 'pepper', 'crop'][:4]
 
         # Loss
         self.lambdas_pix_last = {
@@ -95,7 +97,7 @@ class Config():
 
         self.batch_size_valid = 1
         self.rand_seed = 7
-        run_sh_file = [f for f in os.listdir('.') if 'go.sh' == f] + [os.path.join('..', f) for f in os.listdir('..') if 'go.sh' == f]
+        run_sh_file = [f for f in os.listdir('.') if 'train.sh' == f] + [os.path.join('..', f) for f in os.listdir('..') if 'train.sh' == f]
         with open(run_sh_file[0], 'r') as f:
             lines = f.readlines()
             self.save_last = int([l.strip() for l in lines if 'val_last=' in l][0].split('=')[-1])

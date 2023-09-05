@@ -15,7 +15,7 @@ from config import Config
 config = Config()
 
 
-def inference(model, data_loader_test, pred_dir, method, testset, device=0):
+def inference(model, data_loader_test, pred_root, method, testset, device=0):
     model_training = model.training
     if model_training:
         model.eval()
@@ -26,7 +26,7 @@ def inference(model, data_loader_test, pred_dir, method, testset, device=0):
         with torch.no_grad():
             scaled_preds = model(inputs)[-1].sigmoid()
 
-        os.makedirs(os.path.join(pred_dir, method, testset), exist_ok=True)
+        os.makedirs(os.path.join(pred_root, method, testset), exist_ok=True)
 
         for idx_sample in range(scaled_preds.shape[0]):
             res = nn.functional.interpolate(
@@ -35,7 +35,7 @@ def inference(model, data_loader_test, pred_dir, method, testset, device=0):
                 mode='bilinear',
                 align_corners=True
             )
-            save_tensor_img(res, os.path.join(os.path.join(pred_dir, method, testset), label_paths[idx_sample].replace('\\', '/').split('/')[-1]))   # test set dir + file name
+            save_tensor_img(res, os.path.join(os.path.join(pred_root, method, testset), label_paths[idx_sample].replace('\\', '/').split('/')[-1]))   # test set dir + file name
     if model_training:
         model.train()
     return None
@@ -64,10 +64,16 @@ def main(args):
             batch_size=config.batch_size_valid, shuffle=False, num_workers=config.num_workers, pin_memory=True
         )
         for weights in weights_lst:
+            if int(weights.strip('.pth').split('ep')[-1]) % 1 != 0:
+                continue
             print('\tInferencing {}...'.format(weights))
             model.load_state_dict(torch.load(weights, map_location='cpu'))
             model = model.to(device)
-            inference(model, data_loader_test=data_loader_test, pred_dir=args.pred_dir, method='--'.join([_.rstrip('.pth') for _ in weights.split(os.sep)[-2:]]), testset=testset)
+            inference(
+                model, data_loader_test=data_loader_test, pred_root=args.pred_root,
+                method='--'.join([w.rstrip('.pth') for w in weights.split(os.sep)[-2:]]),
+                testset=testset
+            )
 
 
 if __name__ == '__main__':
@@ -75,15 +81,16 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='')
     parser.add_argument('--ckpt', type=str, help='model folder')
     parser.add_argument('--ckpt_folder', default=sorted(glob(os.path.join('ckpt', '*')))[-1], type=str, help='model folder')
-    parser.add_argument('--pred_dir', default='e_preds', type=str, help='Output folder')
+    parser.add_argument('--pred_root', default='e_preds', type=str, help='Output folder')
     parser.add_argument('--testsets',
-                        default=[
-                            'DIS-VD+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4',
-                            'COD10K+NC4K+CAMO+CHAMELEON',
-                            'DIS-VD',
-                            'COD10K',
-                            'CHAMELEON',
-                        ][2 if config.dataset == 'DIS5K' else 3],
+                        default={
+                            'DIS5K': 'DIS-VD+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4',
+                            'COD': 'COD10K+NC4K+CAMO+CHAMELEON',
+                            'SOD': 'DAVIS-S+HRSOD-TE+UHRSD-TE+DUTS-TE+DUT-OMRON',
+                            'DIS5K-': 'DIS-VD',
+                            'COD-': 'COD10K',
+                            'SOD-': 'DAVIS-S+HRSOD-TE+UHRSD-TE',
+                        }[config.dataset + ''],
                         type=str,
                         help="Test all sets: , 'DIS-VD+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4'")
 
