@@ -17,19 +17,21 @@ def do_eval(opt):
     # evaluation for whole dataset
     # dataset first in evaluation
     for _data_name in opt.data_lst:
-        gt_src = os.path.join(opt.gt_root, _data_name)
-        gt_paths = glob(os.path.join(gt_src, 'gt', '*'))
-        if not gt_paths:
+        pred_data_dir =  sorted(glob(os.path.join(opt.pred_root, opt.model_lst[0], _data_name)))
+        if not pred_data_dir:
+            print('Skip dataset {}.'.format(_data_name))
             continue
+        gt_src = os.path.join(opt.gt_root, _data_name)
+        gt_paths = sorted(glob(os.path.join(gt_src, 'gt', '*')))
         print('#' * 20, _data_name, '#' * 20)
         filename = os.path.join(opt.save_dir, '{}_eval.txt'.format(_data_name))
         tb = pt.PrettyTable()
-        tb.field_names = ["Dataset", "Method", "Smeasure", "MAE", "maxEm", "meanEm", "maxFm", "meanFm", "wFmeasure", "adpEm", "adpFm"]
+        tb.field_names = ["Dataset", "Method", "Smeasure", "MAE", "maxEm", "meanEm", "maxFm", "meanFm", "wFmeasure", "adpEm", "adpFm", "HCE"]
         for _model_name in opt.model_lst[:]:
             print('\t', 'Evaluating model: {}...'.format(_model_name))
             pred_paths = [p.replace(opt.gt_root, os.path.join(opt.pred_root, _model_name)).replace('/gt/', '/') for p in gt_paths]
             # print(pred_paths[:1], gt_paths[:1])
-            em, sm, fm, mae, wfm = evaluator(
+            em, sm, fm, mae, wfm, hce = evaluator(
                 gt_paths=gt_paths,
                 pred_paths=pred_paths,
                 metrics=opt.metrics.split('+'),
@@ -38,7 +40,7 @@ def do_eval(opt):
             scores = [
                 sm.round(3), mae.round(3), em['curve'].max().round(3), em['curve'].mean().round(3),
                 fm['curve'].max().round(3), fm['curve'].mean().round(3), wfm.round(3),
-                em['adp'].round(3), fm['adp'].round(3)
+                em['adp'].round(3), fm['adp'].round(3), hce.round(3),
             ]
             for idx_score, score in enumerate(scores):
                 scores[idx_score] = format(score, '.3f')
@@ -77,7 +79,7 @@ if __name__ == '__main__':
         default=False)
     parser.add_argument(
         '--metrics', type=str, help='candidate competitors',
-        default='+'.join(['S', 'MAE', 'E', 'F', 'WF'][:]))
+        default='+'.join(['S', 'MAE', 'E', 'F', 'WF', 'HCE'][:]))
     opt = parser.parse_args()
 
     os.makedirs(opt.save_dir, exist_ok=True)

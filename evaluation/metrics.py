@@ -3,13 +3,16 @@ from tqdm import tqdm
 import cv2
 import numpy as np
 from scipy.ndimage import convolve, distance_transform_edt as bwdist
+from skimage.morphology import skeletonize
+from skimage.morphology import disk
+from skimage.measure import label
 
 
 _EPS = np.spacing(1)
 _TYPE = np.float64
 
 
-def evaluator(gt_paths, pred_paths, metrics=['S', 'MAE', 'E', 'F', 'WF'], verbose=False):
+def evaluator(gt_paths, pred_paths, metrics=['S', 'MAE', 'E', 'F', 'WF', 'HCE'], verbose=False):
     # define measures
     if 'E' in metrics:
         EM = Emeasure()
@@ -21,6 +24,8 @@ def evaluator(gt_paths, pred_paths, metrics=['S', 'MAE', 'E', 'F', 'WF'], verbos
         MAE = MAEmeasure()
     if 'WF' in metrics:
         WFM = WeightedFmeasure()
+    if 'HCE' in metrics:
+        HCE = HCEMeasure()
 
     if isinstance(gt_paths, list) and isinstance(pred_paths, list):
         # print(len(gt_paths), len(pred_paths))
@@ -48,6 +53,16 @@ def evaluator(gt_paths, pred_paths, metrics=['S', 'MAE', 'E', 'F', 'WF'], verbos
             MAE.step(pred=pred_ary, gt=gt_ary)
         if 'WF' in metrics:
             WFM.step(pred=pred_ary, gt=gt_ary)
+        if 'HCE' in metrics:
+            ske_path = gt.replace('/gt/', '/ske/')
+            if os.path.exists(ske_path):
+                ske_ary = cv2.imread(ske_path, cv2.IMREAD_GRAYSCALE)
+                ske_ary = ske_ary > 128
+            else:
+                ske_ary = skeletonize(gt_ary > 128)
+                os.makedirs(os.path.join(ske_path.split(os.sep)[:-1]), exist_ok=True)
+                cv2.imwrite(ske_path, ske_ary.astype(np.uint8) * 255)
+            HCE.step(pred=pred_ary, gt=gt_ary, gt_ske=ske_ary)
 
     if 'E' in metrics:
         em = EM.get_results()['em']
@@ -69,8 +84,12 @@ def evaluator(gt_paths, pred_paths, metrics=['S', 'MAE', 'E', 'F', 'WF'], verbos
         wfm = WFM.get_results()['wfm']
     else:
         wfm = np.float64(-1)
+    if 'HCE' in metrics:
+        hce = HCE.get_results()['hce']
+    else:
+        hce = np.float64(-1)
 
-    return em, sm, fm, mae, wfm
+    return em, sm, fm, mae, wfm, hce
 
 
 def _prepare_data(pred: np.ndarray, gt: np.ndarray) -> tuple:
@@ -449,3 +468,142 @@ class WeightedFmeasure(object):
     def get_results(self) -> dict:
         weighted_fm = np.mean(np.array(self.weighted_fms, dtype=_TYPE))
         return dict(wfm=weighted_fm)
+
+
+class HCEMeasure(object):
+    def __init__(self):
+        self.hces = []
+
+    def step(self, pred: np.ndarray, gt: np.ndarray, gt_ske):
+        # pred, gt = _prepare_data(pred, gt)
+
+        hce = self.cal_hce(pred, gt, gt_ske)
+        self.hces.append(hce)
+
+    def get_results(self) -> dict:
+        hce = np.mean(np.array(self.hces, _TYPE))
+        return dict(hce=hce)
+
+
+    def cal_hce(self, pred: np.ndarray, gt: np.ndarray, gt_ske: np.ndarray, relax=5, epsilon=2.0) -> float:
+        # Binarize gt
+        if(len(gt.shape)>2):
+            gt = gt[:, :, 0]
+
+        epsilon_gt = 128#(np.amin(gt)+np.amax(gt))/2.0
+        gt = (gt>epsilon_gt).astype(np.uint8)
+
+        # Binarize pred
+        if(len(pred.shape)>2):
+            pred = pred[:, :, 0]
+        epsilon_pred = 128#(np.amin(pred)+np.amax(pred))/2.0
+        pred = (pred>epsilon_pred).astype(np.uint8)
+
+        Union = np.logical_or(gt, pred)
+        TP = np.logical_and(gt, pred)
+        FP = pred - TP
+        FN = gt - TP
+
+        # relax the Union of gt and pred
+        Union_erode = Union.copy()
+        Union_erode = cv2.erode(Union_erode.astype(np.uint8), disk(1), iterations=relax)
+
+        # --- get the relaxed False Positive regions for computing the human efforts in correcting them ---
+        FP_ = np.logical_and(FP, Union_erode) # get the relaxed FP
+        for i in range(0, relax):
+            FP_ = cv2.dilate(FP_.astype(np.uint8), disk(1))
+            FP_ = np.logical_and(FP_, 1-np.logical_or(TP, FN))
+        FP_ = np.logical_and(FP, FP_)
+
+        # --- get the relaxed False Negative regions for computing the human efforts in correcting them ---
+        FN_ = np.logical_and(FN, Union_erode) # preserve the structural components of FN
+        ## recover the FN, where pixels are not close to the TP borders
+        for i in range(0, relax):
+            FN_ = cv2.dilate(FN_.astype(np.uint8), disk(1))
+            FN_ = np.logical_and(FN_, 1-np.logical_or(TP, FP))
+        FN_ = np.logical_and(FN, FN_)
+        FN_ = np.logical_or(FN_, np.logical_xor(gt_ske, np.logical_and(TP, gt_ske))) # preserve the structural components of FN
+
+        ## 2. =============Find exact polygon control points and independent regions==============
+        ## find contours from FP_
+        ctrs_FP, hier_FP = cv2.findContours(FP_.astype(np.uint8), cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+        ## find control points and independent regions for human correction
+        bdies_FP, indep_cnt_FP = self.filter_bdy_cond(ctrs_FP, FP_, np.logical_or(TP,FN_))
+        ## find contours from FN_
+        ctrs_FN, hier_FN = cv2.findContours(FN_.astype(np.uint8), cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+        ## find control points and independent regions for human correction
+        bdies_FN, indep_cnt_FN = self.filter_bdy_cond(ctrs_FN, FN_, 1-np.logical_or(np.logical_or(TP, FP_), FN_))
+
+        poly_FP, poly_FP_len, poly_FP_point_cnt = self.approximate_RDP(bdies_FP, epsilon=epsilon)
+        poly_FN, poly_FN_len, poly_FN_point_cnt = self.approximate_RDP(bdies_FN, epsilon=epsilon)
+
+        # FP_points+FP_indep+FN_points+FN_indep
+        return poly_FP_point_cnt+indep_cnt_FP+poly_FN_point_cnt+indep_cnt_FN
+
+    def filter_bdy_cond(self, bdy_, mask, cond):
+
+        cond = cv2.dilate(cond.astype(np.uint8), disk(1))
+        labels = label(mask) # find the connected regions
+        lbls = np.unique(labels) # the indices of the connected regions
+        indep = np.ones(lbls.shape[0]) # the label of each connected regions
+        indep[0] = 0 # 0 indicate the background region
+
+        boundaries = []
+        h,w = cond.shape[0:2]
+        ind_map = np.zeros((h, w))
+        indep_cnt = 0
+
+        for i in range(0, len(bdy_)):
+            tmp_bdies = []
+            tmp_bdy = []
+            for j in range(0, bdy_[i].shape[0]):
+                r, c = bdy_[i][j,0,1],bdy_[i][j,0,0]
+
+                if(np.sum(cond[r, c])==0 or ind_map[r, c]!=0):
+                    if(len(tmp_bdy)>0):
+                        tmp_bdies.append(tmp_bdy)
+                        tmp_bdy = []
+                    continue
+                tmp_bdy.append([c, r])
+                ind_map[r, c] =  ind_map[r, c] + 1
+                indep[labels[r, c]] = 0 # indicates part of the boundary of this region needs human correction
+            if(len(tmp_bdy)>0):
+                tmp_bdies.append(tmp_bdy)
+
+            # check if the first and the last boundaries are connected
+            # if yes, invert the first boundary and attach it after the last boundary
+            if(len(tmp_bdies)>1):
+                first_x, first_y = tmp_bdies[0][0]
+                last_x, last_y = tmp_bdies[-1][-1]
+                if((abs(first_x-last_x)==1 and first_y==last_y) or
+                (first_x==last_x and abs(first_y-last_y)==1) or
+                (abs(first_x-last_x)==1 and abs(first_y-last_y)==1)
+                ):
+                    tmp_bdies[-1].extend(tmp_bdies[0][::-1])
+                    del tmp_bdies[0]
+
+            for k in range(0, len(tmp_bdies)):
+                tmp_bdies[k] =  np.array(tmp_bdies[k])[:, np.newaxis, :]
+            if(len(tmp_bdies)>0):
+                boundaries.extend(tmp_bdies)
+
+        return boundaries, np.sum(indep)
+
+    # this function approximate each boundary by DP algorithm
+    # https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm
+    def approximate_RDP(self, boundaries, epsilon=1.0):
+
+        boundaries_ = []
+        boundaries_len_ = []
+        pixel_cnt_ = 0
+
+        # polygon approximate of each boundary
+        for i in range(0, len(boundaries)):
+            boundaries_.append(cv2.approxPolyDP(boundaries[i], epsilon, False))
+
+        # count the control points number of each boundary and the total control points number of all the boundaries
+        for i in range(0, len(boundaries_)):
+            boundaries_len_.append(len(boundaries_[i]))
+            pixel_cnt_ = pixel_cnt_ + len(boundaries_[i])
+
+        return boundaries_, boundaries_len_, pixel_cnt_

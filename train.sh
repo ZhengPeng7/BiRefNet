@@ -1,9 +1,9 @@
 #!/bin/bash
 # Run script
 method="$1"
-epochs=140
-val_last=40
-step=5
+epochs=120
+val_last=60
+step=10
 testsets=NO     # Non-existing folder to skip.
 # testsets=COD10K   # for COD
 
@@ -19,7 +19,7 @@ then
     # Adapt the nproc_per_node by the number of GPUs. Give 29500 as the default value of master_port.
     echo "Multi-GPU mode received..."
     CUDA_VISIBLE_DEVICES=${devices} \
-    torchrun --nproc_per_node $((nproc_per_node+1)) --master_port=$((29500+${3:-0})) \
+    torchrun --nproc_per_node $((nproc_per_node+1)) --master_port=$((29500+${3:-11})) \
     train.py --ckpt_dir ckpt/${method} --epochs ${epochs} \
         --testsets ${testsets} \
         --dist ${to_be_distributed}

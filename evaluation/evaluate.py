@@ -24,13 +24,13 @@ def evaluate(pred_dir, method, testset, only_S_MAE=False, epoch=0):
         tb = pt.PrettyTable()
         field_names = [
             "Dataset", "Method", "maxFm", "wFmeasure", "MAE", "Smeasure", "meanEm", "maxEm", "meanFm",
-            "adpEm", "adpFm"
+            "adpEm", "adpFm", 'HCE'
         ]
         tb.field_names = [name for name in field_names if not only_S_MAE or all(metric not in name for metric in ['Em', 'Fm'])]
-        em, sm, fm, mae, wfm = evaluator(
+        em, sm, fm, mae, wfm, hce = evaluator(
             gt_paths=gt_paths[:],
             pred_paths=pred_paths[:],
-            metrics=['S', 'MAE', 'E', 'F'][:10*(not only_S_MAE) + 2],    # , 'WF'
+            metrics=['S', 'MAE', 'E', 'F', 'HCE'][:10*(not only_S_MAE) + 2],    # , 'WF'
             verbose=config.verbose_eval,
         )
         e_max, e_mean, e_adp = em['curve'].max(), em['curve'].mean(), em['adp'].mean()
@@ -38,13 +38,13 @@ def evaluate(pred_dir, method, testset, only_S_MAE=False, epoch=0):
         tb.add_row(
             [
                 method+str(epoch), testset, f_max.round(3), f_wfm.round(3), mae.round(3), sm.round(3),
-                e_mean.round(3), e_max.round(3), f_mean.round(3), em['adp'].round(3), f_adp.round(3)
+                e_mean.round(3), e_max.round(3), f_mean.round(3), em['adp'].round(3), f_adp.round(3), hce.round(3)
             ] if not only_S_MAE else [method, testset, mae.round(3), sm.round(3)]
         )
         print(tb)
         file_to_write.write(str(tb).replace('+', '|')+'\n')
         file_to_write.close()
-    return {'e_max': e_max, 'e_mean': e_mean, 'e_adp': e_adp, 'sm': sm, 'mae': mae, 'f_max': f_max, 'f_mean': f_mean, 'f_wfm': f_wfm, 'f_adp': f_adp}
+    return {'e_max': e_max, 'e_mean': e_mean, 'e_adp': e_adp, 'sm': sm, 'mae': mae, 'f_max': f_max, 'f_mean': f_mean, 'f_wfm': f_wfm, 'f_adp': f_adp, 'hce': hce}
 
 
 def main():
@@ -53,7 +53,7 @@ def main():
     method = 'tmp_val'
     testsets = 'DIS-VD+DIS-TE1'
     for testset in testsets.split('+'):
-        evaluate(pred_dir, method, testset, only_S_MAE=only_S_MAE)
+        res_dct = evaluate(pred_dir, method, testset, only_S_MAE=only_S_MAE)
 
 
 if __name__ == '__main__':

@@ -227,10 +227,24 @@ class Decoder(nn.Module):
         DecoderBlock = eval(self.config.dec_blk)
         LateralBlock = eval(self.config.lat_blk)
 
+        if self.config.dec_ipt:
+            self.split = self.config.dec_ipt_split
+            N_dec_ipt = 64
+            DBlock = InceptionC
+            ic = 16
+            ipt_cha_opt = 1
+            self.ipt_blk4 = DBlock(2**8*3 if self.split else 3, [N_dec_ipt, channels[0]//8][ipt_cha_opt], inter_channels=ic)
+            self.ipt_blk3 = DBlock(2**6*3 if self.split else 3, [N_dec_ipt, channels[1]//8][ipt_cha_opt], inter_channels=ic)
+            self.ipt_blk2 = DBlock(2**4*3 if self.split else 3, [N_dec_ipt, channels[2]//8][ipt_cha_opt], inter_channels=ic)
+            self.ipt_blk1 = DBlock(2**0*3 if self.split else 3, [N_dec_ipt, channels[3]//8][ipt_cha_opt], inter_channels=ic)
+        else:
+            self.split = None
+
         self.decoder_block4 = DecoderBlock(channels[0], channels[1])
-        self.decoder_block3 = DecoderBlock(channels[1], channels[2])
-        self.decoder_block2 = DecoderBlock(channels[2], channels[3])
-        self.decoder_block1 = DecoderBlock(channels[3], channels[3]//2)
+        self.decoder_block3 = DecoderBlock(channels[1]+([N_dec_ipt, channels[0]//8][ipt_cha_opt] if self.config.dec_ipt else 0), channels[2])
+        self.decoder_block2 = DecoderBlock(channels[2]+([N_dec_ipt, channels[1]//8][ipt_cha_opt] if self.config.dec_ipt else 0), channels[3])
+        self.decoder_block1 = DecoderBlock(channels[3]+([N_dec_ipt, channels[2]//8][ipt_cha_opt] if self.config.dec_ipt else 0), channels[3]//2)
+        self.conv_out1 = nn.Sequential(nn.Conv2d(channels[3]//2+([N_dec_ipt, channels[3]//8][ipt_cha_opt] if self.config.dec_ipt else 0), 1, 1, 1, 0))
 
         self.lateral_block4 = LateralBlock(channels[1], channels[1])
         self.lateral_block3 = LateralBlock(channels[2], channels[2])
@@ -240,7 +254,19 @@ class Decoder(nn.Module):
             self.conv_ms_spvn_4 = nn.Conv2d(channels[1], 1, 1, 1, 0)
             self.conv_ms_spvn_3 = nn.Conv2d(channels[2], 1, 1, 1, 0)
             self.conv_ms_spvn_2 = nn.Conv2d(channels[3], 1, 1, 1, 0)
-        self.conv_out1 = nn.Sequential(nn.Conv2d(channels[3]//2, 1, 1, 1, 0))
+
+
+    def get_patches_batch(self, x, p):
+        _size_h, _size_w = p.shape[2:]
+        patches_batch = []
+        for idx in range(x.shape[0]):
+            columns_x = torch.split(x[idx], split_size_or_sections=_size_w, dim=-1)
+            patches_x = []
+            for column_x in columns_x:
+                patches_x += [p.unsqueeze(0) for p in torch.split(column_x, split_size_or_sections=_size_h, dim=-2)]
+            patch_sample = torch.cat(patches_x, dim=1)
+            patches_batch.append(patch_sample)
+        return torch.cat(patches_batch, dim=0)
 
     def forward(self, features):
         x, x1, x2, x3, x4 = features
@@ -248,17 +274,29 @@ class Decoder(nn.Module):
         p4 = self.decoder_block4(x4)
         _p4 = F.interpolate(p4, size=x3.shape[2:], mode='bilinear', align_corners=True)
         _p3 = _p4 + self.lateral_block4(x3)
+        if self.config.dec_ipt:
+            patches_batch = self.get_patches_batch(x, _p3) if self.split else x
+            _p3 = torch.cat((_p3, self.ipt_blk4(F.interpolate(patches_batch, size=x3.shape[2:], mode='bilinear', align_corners=True))), 1)
 
         p3 = self.decoder_block3(_p3)
         _p3 = F.interpolate(p3, size=x2.shape[2:], mode='bilinear', align_corners=True)
         _p2 = _p3 + self.lateral_block3(x2)
+        if self.config.dec_ipt:
+            patches_batch = self.get_patches_batch(x, _p2) if self.split else x
+            _p2 = torch.cat((_p2, self.ipt_blk3(F.interpolate(patches_batch, size=x2.shape[2:], mode='bilinear', align_corners=True))), 1)
 
         p2 = self.decoder_block2(_p2)
         _p2 = F.interpolate(p2, size=x1.shape[2:], mode='bilinear', align_corners=True)
         _p1 = _p2 + self.lateral_block2(x1)
+        if self.config.dec_ipt:
+            patches_batch = self.get_patches_batch(x, _p1) if self.split else x
+            _p1 = torch.cat((_p1, self.ipt_blk2(F.interpolate(patches_batch, size=x1.shape[2:], mode='bilinear', align_corners=True))), 1)
 
         _p1 = self.decoder_block1(_p1)
         _p1 = F.interpolate(_p1, size=x.shape[2:], mode='bilinear', align_corners=True)
+        if self.config.dec_ipt:
+            patches_batch = self.get_patches_batch(x, _p1) if self.split else x
+            _p1 = torch.cat((_p1, self.ipt_blk1(F.interpolate(patches_batch, size=x.shape[2:], mode='bilinear', align_corners=True))), 1)
         p1_out = self.conv_out1(_p1)
 
         if self.config.ms_supervision:
@@ -267,3 +305,62 @@ class Decoder(nn.Module):
             outs.append(self.conv_ms_spvn_2(p2))
         outs.append(p1_out)
         return outs
+
+
+class AAA(nn.Module):
+    def __init__(
+        self, in_channels: int, out_channels: int, inter_channels=64
+    ) -> None:
+        super().__init__()
+        self.conv1 = nn.Conv2d(in_channels, inter_channels, 3, 1, 1)
+        self.conv_out = nn.Conv2d(inter_channels, out_channels, 3, 1, 1)
+
+    def forward(self, x):
+        return self.conv_out(self.conv1(x))
+
+
+class InceptionC(nn.Module):
+    def __init__(
+        self, in_channels: int, out_channels: int, inter_channels=16, conv_block=None
+    ) -> None:
+        super().__init__()
+        if conv_block is None:
+            conv_block = torch.nn.Conv2d
+        self.branch1x1 = conv_block(in_channels, int(out_channels//4), kernel_size=1)
+
+        c7 = inter_channels
+        self.branch7x7_1 = conv_block(in_channels, c7, kernel_size=1)
+        self.branch7x7_2 = conv_block(c7, c7, kernel_size=(1, 7), padding=(0, 3))
+        self.branch7x7_3 = conv_block(c7, int(out_channels//4), kernel_size=(7, 1), padding=(3, 0))
+
+        self.branch7x7dbl_1 = conv_block(in_channels, c7, kernel_size=1)
+        self.branch7x7dbl_2 = conv_block(c7, c7, kernel_size=(7, 1), padding=(3, 0))
+        self.branch7x7dbl_3 = conv_block(c7, c7, kernel_size=(1, 7), padding=(0, 3))
+        self.branch7x7dbl_4 = conv_block(c7, c7, kernel_size=(7, 1), padding=(3, 0))
+        self.branch7x7dbl_5 = conv_block(c7, int(out_channels//4), kernel_size=(1, 7), padding=(0, 3))
+
+        self.branch_pool = conv_block(in_channels, int(out_channels//4), kernel_size=1)
+        self.conv_out = conv_block(int(out_channels//4)*4, out_channels, 1, 1, 0)
+
+    def _forward(self, x):
+        branch1x1 = self.branch1x1(x)
+
+        branch7x7 = self.branch7x7_1(x)
+        branch7x7 = self.branch7x7_2(branch7x7)
+        branch7x7 = self.branch7x7_3(branch7x7)
+
+        branch7x7dbl = self.branch7x7dbl_1(x)
+        branch7x7dbl = self.branch7x7dbl_2(branch7x7dbl)
+        branch7x7dbl = self.branch7x7dbl_3(branch7x7dbl)
+        branch7x7dbl = self.branch7x7dbl_4(branch7x7dbl)
+        branch7x7dbl = self.branch7x7dbl_5(branch7x7dbl)
+
+        branch_pool = F.avg_pool2d(x, kernel_size=3, stride=1, padding=1)
+        branch_pool = self.branch_pool(branch_pool)
+
+        outputs = [branch1x1, branch7x7, branch7x7dbl, branch_pool]
+        return outputs
+
+    def forward(self, x):
+        outputs = self._forward(x)
+        return self.conv_out(torch.cat(outputs, 1))
