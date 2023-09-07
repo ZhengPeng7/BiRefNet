@@ -19,8 +19,8 @@ class Config():
         self.auxiliary_classification = False
         self.refine_iteration = 1
         self.freeze_bb = False
-        self.compile_and_precisionHigh = 0
-        self.load_all = 0
+        self.compile_and_precisionHigh = True
+        self.load_all = True
         self.verbose_eval = True
 
         self.size = 1024
