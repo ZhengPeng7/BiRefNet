@@ -5,7 +5,7 @@ import math
 class Config():
     def __init__(self) -> None:
         self.dec_ipt = True
-        self.dec_ipt_split = True
+        self.dec_ipt_split = False
         self.locate_head = False
         self.cxt_num = [0, 3][1]    # multi-scale skip connections from encoder
         self.mul_scl_ipt = ['', 'add', 'cat'][2]
@@ -25,7 +25,7 @@ class Config():
 
         self.size = 1024
         self.batch_size = 4
-        self.IoU_finetune_last_epochs = [-10, 0][0]     # choose 0 to skip
+        self.IoU_finetune_last_epochs = [-20, 0][0]     # choose 0 to skip
         self.ms_supervision = False
         if self.dec_blk == 'HierarAttDecBlk':
             self.batch_size = 2 ** [0, 1, 2, 3, 4][2]
@@ -84,7 +84,7 @@ class Config():
             'mse': 150 * 0,         # can smooth the saliency map
             'triplet': 3 * 0,
             'reg': 100 * 0,
-            'ssim': 5 * 0,          # help contours,
+            'ssim': 5 * 1,          # help contours,
             'cnt': 5 * 0,          # help contours
         }
         self.lambdas_cls = {

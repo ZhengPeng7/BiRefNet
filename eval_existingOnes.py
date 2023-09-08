@@ -26,7 +26,15 @@ def do_eval(opt):
         print('#' * 20, _data_name, '#' * 20)
         filename = os.path.join(opt.save_dir, '{}_eval.txt'.format(_data_name))
         tb = pt.PrettyTable()
-        tb.field_names = ["Dataset", "Method", "Smeasure", "MAE", "maxEm", "meanEm", "maxFm", "meanFm", "wFmeasure", "adpEm", "adpFm", "HCE"]
+        tb.vertical_char = '&'
+        if config.dataset == 'DIS5K':
+            tb.field_names = ["Dataset", "Method", "maxFm", "wFmeasure", 'MAE', "Smeasure", "meanEm", "HCE", "maxEm", "meanFm", "adpEm", "adpFm"]
+        elif config.dataset == 'COD':
+            tb.field_names = ["Dataset", "Method", "Smeasure", "wFmeasure", "meanFm", "maxFm", "meanEm", "maxEm", 'MAE', "adpEm", "adpFm", "HCE"]
+        elif config.dataset == 'SOD':
+            tb.field_names = ["Dataset", "Method", "Smeasure", "maxFm", "meanEm", 'MAE', "maxEm", "meanFm", "wFmeasure", "adpEm", "adpFm", "HCE"]
+        else:
+            tb.field_names = ["Dataset", "Method", "Smeasure", 'MAE', "maxEm", "meanEm", "maxFm", "meanFm", "wFmeasure", "adpEm", "adpFm", "HCE"]
         for _model_name in opt.model_lst[:]:
             print('\t', 'Evaluating model: {}...'.format(_model_name))
             pred_paths = [p.replace(opt.gt_root, os.path.join(opt.pred_root, _model_name)).replace('/gt/', '/') for p in gt_paths]
@@ -37,13 +45,30 @@ def do_eval(opt):
                 metrics=opt.metrics.split('+'),
                 verbose=config.verbose_eval
             )
-            scores = [
-                sm.round(3), mae.round(3), em['curve'].max().round(3), em['curve'].mean().round(3),
-                fm['curve'].max().round(3), fm['curve'].mean().round(3), wfm.round(3),
-                em['adp'].round(3), fm['adp'].round(3), hce.round(3),
-            ]
+            if config.dataset == 'DIS5K':
+                scores = [
+                    fm['curve'].max().round(3), wfm.round(3), mae.round(3), sm.round(3), em['curve'].mean().round(3), int(hce.round()), 
+                    em['curve'].max().round(3), fm['curve'].mean().round(3), em['adp'].round(3), fm['adp'].round(3),
+                ]
+            elif config.dataset == 'COD':
+                scores = [
+                    sm.round(3), wfm.round(3), fm['curve'].mean().round(3), fm['curve'].max().round(3), em['curve'].mean().round(3), em['curve'].max().round(3), mae.round(3),
+                    em['adp'].round(3), fm['adp'].round(3), int(hce.round()),
+                ]
+            elif config.dataset == 'SOD':
+                scores = [
+                    sm.round(3), fm['curve'].max().round(3), em['curve'].mean().round(3), mae.round(3),
+                    em['curve'].max().round(3), fm['curve'].mean().round(3), wfm.round(3), em['adp'].round(3), fm['adp'].round(3), int(hce.round()),
+                ]
+            else:
+                scores = [
+                    sm.round(3), mae.round(3), em['curve'].max().round(3), em['curve'].mean().round(3),
+                    fm['curve'].max().round(3), fm['curve'].mean().round(3), wfm.round(3),
+                    em['adp'].round(3), fm['adp'].round(3), int(hce.round()),
+                ]
+            
             for idx_score, score in enumerate(scores):
-                scores[idx_score] = format(score, '.3f')
+                scores[idx_score] = '.' + format(score, '.3f' if score <= 1 else '<4').split('.')[-1]
             records = [_data_name, _model_name] + scores
             tb.add_row(records)
             # Write results after every check.
@@ -79,7 +104,7 @@ if __name__ == '__main__':
         default=False)
     parser.add_argument(
         '--metrics', type=str, help='candidate competitors',
-        default='+'.join(['S', 'MAE', 'E', 'F', 'WF', 'HCE'][:]))
+        default='+'.join(['S', 'MAE', 'E', 'F', 'WF', 'HCE'][:100 if config.dataset == 'DIS5K' else -1]))
     opt = parser.parse_args()
 
     os.makedirs(opt.save_dir, exist_ok=True)

@@ -23,7 +23,7 @@ def evaluate(pred_dir, method, testset, only_S_MAE=False, epoch=0):
     with open(filename, 'a+') as file_to_write:
         tb = pt.PrettyTable()
         field_names = [
-            "Dataset", "Method", "maxFm", "wFmeasure", "MAE", "Smeasure", "meanEm", "maxEm", "meanFm",
+            "Dataset", "Method", "maxFm", "wFmeasure", 'MAE', "Smeasure", "meanEm", "maxEm", "meanFm",
             "adpEm", "adpFm", 'HCE'
         ]
         tb.field_names = [name for name in field_names if not only_S_MAE or all(metric not in name for metric in ['Em', 'Fm'])]

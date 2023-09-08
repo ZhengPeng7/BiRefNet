@@ -230,8 +230,8 @@ class Decoder(nn.Module):
         if self.config.dec_ipt:
             self.split = self.config.dec_ipt_split
             N_dec_ipt = 64
-            DBlock = InceptionC
-            ic = 16
+            DBlock = SimpleConvs
+            ic = 64
             ipt_cha_opt = 1
             self.ipt_blk4 = DBlock(2**8*3 if self.split else 3, [N_dec_ipt, channels[0]//8][ipt_cha_opt], inter_channels=ic)
             self.ipt_blk3 = DBlock(2**6*3 if self.split else 3, [N_dec_ipt, channels[1]//8][ipt_cha_opt], inter_channels=ic)
@@ -307,7 +307,7 @@ class Decoder(nn.Module):
         return outs
 
 
-class AAA(nn.Module):
+class SimpleConvs(nn.Module):
     def __init__(
         self, in_channels: int, out_channels: int, inter_channels=64
     ) -> None:
@@ -317,50 +317,3 @@ class AAA(nn.Module):
 
     def forward(self, x):
         return self.conv_out(self.conv1(x))
-
-
-class InceptionC(nn.Module):
-    def __init__(
-        self, in_channels: int, out_channels: int, inter_channels=16, conv_block=None
-    ) -> None:
-        super().__init__()
-        if conv_block is None:
-            conv_block = torch.nn.Conv2d
-        self.branch1x1 = conv_block(in_channels, int(out_channels//4), kernel_size=1)
-
-        c7 = inter_channels
-        self.branch7x7_1 = conv_block(in_channels, c7, kernel_size=1)
-        self.branch7x7_2 = conv_block(c7, c7, kernel_size=(1, 7), padding=(0, 3))
-        self.branch7x7_3 = conv_block(c7, int(out_channels//4), kernel_size=(7, 1), padding=(3, 0))
-
-        self.branch7x7dbl_1 = conv_block(in_channels, c7, kernel_size=1)
-        self.branch7x7dbl_2 = conv_block(c7, c7, kernel_size=(7, 1), padding=(3, 0))
-        self.branch7x7dbl_3 = conv_block(c7, c7, kernel_size=(1, 7), padding=(0, 3))
-        self.branch7x7dbl_4 = conv_block(c7, c7, kernel_size=(7, 1), padding=(3, 0))
-        self.branch7x7dbl_5 = conv_block(c7, int(out_channels//4), kernel_size=(1, 7), padding=(0, 3))
-
-        self.branch_pool = conv_block(in_channels, int(out_channels//4), kernel_size=1)
-        self.conv_out = conv_block(int(out_channels//4)*4, out_channels, 1, 1, 0)
-
-    def _forward(self, x):
-        branch1x1 = self.branch1x1(x)
-
-        branch7x7 = self.branch7x7_1(x)
-        branch7x7 = self.branch7x7_2(branch7x7)
-        branch7x7 = self.branch7x7_3(branch7x7)
-
-        branch7x7dbl = self.branch7x7dbl_1(x)
-        branch7x7dbl = self.branch7x7dbl_2(branch7x7dbl)
-        branch7x7dbl = self.branch7x7dbl_3(branch7x7dbl)
-        branch7x7dbl = self.branch7x7dbl_4(branch7x7dbl)
-        branch7x7dbl = self.branch7x7dbl_5(branch7x7dbl)
-
-        branch_pool = F.avg_pool2d(x, kernel_size=3, stride=1, padding=1)
-        branch_pool = self.branch_pool(branch_pool)
-
-        outputs = [branch1x1, branch7x7, branch7x7dbl, branch_pool]
-        return outputs
-
-    def forward(self, x):
-        outputs = self._forward(x)
-        return self.conv_out(torch.cat(outputs, 1))
