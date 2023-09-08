@@ -10,7 +10,7 @@ srun --nodes=1 --nodelist=Master,Slave1,Slave2,Slave3,Slave4,Slave5 \
 --cpus-per-task=32 \
 bash train.sh ${method} ${devices}
 
-# hostname
+hostname
 
-# devices_test=${3:-7}
-# bash test.sh ${devices_test}
+devices_test=${3:-7}
+bash test.sh ${devices_test}
