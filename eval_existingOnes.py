@@ -16,7 +16,7 @@ config = Config()
 def do_eval(opt):
     # evaluation for whole dataset
     # dataset first in evaluation
-    for _data_name in opt.data_lst:
+    for _data_name in opt.data_lst.split('+'):
         pred_data_dir =  sorted(glob(os.path.join(opt.pred_root, opt.model_lst[0], _data_name)))
         if not pred_data_dir:
             print('Skip dataset {}.'.format(_data_name))
@@ -68,12 +68,12 @@ def do_eval(opt):
                 ]
             
             for idx_score, score in enumerate(scores):
-                scores[idx_score] = '.' + format(score, '.3f' if score <= 1 else '<4').split('.')[-1]
+                scores[idx_score] = '.' + format(score, '.3f').split('.')[-1] if score <= 1  else format(score, '<4')
             records = [_data_name, _model_name] + scores
             tb.add_row(records)
             # Write results after every check.
             with open(filename, 'w+') as file_to_write:
-                file_to_write.write(str(tb))
+                file_to_write.write(str(tb)+'\n')
         print(tb)
 
 
@@ -87,11 +87,11 @@ if __name__ == '__main__':
         '--pred_root', type=str, help='prediction root',
         default='./e_preds')
     parser.add_argument(
-        '--data_lst', type=list, help='test dataset',
+        '--data_lst', type=str, help='test dataset',
         default={
-            'DIS5K': ['DIS-VD', 'DIS-TE1', 'DIS-TE2', 'DIS-TE3', 'DIS-TE4'][:],
-            'COD': ['COD10K', 'NC4K', 'CAMO', 'CHAMELEON'][:],
-            'SOD': ['DAVIS-S', 'HRSOD-TE', 'UHRSD-TE', 'DUTS-TE', 'DUT-OMRON'][:]
+            'DIS5K': '+'.join(['DIS-VD', 'DIS-TE1', 'DIS-TE2', 'DIS-TE3', 'DIS-TE4'][:]),
+            'COD': '+'.join(['COD10K', 'NC4K', 'CAMO', 'CHAMELEON'][:]),
+            'SOD': '+'.join(['DAVIS-S', 'HRSOD-TE', 'UHRSD-TE', 'DUTS-TE', 'DUT-OMRON'][:])
         }[config.dataset])
     parser.add_argument(
         '--model_lst', type=str, help='candidate competitors',
@@ -112,7 +112,7 @@ if __name__ == '__main__':
 
     # check the integrity of each candidates
     if opt.check_integrity:
-        for _data_name in opt.data_lst:
+        for _data_name in opt.data_lst.split('+'):
             for _model_name in opt.model_lst:
                 gt_pth = os.path.join(opt.gt_root, _data_name)
                 pred_pth = os.path.join(opt.pred_root, _model_name, _data_name)

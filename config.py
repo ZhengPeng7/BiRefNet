@@ -84,7 +84,7 @@ class Config():
             'mse': 150 * 0,         # can smooth the saliency map
             'triplet': 3 * 0,
             'reg': 100 * 0,
-            'ssim': 5 * 1,          # help contours,
+            'ssim': 10 * 1,          # help contours,
             'cnt': 5 * 0,          # help contours
         }
         self.lambdas_cls = {
