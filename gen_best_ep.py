@@ -6,13 +6,13 @@ from config import Config
 
 config = Config()
 
-eval_txts = sorted(glob('e_results/*VD_eval.txt'))
+eval_txts = sorted(glob('e_results/*_eval.txt'))
 print('eval_txts:', [_.split(os.sep)[-1] for _ in eval_txts])
 score_panel = {}
 sep = '&'
 metric = ['sm', 'wfm', 'hce'][2]
 for idx_et, eval_txt in enumerate(eval_txts):
-    with open(eval_txt) as f:
+    with open(eval_txt, 'r') as f:
         lines = [l for l in f.readlines()[3:] if '.' in l]
     for idx_line, line in enumerate(lines):
         properties = line.strip().strip(sep).split(sep)
@@ -44,15 +44,31 @@ for k, v in score_panel.items():
         good_models.append(k)
 
 # Write
-with open(eval_txt) as f:
+with open(eval_txt, 'r') as f:
     lines = f.readlines()
 info4good_models = lines[:3]
+metric_names = [m.strip() for m in lines[1].strip().strip('&').split('&')[2:]]
+testset_mean_values = {metric_name: [] for metric_name in metric_names}
 for good_model in good_models:
     for idx_et, eval_txt in enumerate(eval_txts):
-        with open(eval_txt) as f:
+        with open(eval_txt, 'r') as f:
             lines = f.readlines()
         for line in lines:
             if set([good_model]) & set([_.strip() for _ in line.split(sep)]):
                 info4good_models.append(line)
+                metric_scores = [float(m.strip()) for m in line.strip().strip('&').split('&')[2:]]
+                for idx_score, metric_score in enumerate(metric_scores):
+                    testset_mean_values[metric_names[idx_score]].append(metric_score)
+
+testset_mean_values_lst = ['{:<4}'.format(int(np.mean(v_lst).round())) if name == 'HCE' else '{:.3f}'.format(np.mean(v_lst)).lstrip('0') for name, v_lst in testset_mean_values.items()]
+sample_line_for_placing_mean_values = info4good_models[-2]
+numbers_placed_well = sample_line_for_placing_mean_values.replace(sample_line_for_placing_mean_values.split('&')[1].strip(), 'DIS-TEs').strip().split('&')[3:]
+for idx_number, (number_placed_well, testset_mean_value) in enumerate(zip(numbers_placed_well, testset_mean_values_lst)):
+    numbers_placed_well[idx_number] = number_placed_well.replace(number_placed_well.strip(), testset_mean_value)
+testset_mean_line = '&'.join(sample_line_for_placing_mean_values.replace(sample_line_for_placing_mean_values.split('&')[1].strip(), 'DIS-TEs').split('&')[:3] + numbers_placed_well) + '\n'
+info4good_models.append(testset_mean_line)
 info4good_models.append(lines[-1])
-print(''.join(info4good_models))
+info = ''.join(info4good_models)
+print(info)
+with open(os.path.join('e_results', 'eval.txt'), 'w') as f:
+    f.write(info + '\n')
