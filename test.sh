@@ -21,4 +21,4 @@ testsets=DIS-TE3 && nohup python eval_existingOnes.py --pred_root ${pred_root} \
 testsets=DIS-TE4 && nohup python eval_existingOnes.py --pred_root ${pred_root} \
     --data_lst ${testsets} > ${log_dir}/eval_${testsets}.out 2>&1 &
 
-echo Evaluation is finished at $(date)
+echo Evaluation is started at $(date)
