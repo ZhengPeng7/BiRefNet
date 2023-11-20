@@ -20,11 +20,11 @@ class Config():
         self.refine_iteration = 1
         self.freeze_bb = False
         self.compile_and_precisionHigh = True
-        self.load_all = True
+        self.load_all = 0
         self.verbose_eval = True
 
         self.size = 1024
-        self.batch_size = 4
+        self.batch_size = 2
         self.IoU_finetune_last_epochs = [-100, 0][0]     # choose 0 to skip
         self.ms_supervision = False
         if self.dec_blk == 'HierarAttDecBlk':
@@ -42,7 +42,7 @@ class Config():
             'vgg16', 'vgg16bn', 'resnet50',         # 0, 1, 2
             'pvt_v2_b2', 'pvt_v2_b5',               # 3-bs10, 4-bs5
             'swin_v1_b', 'swin_v1_l'                # 5-bs9, 6-bs6
-        ][6]
+        ][3]
         self.lateral_channels_in_collection = {
             'vgg16': [512, 256, 128, 64], 'vgg16bn': [512, 256, 128, 64], 'resnet50': [1024, 512, 256, 64],
             'pvt_v2_b2': [512, 320, 128, 64], 'pvt_v2_b5': [512, 320, 128, 64],
@@ -51,7 +51,7 @@ class Config():
         if self.mul_scl_ipt == 'cat':
             self.lateral_channels_in_collection = [channel * 2 for channel in self.lateral_channels_in_collection]
         self.cxt = self.lateral_channels_in_collection[1:][::-1][-self.cxt_num:] if self.cxt_num else []
-        self.sys_home_dir = '/home/user2'
+        self.sys_home_dir = '/root/autodl-tmp'
         self.weights_root_dir = os.path.join(self.sys_home_dir, 'weights')
         self.weights = {
             'pvt_v2_b2': os.path.join(self.weights_root_dir, 'pvt_v2_b2.pth'),

@@ -60,7 +60,7 @@ def evaluator(gt_paths, pred_paths, metrics=['S', 'MAE', 'E', 'F', 'WF', 'HCE'],
                 ske_ary = ske_ary > 128
             else:
                 ske_ary = skeletonize(gt_ary > 128)
-                os.makedirs(os.path.join(ske_path.split(os.sep)[:-1]), exist_ok=True)
+                os.makedirs(os.path.join(*ske_path.split(os.sep)[:-1]), exist_ok=True)
                 cv2.imwrite(ske_path, ske_ary.astype(np.uint8) * 255)
             HCE.step(pred=pred_ary, gt=gt_ary, gt_ske=ske_ary)
 
