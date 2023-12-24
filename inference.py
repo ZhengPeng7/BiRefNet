@@ -67,7 +67,13 @@ def main(args):
             if int(weights.strip('.pth').split('ep')[-1]) % 1 != 0:
                 continue
             print('\tInferencing {}...'.format(weights))
-            model.load_state_dict(torch.load(weights, map_location='cpu'))
+            # model.load_state_dict(torch.load(weights, map_location='cpu'))
+            state_dict = torch.load(weights, map_location='cpu')
+            unwanted_prefix = '_orig_mod.'
+            for k, v in list(state_dict.items()):
+                if k.startswith(unwanted_prefix):
+                    state_dict[k[len(unwanted_prefix):]] = state_dict.pop(k)
+            model.load_state_dict(state_dict)
             model = model.to(device)
             inference(
                 model, data_loader_test=data_loader_test, pred_root=args.pred_root,

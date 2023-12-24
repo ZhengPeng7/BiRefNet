@@ -1,4 +1,4 @@
-devices=${1:-7}
+devices=${1:-0}
 pred_root=${2:-e_preds}
 
 # Inference

@@ -51,7 +51,7 @@ logger_loss_idx = 1
 
 # log model and optimizer params
 # logger.info("Model details:"); logger.info(model)
-logger.info("datasets: load_all={}, compile={}.".format(config.load_all, config.compile_and_precisionHigh))
+logger.info("datasets: load_all={}, compile={}.".format(config.load_all, config.compile))
 logger.info("Other hyperparameters:"); logger.info(args)
 print('batch size:', config.batch_size)
 
@@ -113,8 +113,9 @@ def init_models_optimizers(epochs, to_be_distributed):
         model = DDP(model, device_ids=[device])
     else:
         model = model.to(device)
-    if config.compile_and_precisionHigh:
+    if config.compile:
         model = torch.compile(model, mode=['default', 'reduce-overhead', 'max-autotune'][0])
+    if config.precisionHigh:
         torch.set_float32_matmul_precision('high')
 
 
@@ -160,7 +161,7 @@ class Trainer:
             disc = DDP(disc, device_ids=[device], broadcast_buffers=False)
         else:
             disc = disc.to(device)
-        if config.compile_and_precisionHigh:
+        if config.compile:
             disc = torch.compile(disc, mode=['default', 'reduce-overhead', 'max-autotune'][0])
         adv_criterion = nn.BCELoss()
         if config.optimizer == 'AdamW':

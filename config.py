@@ -4,7 +4,7 @@ import math
 
 class Config():
     def __init__(self) -> None:
-        self.dec_ipt = True
+        self.dec_ipt = False
         self.dec_ipt_split = False
         self.locate_head = False
         self.cxt_num = [0, 3][1]    # multi-scale skip connections from encoder
@@ -19,13 +19,14 @@ class Config():
         self.auxiliary_classification = False
         self.refine_iteration = 1
         self.freeze_bb = False
-        self.compile_and_precisionHigh = True
-        self.load_all = 0
+        self.precisionHigh = True
+        self.compile = True
+        self.load_all = True
         self.verbose_eval = True
 
         self.size = 1024
         self.batch_size = 2
-        self.IoU_finetune_last_epochs = [-100, 0][0]     # choose 0 to skip
+        self.IoU_finetune_last_epochs = [0, -10][1]     # choose 0 to skip
         self.ms_supervision = False
         if self.dec_blk == 'HierarAttDecBlk':
             self.batch_size = 2 ** [0, 1, 2, 3, 4][2]
@@ -42,7 +43,7 @@ class Config():
             'vgg16', 'vgg16bn', 'resnet50',         # 0, 1, 2
             'pvt_v2_b2', 'pvt_v2_b5',               # 3-bs10, 4-bs5
             'swin_v1_b', 'swin_v1_l'                # 5-bs9, 6-bs6
-        ][3]
+        ][6]
         self.lateral_channels_in_collection = {
             'vgg16': [512, 256, 128, 64], 'vgg16bn': [512, 256, 128, 64], 'resnet50': [1024, 512, 256, 64],
             'pvt_v2_b2': [512, 320, 128, 64], 'pvt_v2_b5': [512, 320, 128, 64],
