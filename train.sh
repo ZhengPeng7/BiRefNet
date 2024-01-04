@@ -13,7 +13,7 @@ nproc_per_node=$(echo ${devices%%,} | grep -o "," | wc -l)
 
 to_be_distributed=`echo ${nproc_per_node} | awk '{if($e > 0) print "True"; else print "False";}'`
 
-echo Training starts at $(date)
+echo Training started at $(date)
 if [ ${to_be_distributed} == "True" ]
 then
     # Adapt the nproc_per_node by the number of GPUs. Give 29500 as the default value of master_port.
@@ -32,4 +32,4 @@ else
         --resume ckpt/xx/ep100.pth
 fi
 
-echo Training is finished at $(date)
+echo Training finished at $(date)

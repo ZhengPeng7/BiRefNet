@@ -5,7 +5,7 @@ pred_root=${2:-e_preds}
 
 CUDA_VISIBLE_DEVICES=${devices} python inference.py --pred_root ${pred_root}
 
-echo Inference is finished at $(date)
+echo Inference finished at $(date)
 
 # Evaluation
 log_dir=e_logs
@@ -21,4 +21,4 @@ testsets=DIS-TE3 && nohup python eval_existingOnes.py --pred_root ${pred_root} \
 testsets=DIS-TE4 && nohup python eval_existingOnes.py --pred_root ${pred_root} \
     --data_lst ${testsets} > ${log_dir}/eval_${testsets}.out 2>&1 &
 
-echo Evaluation is started at $(date)
+echo Evaluation started at $(date)
