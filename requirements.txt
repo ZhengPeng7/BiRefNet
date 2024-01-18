@@ -1,4 +1,6 @@
+--extra-index-url https://download.pytorch.org/whl/cu117
 torch==2.0.0
+--extra-index-url https://download.pytorch.org/whl/cu117
 torchvision==0.15.1
 opencv-python
 tqdm
@@ -7,4 +9,4 @@ prettytable
 scipy
 psutil
 scikit-image
-
+kornia

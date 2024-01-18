@@ -141,6 +141,8 @@ class Trainer:
     ):
         self.model, self.optimizer, self.lr_scheduler = model_opt_lrsch
         self.train_loader, self.test_loaders = data_loaders
+        if config.out_ref:
+            self.criterion_gdt = nn.BCELoss()
 
         # Setting Losses
         self.pix_loss = PixLoss()
@@ -180,6 +182,11 @@ class Trainer:
         gts = batch[1].to(device)
         class_labels = batch[2].to(device)
         scaled_preds, class_preds_lst = self.model(inputs)
+        if config.out_ref:
+            (outs_gdt_pred, outs_gdt_label), scaled_preds = scaled_preds
+            loss_gdt = 0.
+            for _gdt_pred, _gdt_label in zip(outs_gdt_pred, outs_gdt_label):
+                loss_gdt = loss_gdt + self.criterion_gdt(nn.functional.interpolate(_gdt_pred, size=_gdt_label.shape[2:], mode='bilinear', align_corners=True).sigmoid(), _gdt_label)
         if None in class_preds_lst:
             loss_cls = 0.
         else:
@@ -191,6 +198,8 @@ class Trainer:
         self.loss_dict['loss_pix'] = loss_pix.item()
         # since there may be several losses for sal, the lambdas for them (lambdas_pix) are inside the loss.py
         loss = loss_pix + loss_cls
+        if config.out_ref:
+            loss = loss + loss_gdt * 1.0
 
         if config.lambda_adv_g:
             # gen

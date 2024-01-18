@@ -101,7 +101,7 @@ class Attention(nn.Module):
             kv = self.kv(x).reshape(B, -1, 2, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
         k, v = kv[0], kv[1]
 
-        if config.flash_attention_enabled:
+        if config.SDPA_enabled:
             x = torch.nn.functional.scaled_dot_product_attention(
                 q, k, v,
                 attn_mask=None, dropout_p=self.attn_drop_prob, is_causal=False

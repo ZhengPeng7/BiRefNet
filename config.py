@@ -4,8 +4,10 @@ import math
 
 class Config():
     def __init__(self) -> None:
-        self.dec_ipt = False
-        self.dec_ipt_split = False
+        self.ms_supervision = True
+        self.out_ref = self.ms_supervision and True
+        self.dec_ipt = True
+        self.dec_ipt_split = True
         self.locate_head = False
         self.cxt_num = [0, 3][1]    # multi-scale skip connections from encoder
         self.mul_scl_ipt = ['', 'add', 'cat'][2]
@@ -27,7 +29,6 @@ class Config():
         self.size = 1024
         self.batch_size = 2
         self.IoU_finetune_last_epochs = [0, -10][1]     # choose 0 to skip
-        self.ms_supervision = False
         if self.dec_blk == 'HierarAttDecBlk':
             self.batch_size = 2 ** [0, 1, 2, 3, 4][2]
         self.model = [
@@ -68,7 +69,7 @@ class Config():
         self.lr_decay_epochs = [1e4]    # Set to negative N to decay the lr in the last N-th epoch.
         self.lr_decay_rate = 0.5
         self.only_S_MAE = False
-        self.flash_attention_enabled = False    # Bug. Slower and errors occur in multi-GPUs
+        self.SDPA_enabled = False    # Bug. Slower and errors occur in multi-GPUs
 
         # Data
         self.data_root_dir = os.path.join(self.sys_home_dir, 'datasets/dis')

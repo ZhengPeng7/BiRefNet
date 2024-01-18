@@ -132,7 +132,7 @@ class WindowAttention(nn.Module):
 
         q = q * self.scale
 
-        if config.flash_attention_enabled:
+        if config.SDPA_enabled:
             x = torch.nn.functional.scaled_dot_product_attention(
                 q, k, v,
                 attn_mask=None, dropout_p=self.attn_drop_prob, is_causal=False

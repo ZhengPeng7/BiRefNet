@@ -127,9 +127,10 @@ class BSL(nn.Module):
         ########## Decoder ##########
         features = [x, x1, x2, x3, x4]
         if self.config.out_ref:
-            features.append(laplacian(torch.mean(x, dim=1).unsqueeze(1), kernel_size=5).sigmoid())
-        scaled_preds = self.decoder(features)
-        return scaled_preds, class_preds
+            features.append(laplacian(x, kernel_size=3))
+        out_dict = self.decoder(features)
+        out_dict.update(class_preds=class_preds)
+        return out_dict
 
     def forward_ref(self, x, pred):
         # refine patch-level segmentation
@@ -138,11 +139,11 @@ class BSL(nn.Module):
         # pred = pred.sigmoid()
         if self.config.refine == 'itself':
             x = self.stem_layer(torch.cat([x, pred], dim=1))
-            scaled_preds, class_preds = self.forward_ori(x)
+            out_dict = self.forward_ori(x)
         else:
-            scaled_preds = self.refiner([x, pred])
-            class_preds = None
-        return scaled_preds, class_preds
+            out_dict = self.refiner([x, pred])
+            out_dict.update(class_preds=None)
+        return out_dict
 
     def forward_ref_end(self, x):
         # remove the grids of concatenated preds
@@ -151,20 +152,75 @@ class BSL(nn.Module):
 
     # def forward(self, x):
     #     if self.config.refine:
-    #         scaled_preds, class_preds_ori = self.forward_ori(F.interpolate(x, size=(x.shape[2]//4, x.shape[3]//4), mode='bilinear', align_corners=True))
+    #         out_dict = self.forward_ori(F.interpolate(x, size=(x.shape[2]//4, x.shape[3]//4), mode='bilinear', align_corners=True))
     #         class_preds_lst = [class_preds_ori]
     #         for _ in range(self.config.refine_iteration):
-    #             scaled_preds_ref, class_preds_ref = self.forward_ref(x, scaled_preds[-1])
-    #             scaled_preds += scaled_preds_ref
-    #             class_preds_lst.append(class_preds_ref)
+    #             out_dict_ref = self.forward_ref(x, scaled_preds[-1])
+    #             out_dict.update(scaled_preds=out_dict['outs']+out_dict_ref['outs'])
+    #             class_preds_lst.append(out_dict_ref[class_preds])
     #     else:
-    #         scaled_preds, class_preds = self.forward_ori(x)
-    #         class_preds_lst = [class_preds]
-    #     return [scaled_preds, class_preds_lst] if self.training else scaled_preds
+    #         out_dict = self.forward_ori(x)
+    #         class_preds_lst = [out_dict['class_preds']]
+    #     return out_dict
 
     def forward(self, x):
-        scaled_preds, class_preds = self.forward_ori(x)
-        class_preds_lst = [class_preds]
+        if self.config.refine:
+            if self.config.progressive_ref:
+                scale = self.config.scale
+                scaled_preds, class_preds_ori = self.forward_ori(
+                    F.interpolate(x, size=(x.shape[2]//scale, x.shape[3]//scale), mode='bilinear', align_corners=True)
+                )
+                class_preds_lst = [class_preds_ori]
+                for _ in range(self.config.refine_iteration):
+                    _size_w, _size_h = x.shape[2] // scale, x.shape[3] // scale
+                    x_lst, pred_lst = [], []
+                    y = F.interpolate(
+                        scaled_preds[-1],
+                        size=(x.shape[2], x.shape[3]),
+                        mode='bilinear',
+                        align_corners=True
+                    )
+                    for idx in range(x.shape[0]):
+                        columns_x = torch.split(x[idx], split_size_or_sections=_size_w, dim=-1)
+                        columns_pred = torch.split(y[idx], split_size_or_sections=_size_w, dim=-1)
+                        patches_x, patches_pred = [], []
+                        for column_x in columns_x:
+                            patches_x += [p.unsqueeze(0) for p in torch.split(column_x, split_size_or_sections=_size_h, dim=-2)]
+                        for column_pred in columns_pred:
+                            patches_pred += [p.unsqueeze(0) for p in torch.split(column_pred, split_size_or_sections=_size_h, dim=-2)]
+                        x_lst += patches_x
+                        pred_lst += patches_pred
+                    scaled_preds_ref, class_preds_ref = self.forward_ref(
+                        torch.cat(x_lst, dim=0),
+                        torch.cat(pred_lst, dim=0),
+                    )
+                    scaled_preds_ref_recovered = []
+                    for idx_end_of_sample in range(0, (self.config.batch_size if self.training else self.config.batch_size_valid)*(scale**2), scale**2):
+                        preds_one_sample = scaled_preds_ref[-1][idx_end_of_sample:idx_end_of_sample+scale**2]
+                        one_sample = []
+                        for idx_pred in range(preds_one_sample.shape[0]):
+                            if idx_pred % scale == 0:
+                                one_column = []
+                            one_column.append(preds_one_sample[idx_pred])
+                            if len(one_column) == scale:
+                                one_sample.append(torch.cat(one_column, dim=-2))
+                        one_sample = torch.cat(one_sample, dim=-1)
+                        scaled_preds_ref_recovered.append(one_sample.unsqueeze(0))
+                    scaled_preds_ref_recovered_cat = torch.cat(scaled_preds_ref_recovered, dim=0)
+                    if self.config.ender:
+                        scaled_preds_ref_recovered_cat = self.forward_ref_end(scaled_preds_ref_recovered_cat)
+                    scaled_preds.append(scaled_preds_ref_recovered_cat)
+                    # class_preds_lst.append(class_preds_ref)
+            else:
+                scaled_preds, class_preds_ori = self.forward_ori(x)
+                class_preds_lst = [class_preds_ori]
+                for _ in range(self.config.refine_iteration):
+                    scaled_preds_ref, class_preds_ref = self.forward_ref(x, scaled_preds[-1])
+                    scaled_preds += scaled_preds_ref
+                    class_preds_lst.append(class_preds_ref)
+        else:
+            scaled_preds, class_preds = self.forward_ori(x)
+            class_preds_lst = [class_preds]
         return [scaled_preds, class_preds_lst] if self.training else scaled_preds
 
 
@@ -204,18 +260,17 @@ class Decoder(nn.Module):
             self.conv_ms_spvn_2 = nn.Conv2d(channels[3], 1, 1, 1, 0)
 
             if self.config.out_ref:
-                _N = 16
-                self.gdt_convs_4 = nn.Sequential(nn.Conv2d(channels[1], _N, 3, 1, 1), nn.BatchNorm2d(_N), nn.ReLU(inplace=True))
-                self.gdt_convs_3 = nn.Sequential(nn.Conv2d(channels[2], _N, 3, 1, 1), nn.BatchNorm2d(_N), nn.ReLU(inplace=True))
-                self.gdt_convs_2 = nn.Sequential(nn.Conv2d(channels[3], _N, 3, 1, 1), nn.BatchNorm2d(_N), nn.ReLU(inplace=True))
+                self.gdt_convs_4 = nn.Sequential(nn.Conv2d(channels[1], 16, 3, 1, 1), nn.BatchNorm2d(), nn.ReLU(inplace=True))
+                self.gdt_convs_3 = nn.Sequential(nn.Conv2d(channels[2], 16, 3, 1, 1), nn.BatchNorm2d(), nn.ReLU(inplace=True))
+                self.gdt_convs_2 = nn.Sequential(nn.Conv2d(channels[3], 16, 3, 1, 1), nn.BatchNorm2d(), nn.ReLU(inplace=True))
 
-                self.gdt_convs_pred_4 = nn.Sequential(nn.Conv2d(_N, 1, 1, 1, 0))
-                self.gdt_convs_pred_3 = nn.Sequential(nn.Conv2d(_N, 1, 1, 1, 0))
-                self.gdt_convs_pred_2 = nn.Sequential(nn.Conv2d(_N, 1, 1, 1, 0))
+                self.gdt_convs_pred_4 = nn.Sequential(nn.Conv2d(channels[1], 1, 1, 1, 0))
+                self.gdt_convs_pred_3 = nn.Sequential(nn.Conv2d(channels[2], 1, 1, 1, 0))
+                self.gdt_convs_pred_2 = nn.Sequential(nn.Conv2d(channels[3], 1, 1, 1, 0))
                 
-                self.gdt_convs_attn_4 = nn.Sequential(nn.Conv2d(_N, 1, 1, 1, 0))
-                self.gdt_convs_attn_3 = nn.Sequential(nn.Conv2d(_N, 1, 1, 1, 0))
-                self.gdt_convs_attn_2 = nn.Sequential(nn.Conv2d(_N, 1, 1, 1, 0))
+                self.gdt_convs_attn_4 = nn.Sequential(nn.Conv2d(channels[1], 1, 1, 1, 0))
+                self.gdt_convs_attn_3 = nn.Sequential(nn.Conv2d(channels[2], 1, 1, 1, 0))
+                self.gdt_convs_attn_2 = nn.Sequential(nn.Conv2d(channels[3], 1, 1, 1, 0))
 
 
     def get_patches_batch(self, x, p):
@@ -253,7 +308,7 @@ class Decoder(nn.Module):
             # m3 --dilation--> m3_dia
             # G_3^gt * m3_dia --> G_3^m, which is the label of gradient
             m3_dia = m3
-            gdt_label_main_3 = gdt_gt * F.interpolate(m3_dia, size=gdt_gt.shape[2:], mode='bilinear', align_corners=True)
+            gdt_label_main_3 = gdt_gt * m3_dia
             outs_gdt_label.append(gdt_label_main_3)
             # >> Pred:
             # p3 --conv--BN--> F_3^G, where F_3^G predicts the \hat{G_3} with xx
@@ -276,7 +331,7 @@ class Decoder(nn.Module):
         if self.config.out_ref:
             # >> GT:
             m2_dia = m2
-            gdt_label_main_2 = gdt_gt * F.interpolate(m2_dia, size=gdt_gt.shape[2:], mode='bilinear', align_corners=True)
+            gdt_label_main_2 = gdt_gt * m2_dia
             outs_gdt_label.append(gdt_label_main_2)
             # >> Pred:
             p2_gdt = self.gdt_convs_2(p2)
@@ -303,7 +358,12 @@ class Decoder(nn.Module):
             outs.append(m3)
             outs.append(m2)
         outs.append(p1_out)
-        return outs if not self.config.out_ref else ([outs_gdt_pred, outs_gdt_label], outs)
+        out_dict = {}
+        out_dict.update(outs=outs)
+        if self.config.out_ref:
+            out_dict.update(outs_gdt_pred=outs_gdt_pred)
+            out_dict.update(outs_gdt_label=outs_gdt_label)
+        return out_dict
 
 
 class SimpleConvs(nn.Module):
