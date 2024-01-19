@@ -142,7 +142,7 @@ class Trainer:
         self.model, self.optimizer, self.lr_scheduler = model_opt_lrsch
         self.train_loader, self.test_loaders = data_loaders
         if config.out_ref:
-            self.criterion_gdt = nn.BCELoss()
+            self.criterion_gdt = nn.BCEWithLogitsLoss()
 
         # Setting Losses
         self.pix_loss = PixLoss()
@@ -186,7 +186,8 @@ class Trainer:
             (outs_gdt_pred, outs_gdt_label), scaled_preds = scaled_preds
             loss_gdt = 0.
             for _gdt_pred, _gdt_label in zip(outs_gdt_pred, outs_gdt_label):
-                loss_gdt = loss_gdt + self.criterion_gdt(nn.functional.interpolate(_gdt_pred, size=_gdt_label.shape[2:], mode='bilinear', align_corners=True).sigmoid(), _gdt_label)
+                _gdt_pred = nn.functional.interpolate(_gdt_pred, size=_gdt_label.shape[2:], mode='bilinear', align_corners=True)
+                loss_gdt = loss_gdt + self.criterion_gdt(_gdt_pred, _gdt_label)
         if None in class_preds_lst:
             loss_cls = 0.
         else:
@@ -194,7 +195,8 @@ class Trainer:
             self.loss_dict['loss_cls'] = loss_cls.item()
 
         # Loss
-        loss_pix = self.pix_loss(scaled_preds, gts) * 1.0
+        loss_pix = self.pix_loss(scaled_preds, torch.clamp(gts, 0, 1)) * 1.0
+        # print('loss_pix:', loss_pix, 'loss_gdt:', loss_gdt, _gdt_pred.min(), _gdt_label.min())
         self.loss_dict['loss_pix'] = loss_pix.item()
         # since there may be several losses for sal, the lambdas for them (lambdas_pix) are inside the loss.py
         loss = loss_pix + loss_cls

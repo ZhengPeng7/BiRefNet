@@ -22,8 +22,8 @@ class Config():
         self.refine_iteration = 1
         self.freeze_bb = False
         self.precisionHigh = True
-        self.compile = True
-        self.load_all = True
+        self.compile = 0
+        self.load_all = 0
         self.verbose_eval = True
 
         self.size = 1024

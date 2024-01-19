@@ -26,7 +26,7 @@ then
 else
     echo "Single-GPU mode received..."
     CUDA_VISIBLE_DEVICES=${devices} \
-    python train.py --ckpt_dir ckpt/${method} --epochs ${epochs} \
+    CUDA_LAUNCH_BLOCKING=1 python train.py --ckpt_dir ckpt/${method} --epochs ${epochs} \
         --testsets ${testsets} \
         --dist ${to_be_distributed} \
         --resume ckpt/xx/ep100.pth
