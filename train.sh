@@ -1,7 +1,7 @@
 #!/bin/bash
 # Run script
 method="$1"
-epochs=120
+epochs=80
 val_last=10
 step=10
 testsets=NO     # Non-existing folder to skip.

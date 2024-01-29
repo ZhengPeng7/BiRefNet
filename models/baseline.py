@@ -303,7 +303,7 @@ class Decoder(nn.Module):
             outs.append(m3)
             outs.append(m2)
         outs.append(p1_out)
-        return outs if not self.config.out_ref else ([outs_gdt_pred, outs_gdt_label], outs)
+        return outs if not (self.config.out_ref and self.training) else ([outs_gdt_pred, outs_gdt_label], outs)
 
 
 class SimpleConvs(nn.Module):

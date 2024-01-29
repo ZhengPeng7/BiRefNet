@@ -142,7 +142,7 @@ class Trainer:
         self.model, self.optimizer, self.lr_scheduler = model_opt_lrsch
         self.train_loader, self.test_loaders = data_loaders
         if config.out_ref:
-            self.criterion_gdt = nn.BCEWithLogitsLoss()
+            self.criterion_gdt = nn.BCELoss()
 
         # Setting Losses
         self.pix_loss = PixLoss()
@@ -184,10 +184,15 @@ class Trainer:
         scaled_preds, class_preds_lst = self.model(inputs)
         if config.out_ref:
             (outs_gdt_pred, outs_gdt_label), scaled_preds = scaled_preds
-            loss_gdt = 0.
-            for _gdt_pred, _gdt_label in zip(outs_gdt_pred, outs_gdt_label):
-                _gdt_pred = nn.functional.interpolate(_gdt_pred, size=_gdt_label.shape[2:], mode='bilinear', align_corners=True)
-                loss_gdt = loss_gdt + self.criterion_gdt(_gdt_pred, _gdt_label)
+            for _idx, (_gdt_pred, _gdt_label) in enumerate(zip(outs_gdt_pred, outs_gdt_label)):
+                _gdt_pred = nn.functional.interpolate(_gdt_pred, size=_gdt_label.shape[2:], mode='bilinear', align_corners=True).sigmoid()
+                _gdt_label = _gdt_label.sigmoid()
+                loss_gdt = self.criterion_gdt(_gdt_pred, _gdt_label) if _idx == 0 else self.criterion_gdt(_gdt_pred, _gdt_label) + loss_gdt
+            self.loss_dict['loss_gdt'] = loss_gdt.item()
+            self.loss_dict['_gdt_pred_min'] = _gdt_pred.min().item()
+            self.loss_dict['_gdt_pred_max'] = _gdt_pred.max().item()
+            self.loss_dict['_gdt_label_min'] = _gdt_label.min().item()
+            self.loss_dict['_gdt_label_max'] = _gdt_label.max().item()
         if None in class_preds_lst:
             loss_cls = 0.
         else:
