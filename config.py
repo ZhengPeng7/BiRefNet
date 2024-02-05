@@ -28,7 +28,7 @@ class Config():
 
         self.size = 1024
         self.batch_size = 2
-        self.IoU_finetune_last_epochs = [0, -10][0]     # choose 0 to skip
+        self.IoU_finetune_last_epochs = [0, -10][1]     # choose 0 to skip
         if self.dec_blk == 'HierarAttDecBlk':
             self.batch_size = 2 ** [0, 1, 2, 3, 4][2]
         self.model = [

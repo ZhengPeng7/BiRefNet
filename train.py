@@ -186,13 +186,15 @@ class Trainer:
             (outs_gdt_pred, outs_gdt_label), scaled_preds = scaled_preds
             for _idx, (_gdt_pred, _gdt_label) in enumerate(zip(outs_gdt_pred, outs_gdt_label)):
                 _gdt_pred = nn.functional.interpolate(_gdt_pred, size=_gdt_label.shape[2:], mode='bilinear', align_corners=True).sigmoid()
+                # print('Before, _gdt_label:', _gdt_label.min(), _gdt_label.max(), _gdt_label.mean(), '\n', _gdt_label)
                 _gdt_label = _gdt_label.sigmoid()
+                # print('Afterr, _gdt_label:', _gdt_label.min(), _gdt_label.max(), _gdt_label.mean(), '\n', _gdt_label, '\n'*3)
                 loss_gdt = self.criterion_gdt(_gdt_pred, _gdt_label) if _idx == 0 else self.criterion_gdt(_gdt_pred, _gdt_label) + loss_gdt
             self.loss_dict['loss_gdt'] = loss_gdt.item()
-            self.loss_dict['_gdt_pred_min'] = _gdt_pred.min().item()
-            self.loss_dict['_gdt_pred_max'] = _gdt_pred.max().item()
-            self.loss_dict['_gdt_label_min'] = _gdt_label.min().item()
-            self.loss_dict['_gdt_label_max'] = _gdt_label.max().item()
+            # self.loss_dict['_gdt_pred_min'] = _gdt_pred.min().item()
+            # self.loss_dict['_gdt_pred_max'] = _gdt_pred.max().item()
+            # self.loss_dict['_gdt_label_min'] = _gdt_label.min().item()
+            # self.loss_dict['_gdt_label_max'] = _gdt_label.max().item()
         if None in class_preds_lst:
             loss_cls = 0.
         else:

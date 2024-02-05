@@ -1,8 +1,8 @@
 #!/bin/bash
 # Run script
 method="$1"
-epochs=80
-val_last=10
+epochs=300
+val_last=50
 step=10
 testsets=NO     # Non-existing folder to skip.
 # testsets=COD10K   # for COD
