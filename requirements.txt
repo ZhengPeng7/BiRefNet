@@ -1,7 +1,7 @@
 --extra-index-url https://download.pytorch.org/whl/cu117
-torch==2.0.0
+torch==2.0.1
 --extra-index-url https://download.pytorch.org/whl/cu117
-torchvision==0.15.1
+torchvision==0.15.2
 opencv-python
 tqdm
 timm
