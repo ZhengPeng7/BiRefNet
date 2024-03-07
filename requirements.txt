@@ -7,6 +7,5 @@ tqdm
 timm
 prettytable
 scipy
-psutil
 scikit-image
 kornia

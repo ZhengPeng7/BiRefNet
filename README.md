@@ -48,6 +48,7 @@ Download backbone weights from [my google-drive folder](https://drive.google.com
 ```shell
 # Train & Test & Evaluation
 ./sub.sh RUN_NAME GPU_NUMBERS_FOR_TRAINING GPU_NUMBERS_FOR_TEST
+# See train.sh / test.sh for only training / test-evaluation.
 ```
 
 

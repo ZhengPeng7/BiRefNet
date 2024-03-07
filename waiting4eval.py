@@ -10,7 +10,7 @@ import argparse
 import torch
 
 from config import Config
-from models.baseline import BSL
+from models.baseline import BiRefNet
 from dataset import MyData
 from evaluation.valid import valid
 
@@ -89,7 +89,7 @@ def main():
         test_loaders[testset] = _data_loader_test
 
     # Model, 3070MiB GPU memory for inference
-    model = BSL().to(device)
+    model = BiRefNet().to(device)
     models_evaluated = []
     continous_sleep_time = 0
     while True:

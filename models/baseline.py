@@ -19,9 +19,9 @@ from models.refinement.refiner import Refiner, RefinerPVTInChannels4, RefUNet
 from models.refinement.stem_layer import StemLayer
 
 
-class BSL(nn.Module):
+class BiRefNet(nn.Module):
     def __init__(self):
-        super(BSL, self).__init__()
+        super(BiRefNet, self).__init__()
         self.config = Config()
         self.epoch = 1
         self.bb = build_backbone(self.config.bb, pretrained=True)

@@ -9,7 +9,7 @@ from torch.autograd import Variable
 from config import Config
 from loss import PixLoss, ClsLoss
 from dataset import MyData
-from models.baseline import BSL
+from models.baseline import BiRefNet
 from utils import Logger, AverageMeter, set_seed
 from evaluation.valid import valid
 
@@ -95,7 +95,7 @@ def init_data_loaders(to_be_distributed):
 
 
 def init_models_optimizers(epochs, to_be_distributed):
-    model = BSL()
+    model = BiRefNet()
     if args.resume:
         if os.path.isfile(args.resume):
             logger.info("=> loading checkpoint '{}'".format(args.resume))

@@ -15,7 +15,7 @@ def generate_smoothed_gt(gts):
 
 class Logger():
     def __init__(self, path="log.txt"):
-        self.logger = logging.getLogger('BSL')
+        self.logger = logging.getLogger('BiRefNet')
         self.file_handler = logging.FileHandler(path, "w")
         self.stdout_handler = logging.StreamHandler()
         self.stdout_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(message)s'))
