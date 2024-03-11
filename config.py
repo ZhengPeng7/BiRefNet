@@ -1,5 +1,6 @@
 import os
 import math
+import torch
 
 
 class Config():
@@ -97,7 +98,7 @@ class Config():
         self.lambda_adv_d = 3. * (self.lambda_adv_g > 0)
 
         # others
-        self.device = [0, 'cpu'][0]     # .to(0) = .to('cuda:0')
+        self.device = [0, 'cpu'][0 if torch.cuda.is_available() else 1]     # .to(0) == .to('cuda:0')
 
         self.batch_size_valid = 1
         self.rand_seed = 7
