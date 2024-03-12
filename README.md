@@ -1,6 +1,6 @@
 # <p align=center>`Bilateral Reference for High-Resolution Dichotomous Image Segmentation`</p>
 
-This repo is the official implementation of "[**Bilateral Reference for High-Resolution Dichotomous Image Segmentation**](https://arxiv.org/pdf/2205.15469.pdf)" (___arXiv 2024___).
+This repo is the official implementation of "[**Bilateral Reference for High-Resolution Dichotomous Image Segmentation**](https://arxiv.org/pdf/2401.03407.pdf)" (___arXiv 2024___).
 
 > **Authors:**
 > [Peng Zheng](https://scholar.google.com/citations?user=TZRzWOsAAAAJ),
