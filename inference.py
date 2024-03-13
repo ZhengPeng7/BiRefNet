@@ -8,7 +8,7 @@ from torch import nn
 
 from dataset import MyData
 from models.baseline import BiRefNet
-from utils import save_tensor_img
+from utils import save_tensor_img, check_state_dict
 from config import Config
 
 
@@ -69,10 +69,7 @@ def main(args):
             print('\tInferencing {}...'.format(weights))
             # model.load_state_dict(torch.load(weights, map_location='cpu'))
             state_dict = torch.load(weights, map_location='cpu')
-            unwanted_prefix = '_orig_mod.'
-            for k, v in list(state_dict.items()):
-                if k.startswith(unwanted_prefix):
-                    state_dict[k[len(unwanted_prefix):]] = state_dict.pop(k)
+            state_dict = check_state_dict(state_dict)
             model.load_state_dict(state_dict)
             model = model.to(device)
             inference(

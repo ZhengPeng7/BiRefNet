@@ -10,7 +10,7 @@ from config import Config
 from loss import PixLoss, ClsLoss
 from dataset import MyData
 from models.baseline import BiRefNet
-from utils import Logger, AverageMeter, set_seed
+from utils import Logger, AverageMeter, set_seed, check_state_dict
 from evaluation.valid import valid
 
 import torch.multiprocessing as mp
@@ -100,10 +100,7 @@ def init_models_optimizers(epochs, to_be_distributed):
         if os.path.isfile(args.resume):
             logger.info("=> loading checkpoint '{}'".format(args.resume))
             state_dict = torch.load(args.resume, map_location='cpu')
-            unwanted_prefix = '_orig_mod.'
-            for k, v in list(state_dict.items()):
-                if k.startswith(unwanted_prefix):
-                    state_dict[k[len(unwanted_prefix):]] = state_dict.pop(k)
+            state_dict = check_state_dict(state_dict)
             model.load_state_dict(state_dict)
             epoch_st = int(args.resume.rstrip('.pth').split('ep')[-1]) + 1
         else:
