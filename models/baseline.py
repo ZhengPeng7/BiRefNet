@@ -20,11 +20,11 @@ from models.refinement.stem_layer import StemLayer
 
 
 class BiRefNet(nn.Module):
-    def __init__(self):
+    def __init__(self, bb_pretrained=True):
         super(BiRefNet, self).__init__()
         self.config = Config()
         self.epoch = 1
-        self.bb = build_backbone(self.config.bb, pretrained=True)
+        self.bb = build_backbone(self.config.bb, pretrained=bb_pretrained)
 
         channels = self.config.lateral_channels_in_collection
 
@@ -126,7 +126,7 @@ class BiRefNet(nn.Module):
             x4 = self.squeeze_module(x4)
         ########## Decoder ##########
         features = [x, x1, x2, x3, x4]
-        if self.config.out_ref:
+        if self.training and self.config.out_ref:
             features.append(laplacian(torch.mean(x, dim=1).unsqueeze(1), kernel_size=5))
         scaled_preds = self.decoder(features)
         return scaled_preds, class_preds
@@ -203,7 +203,7 @@ class Decoder(nn.Module):
             self.conv_ms_spvn_3 = nn.Conv2d(channels[2], 1, 1, 1, 0)
             self.conv_ms_spvn_2 = nn.Conv2d(channels[3], 1, 1, 1, 0)
 
-            if self.config.out_ref:
+            if self.training and self.config.out_ref:
                 _N = 16
                 # self.gdt_convs_4 = nn.Sequential(nn.Conv2d(channels[1], _N, 3, 1, 1), nn.BatchNorm2d(_N), nn.ReLU(inplace=True))
                 self.gdt_convs_3 = nn.Sequential(nn.Conv2d(channels[2], _N, 3, 1, 1), nn.BatchNorm2d(_N), nn.ReLU(inplace=True))
@@ -231,7 +231,7 @@ class Decoder(nn.Module):
         return torch.cat(patches_batch, dim=0)
 
     def forward(self, features):
-        if self.config.out_ref:
+        if self.training and self.config.out_ref:
             outs_gdt_pred = []
             outs_gdt_label = []
             x, x1, x2, x3, x4, gdt_gt = features
@@ -248,7 +248,7 @@ class Decoder(nn.Module):
 
         p3 = self.decoder_block3(_p3)
         m3 = self.conv_ms_spvn_3(p3) if self.config.ms_supervision else None
-        if self.config.out_ref:
+        if self.training and self.config.out_ref:
             # >> GT:
             # m3 --dilation--> m3_dia
             # G_3^gt * m3_dia --> G_3^m, which is the label of gradient
@@ -273,7 +273,7 @@ class Decoder(nn.Module):
 
         p2 = self.decoder_block2(_p2)
         m2 = self.conv_ms_spvn_2(p2) if self.config.ms_supervision else None
-        if self.config.out_ref:
+        if self.training and self.config.out_ref:
             # >> GT:
             m2_dia = m2
             gdt_label_main_2 = gdt_gt * F.interpolate(m2_dia, size=gdt_gt.shape[2:], mode='bilinear', align_corners=True)

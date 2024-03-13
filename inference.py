@@ -51,7 +51,7 @@ def main(args):
         print('Testing with model {}'.format(args.ckpt))
 
     if config.model == 'BiRefNet':
-        model = BiRefNet()
+        model = BiRefNet(bb_pretrained=False)
     weights_lst = sorted(
         glob(os.path.join(args.ckpt_folder, '*.pth')) if args.ckpt_folder else [args.ckpt],
         key=lambda x: int(x.split('ep')[-1].split('.pth')[0]),

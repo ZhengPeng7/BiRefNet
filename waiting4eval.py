@@ -89,7 +89,7 @@ def main():
         test_loaders[testset] = _data_loader_test
 
     # Model, 3070MiB GPU memory for inference
-    model = BiRefNet().to(device)
+    model = BiRefNet(bb_pretrained=False).to(device)
     models_evaluated = []
     continous_sleep_time = 0
     while True:
