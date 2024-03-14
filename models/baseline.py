@@ -203,7 +203,7 @@ class Decoder(nn.Module):
             self.conv_ms_spvn_3 = nn.Conv2d(channels[2], 1, 1, 1, 0)
             self.conv_ms_spvn_2 = nn.Conv2d(channels[3], 1, 1, 1, 0)
 
-            if self.training and self.config.out_ref:
+            if self.config.out_ref:
                 _N = 16
                 # self.gdt_convs_4 = nn.Sequential(nn.Conv2d(channels[1], _N, 3, 1, 1), nn.BatchNorm2d(_N), nn.ReLU(inplace=True))
                 self.gdt_convs_3 = nn.Sequential(nn.Conv2d(channels[2], _N, 3, 1, 1), nn.BatchNorm2d(_N), nn.ReLU(inplace=True))
@@ -248,19 +248,20 @@ class Decoder(nn.Module):
 
         p3 = self.decoder_block3(_p3)
         m3 = self.conv_ms_spvn_3(p3) if self.config.ms_supervision else None
-        if self.training and self.config.out_ref:
-            # >> GT:
-            # m3 --dilation--> m3_dia
-            # G_3^gt * m3_dia --> G_3^m, which is the label of gradient
-            m3_dia = m3
-            gdt_label_main_3 = gdt_gt * F.interpolate(m3_dia, size=gdt_gt.shape[2:], mode='bilinear', align_corners=True)
-            outs_gdt_label.append(gdt_label_main_3)
-            # >> Pred:
-            # p3 --conv--BN--> F_3^G, where F_3^G predicts the \hat{G_3} with xx
-            # F_3^G --sigmoid--> A_3^G
+        if self.config.out_ref:
             p3_gdt = self.gdt_convs_3(p3)
-            gdt_pred_3 = self.gdt_convs_pred_3(p3_gdt)
-            outs_gdt_pred.append(gdt_pred_3)
+            if self.training:
+                # >> GT:
+                # m3 --dilation--> m3_dia
+                # G_3^gt * m3_dia --> G_3^m, which is the label of gradient
+                m3_dia = m3
+                gdt_label_main_3 = gdt_gt * F.interpolate(m3_dia, size=gdt_gt.shape[2:], mode='bilinear', align_corners=True)
+                outs_gdt_label.append(gdt_label_main_3)
+                # >> Pred:
+                # p3 --conv--BN--> F_3^G, where F_3^G predicts the \hat{G_3} with xx
+                # F_3^G --sigmoid--> A_3^G
+                gdt_pred_3 = self.gdt_convs_pred_3(p3_gdt)
+                outs_gdt_pred.append(gdt_pred_3)
             gdt_attn_3 = self.gdt_convs_attn_3(p3_gdt).sigmoid()
             # >> Finally:
             # p3 = p3 * A_3^G
@@ -273,15 +274,16 @@ class Decoder(nn.Module):
 
         p2 = self.decoder_block2(_p2)
         m2 = self.conv_ms_spvn_2(p2) if self.config.ms_supervision else None
-        if self.training and self.config.out_ref:
-            # >> GT:
-            m2_dia = m2
-            gdt_label_main_2 = gdt_gt * F.interpolate(m2_dia, size=gdt_gt.shape[2:], mode='bilinear', align_corners=True)
-            outs_gdt_label.append(gdt_label_main_2)
-            # >> Pred:
+        if self.config.out_ref:
             p2_gdt = self.gdt_convs_2(p2)
-            gdt_pred_2 = self.gdt_convs_pred_2(p2_gdt)
-            outs_gdt_pred.append(gdt_pred_2)
+            if self.training:
+                # >> GT:
+                m2_dia = m2
+                gdt_label_main_2 = gdt_gt * F.interpolate(m2_dia, size=gdt_gt.shape[2:], mode='bilinear', align_corners=True)
+                outs_gdt_label.append(gdt_label_main_2)
+                # >> Pred:
+                gdt_pred_2 = self.gdt_convs_pred_2(p2_gdt)
+                outs_gdt_pred.append(gdt_pred_2)
             gdt_attn_2 = self.gdt_convs_attn_2(p2_gdt).sigmoid()
             # >> Finally:
             p2 = p2 * gdt_attn_2
