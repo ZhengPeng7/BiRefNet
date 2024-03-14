@@ -7,6 +7,7 @@ from torchvision import transforms
 
 from preproc import preproc
 from config import Config
+from utils import path_to_image
 
 
 Image.MAX_IMAGE_PIXELS = None       # remove DecompressionBombWarning
@@ -45,17 +46,10 @@ class MyData(data.Dataset):
             self.class_labels_loaded = []
             # for image_path, label_path in zip(self.image_paths, self.label_paths):
             for image_path, label_path in tqdm(zip(self.image_paths, self.label_paths), total=len(self.image_paths)):
-                _image = cv2.imread(image_path)
-                _label = cv2.imread(label_path, cv2.IMREAD_GRAYSCALE)
-                if not self.keep_size:
-                    _image_rs = cv2.resize(_image, (config.size, config.size), interpolation=cv2.INTER_LINEAR)
-                    _label_rs = cv2.resize(_label, (config.size, config.size), interpolation=cv2.INTER_LINEAR)
-                self.images_loaded.append(
-                    Image.fromarray(cv2.cvtColor(_image_rs, cv2.COLOR_BGR2RGB)).convert('RGB')
-                )
-                self.labels_loaded.append(
-                    Image.fromarray(_label_rs).convert('L')
-                )
+                _image = path_to_image(image_path, size=(config.size, config.size), color_type='rgb')
+                _label = path_to_image(label_path, size=(config.size, config.size), color_type='gray')
+                self.images_loaded.append(_image)
+                self.labels_loaded.append(_label)
                 self.class_labels_loaded.append(
                     self.cls_name2id[label_path.split('/')[-1].split('#')[3]] if self.is_train and config.auxiliary_classification else -1
                 )
@@ -68,8 +62,8 @@ class MyData(data.Dataset):
             label = self.labels_loaded[index]
             class_label = self.class_labels_loaded[index] if self.is_train and config.auxiliary_classification else -1
         else:
-            image = Image.open(self.image_paths[index]).convert('RGB')
-            label = Image.open(self.label_paths[index]).convert('L')
+            image = path_to_image(self.image_paths[index], size=(config.size, config.size), color_type='rgb')
+            label = path_to_image(self.label_paths[index], size=(config.size, config.size), color_type='gray')
             class_label = self.cls_name2id[self.label_paths[index].split('/')[-1].split('#')[3]] if self.is_train and config.auxiliary_classification else -1
 
         # loading image and label
