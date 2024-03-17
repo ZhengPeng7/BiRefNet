@@ -78,7 +78,7 @@ def main():
     test_loaders = {}
     for testset in testsets.split('+'):
         dataset = MyData(
-            data_root=os.path.join(config.data_root_dir, config.dataset, testset),
+            datasets=testset,
             image_size=config.size, is_train=False
         )
         _data_loader_test = torch.utils.data.DataLoader(

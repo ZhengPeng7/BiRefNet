@@ -60,7 +60,7 @@ def main(args):
     for testset in args.testsets.split('+'):
         print('>>>> Testset: {}...'.format(testset))
         data_loader_test = torch.utils.data.DataLoader(
-            dataset=MyData(data_root=os.path.join(config.data_root_dir, config.dataset, testset), image_size=config.size, is_train=False),
+            dataset=MyData(testset, image_size=config.size, is_train=False),
             batch_size=config.batch_size_valid, shuffle=False, num_workers=config.num_workers, pin_memory=True
         )
         for weights in weights_lst:
@@ -88,12 +88,12 @@ if __name__ == '__main__':
     parser.add_argument('--testsets',
                         default={
                             'DIS5K': 'DIS-VD+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4',
-                            'COD': 'COD10K+NC4K+CAMO+CHAMELEON',
-                            'SOD': 'DAVIS-S+HRSOD-TE+UHRSD-TE+DUTS-TE+DUT-OMRON',
+                            'COD': 'TE-COD10K+NC4K+TE-CAMO+CHAMELEON',
+                            'HRSOD': 'DAVIS-S+TE-HRSOD+TE-UHRSD+TE-DUTS+DUT-OMRON',
                             'DIS5K-': 'DIS-VD',
-                            'COD-': 'COD10K',
-                            'SOD-': 'DAVIS-S+HRSOD-TE+UHRSD-TE',
-                        }[config.dataset + ''],
+                            'COD-': 'TE-COD10K',
+                            'SOD-': 'DAVIS-S+TE-HRSOD+TE-UHRSD',
+                        }[config.task + ''],
                         type=str,
                         help="Test all sets: , 'DIS-VD+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4'")
 

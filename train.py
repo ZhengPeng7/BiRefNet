@@ -56,7 +56,7 @@ logger.info("Other hyperparameters:"); logger.info(args)
 print('batch size:', config.batch_size)
 
 
-if os.path.exists(os.path.join(config.data_root_dir, config.dataset, args.testsets.strip('+').split('+')[0])):
+if os.path.exists(os.path.join(config.data_root_dir, config.task, args.testsets.strip('+').split('+')[0])):
     args.testsets = args.testsets.strip('+').split('+')
 else:
     args.testsets = []
@@ -71,22 +71,22 @@ def prepare_dataloader(dataset: torch.utils.data.Dataset, batch_size: int, to_be
     else:
         return torch.utils.data.DataLoader(
             dataset=dataset, batch_size=batch_size, num_workers=min(config.num_workers, batch_size, 0), pin_memory=True,
-            shuffle=is_train,
+            shuffle=is_train, drop_last=True
         )
 
 
 def init_data_loaders(to_be_distributed):
     # Prepare dataset
-    training_set = {'DIS5K': 'DIS-TR', 'COD': 'train', 'SOD': 'train_DHU'}[config.dataset]
+    training_set = {'DIS5K': 'DIS-TR', 'COD': 'TR-COD10K+TR-CAMO', 'HRSOD': ['TR-DUTS', 'TR-DUTS+TR-HRSOD+TR-UHRSD'][0]}[config.task]
     train_loader = prepare_dataloader(
-        MyData(data_root=os.path.join(config.data_root_dir, config.dataset, training_set), image_size=config.size, is_train=True),
+        MyData(datasets=training_set, image_size=config.size, is_train=True),
         config.batch_size, to_be_distributed=to_be_distributed, is_train=True
     )
     print(len(train_loader), "batches of train dataloader {} have been created.".format(training_set))
     test_loaders = {}
     for testset in args.testsets:
         _data_loader_test = prepare_dataloader(
-            MyData(data_root=os.path.join(config.data_root_dir, config.dataset, testset), image_size=config.size, is_train=False),
+            MyData(datasets=testset, image_size=config.size, is_train=False),
             config.batch_size_valid, is_train=False
         )
         print(len(_data_loader_test), "batches of valid dataloader {} have been created.".format(testset))

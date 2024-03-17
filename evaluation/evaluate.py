@@ -16,8 +16,8 @@ def evaluate(pred_dir, method, testset, only_S_MAE=False, epoch=0):
             id_suffix += 1
             filename = filename.replace('_{}.txt'.format(id_suffix-1), '_{}.txt'.format(id_suffix))
     gt_paths = sorted([
-        os.path.join(config.data_root_dir, config.dataset, testset, 'gt', p)
-        for p in os.listdir(os.path.join(config.data_root_dir, config.dataset, testset, 'gt'))
+        os.path.join(config.data_root_dir, config.task, testset, 'gt', p)
+        for p in os.listdir(os.path.join(config.data_root_dir, config.task, testset, 'gt'))
     ])
     pred_paths = sorted([os.path.join(pred_dir, method, testset, p) for p in os.listdir(os.path.join(pred_dir, method, testset))])
     with open(filename, 'a+') as file_to_write:

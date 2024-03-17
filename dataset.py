@@ -17,7 +17,7 @@ class_labels_TR_sorted = _class_labels_TR_sorted.split(', ')
 
 
 class MyData(data.Dataset):
-    def __init__(self, data_root, image_size, is_train=True):
+    def __init__(self, datasets, image_size, is_train=True):
         self.size_train = image_size
         self.size_test = image_size
         self.keep_size = not config.size
@@ -25,7 +25,6 @@ class MyData(data.Dataset):
         self.is_train = is_train
         self.load_all = config.load_all
         self.device = config.device
-        self.dataset = data_root.replace('\\', '/').split('/')[-1]
         if self.is_train and config.auxiliary_classification:
             self.cls_name2id = {_name: _id for _id, _name in enumerate(class_labels_TR_sorted)}
         self.transform_image = transforms.Compose([
@@ -37,10 +36,20 @@ class MyData(data.Dataset):
             transforms.Resize(self.data_size),
             transforms.ToTensor(),
         ][self.load_all or self.keep_size:])
-        ## 'im' and 'gt' need modifying
-        image_root = os.path.join(data_root, 'im')
-        self.image_paths = [os.path.join(image_root, p) for p in os.listdir(image_root)]
-        self.label_paths = [p.replace('/im/', '/gt/').replace('.jpg', '.png') for p in self.image_paths]
+        dataset_root = os.path.join(config.data_root_dir, config.task)
+        # datasets can be a list of different datasets for training on combined sets.
+        self.image_paths = []
+        for dataset in datasets.split('+'):
+            image_root = os.path.join(dataset_root, dataset, 'im')
+            self.image_paths += [os.path.join(image_root, p) for p in os.listdir(image_root)]
+        self.label_paths = []
+        for p in self.image_paths:
+            for ext in ['.png', '.jpg', '.PNG', '.JPG', '.JPEG']:
+                ## 'im' and 'gt' may need modifying
+                p_gt = p.replace('/im/', '/gt/').replace('.'+p.split('.')[-1], ext)
+                if os.path.exists(p_gt):
+                    self.label_paths.append(p_gt)
+                    break
         if self.load_all:
             self.images_loaded, self.labels_loaded = [], []
             self.class_labels_loaded = []

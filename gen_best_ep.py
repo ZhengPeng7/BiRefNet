@@ -25,7 +25,7 @@ for idx_et, eval_txt in enumerate(eval_txts):
             'sm': [5, 2, 2],
             'wfm': [3, 3, 8],
             'hce': [7, -1, -1]
-        }[metric][['DIS5K', 'COD', 'SOD'].index(config.dataset)]
+        }[metric][['DIS5K', 'COD', 'HRSOD'].index(config.task)]
         if metric != 'hce':
             score_sm = float(properties[targe_idx].strip())
         else:
@@ -61,7 +61,7 @@ for good_model in good_models:
                 for idx_score, metric_score in enumerate(metric_scores):
                     testset_mean_values[metric_names[idx_score]].append(metric_score)
 
-if config.dataset == 'DIS5K':
+if config.task == 'DIS5K':
     testset_mean_values_lst = ['{:<4}'.format(int(np.mean(v_lst[:-1]).round())) if name == 'HCE' else '{:.3f}'.format(np.mean(v_lst[:-1])).lstrip('0') for name, v_lst in testset_mean_values.items()]  # [:-1] to remove DIS-VD
     sample_line_for_placing_mean_values = info4good_models[-2]
     numbers_placed_well = sample_line_for_placing_mean_values.replace(sample_line_for_placing_mean_values.split('&')[1].strip(), 'DIS-TEs').strip().split('&')[3:]

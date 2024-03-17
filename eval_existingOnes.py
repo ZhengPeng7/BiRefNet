@@ -27,11 +27,11 @@ def do_eval(opt):
         filename = os.path.join(opt.save_dir, '{}_eval.txt'.format(_data_name))
         tb = pt.PrettyTable()
         tb.vertical_char = '&'
-        if config.dataset == 'DIS5K':
+        if config.task == 'DIS5K':
             tb.field_names = ["Dataset", "Method", "maxFm", "wFmeasure", 'MAE', "Smeasure", "meanEm", "HCE", "maxEm", "meanFm", "adpEm", "adpFm"]
-        elif config.dataset == 'COD':
+        elif config.task == 'COD':
             tb.field_names = ["Dataset", "Method", "Smeasure", "wFmeasure", "meanFm", "maxFm", "meanEm", "maxEm", 'MAE', "adpEm", "adpFm", "HCE"]
-        elif config.dataset == 'SOD':
+        elif config.task == 'HRSOD':
             tb.field_names = ["Dataset", "Method", "Smeasure", "maxFm", "meanEm", 'MAE', "maxEm", "meanFm", "wFmeasure", "adpEm", "adpFm", "HCE"]
         else:
             tb.field_names = ["Dataset", "Method", "Smeasure", 'MAE', "maxEm", "meanEm", "maxFm", "meanFm", "wFmeasure", "adpEm", "adpFm", "HCE"]
@@ -45,17 +45,17 @@ def do_eval(opt):
                 metrics=opt.metrics.split('+'),
                 verbose=config.verbose_eval
             )
-            if config.dataset == 'DIS5K':
+            if config.task == 'DIS5K':
                 scores = [
                     fm['curve'].max().round(3), wfm.round(3), mae.round(3), sm.round(3), em['curve'].mean().round(3), int(hce.round()), 
                     em['curve'].max().round(3), fm['curve'].mean().round(3), em['adp'].round(3), fm['adp'].round(3),
                 ]
-            elif config.dataset == 'COD':
+            elif config.task == 'COD':
                 scores = [
                     sm.round(3), wfm.round(3), fm['curve'].mean().round(3), fm['curve'].max().round(3), em['curve'].mean().round(3), em['curve'].max().round(3), mae.round(3),
                     em['adp'].round(3), fm['adp'].round(3), int(hce.round()),
                 ]
-            elif config.dataset == 'SOD':
+            elif config.task == 'HRSOD':
                 scores = [
                     sm.round(3), fm['curve'].max().round(3), em['curve'].mean().round(3), mae.round(3),
                     em['curve'].max().round(3), fm['curve'].mean().round(3), wfm.round(3), em['adp'].round(3), fm['adp'].round(3), int(hce.round()),
@@ -82,7 +82,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--gt_root', type=str, help='ground-truth root',
-        default=os.path.join(config.data_root_dir, config.dataset))
+        default=os.path.join(config.data_root_dir, config.task))
     parser.add_argument(
         '--pred_root', type=str, help='prediction root',
         default='./e_preds')
@@ -90,9 +90,9 @@ if __name__ == '__main__':
         '--data_lst', type=str, help='test dataset',
         default={
             'DIS5K': '+'.join(['DIS-VD', 'DIS-TE1', 'DIS-TE2', 'DIS-TE3', 'DIS-TE4'][:]),
-            'COD': '+'.join(['COD10K', 'NC4K', 'CAMO', 'CHAMELEON'][:]),
-            'SOD': '+'.join(['DAVIS-S', 'HRSOD-TE', 'UHRSD-TE', 'DUTS-TE', 'DUT-OMRON'][:])
-        }[config.dataset])
+            'COD': '+'.join(['TE-COD10K', 'NC4K', 'TE-CAMO', 'CHAMELEON'][:]),
+            'HRSOD': '+'.join(['DAVIS-S', 'TE-HRSOD', 'TE-UHRSD', 'TE-DUTS', 'DUT-OMRON'][:])
+        }[config.task])
     parser.add_argument(
         '--model_lst', type=str, help='candidate competitors',
         default=sorted(glob(os.path.join('ckpt', '*')))[-1])
@@ -104,7 +104,7 @@ if __name__ == '__main__':
         default=False)
     parser.add_argument(
         '--metrics', type=str, help='candidate competitors',
-        default='+'.join(['S', 'MAE', 'E', 'F', 'WF', 'HCE'][:100 if config.dataset == 'DIS5K' else -1]))
+        default='+'.join(['S', 'MAE', 'E', 'F', 'WF', 'HCE'][:100 if config.task == 'DIS5K' else -1]))
     opt = parser.parse_args()
 
     os.makedirs(opt.save_dir, exist_ok=True)

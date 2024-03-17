@@ -29,7 +29,7 @@ class Config():
 
         self.size = 1024
         self.batch_size = 2
-        self.IoU_finetune_last_epochs = [0, -40][1]     # choose 0 to skip
+        self.IoU_finetune_last_epochs = [0, -20][1]     # choose 0 to skip
         if self.dec_blk == 'HierarAttDecBlk':
             self.batch_size = 2 ** [0, 1, 2, 3, 4][2]
         self.model = [
@@ -74,7 +74,7 @@ class Config():
 
         # Data
         self.data_root_dir = os.path.join(self.sys_home_dir, 'datasets/dis')
-        self.dataset = ['DIS5K', 'COD', 'SOD'][0]
+        self.task = ['DIS5K', 'COD', 'HRSOD'][0]
         self.preproc_methods = ['flip', 'enhance', 'rotate', 'pepper', 'crop'][:4]
 
         # Loss
