@@ -95,7 +95,7 @@ if __name__ == '__main__':
         }[config.task])
     parser.add_argument(
         '--model_lst', type=str, help='candidate competitors',
-        default=sorted(glob(os.path.join('ckpt', '*')))[-1])
+        default=os.path.join('ckpt', 'tmp'))
     parser.add_argument(
         '--save_dir', type=str, help='candidate competitors',
         default='e_results')
