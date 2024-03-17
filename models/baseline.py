@@ -131,22 +131,22 @@ class BiRefNet(nn.Module):
         scaled_preds = self.decoder(features)
         return scaled_preds, class_preds
 
-    def forward_ref(self, x, pred):
-        # refine patch-level segmentation
-        if pred.shape[2:] != x.shape[2:]:
-            pred = F.interpolate(pred, size=x.shape[2:], mode='bilinear', align_corners=True)
-        # pred = pred.sigmoid()
-        if self.config.refine == 'itself':
-            x = self.stem_layer(torch.cat([x, pred], dim=1))
-            scaled_preds, class_preds = self.forward_ori(x)
-        else:
-            scaled_preds = self.refiner([x, pred])
-            class_preds = None
-        return scaled_preds, class_preds
+    # def forward_ref(self, x, pred):
+    #     # refine patch-level segmentation
+    #     if pred.shape[2:] != x.shape[2:]:
+    #         pred = F.interpolate(pred, size=x.shape[2:], mode='bilinear', align_corners=True)
+    #     # pred = pred.sigmoid()
+    #     if self.config.refine == 'itself':
+    #         x = self.stem_layer(torch.cat([x, pred], dim=1))
+    #         scaled_preds, class_preds = self.forward_ori(x)
+    #     else:
+    #         scaled_preds = self.refiner([x, pred])
+    #         class_preds = None
+    #     return scaled_preds, class_preds
 
-    def forward_ref_end(self, x):
-        # remove the grids of concatenated preds
-        return self.dec_end(x) if self.config.ender else x
+    # def forward_ref_end(self, x):
+    #     # remove the grids of concatenated preds
+    #     return self.dec_end(x) if self.config.ender else x
 
 
     # def forward(self, x):
