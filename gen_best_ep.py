@@ -10,7 +10,7 @@ eval_txts = sorted(glob('e_results/*_eval.txt'))
 print('eval_txts:', [_.split(os.sep)[-1] for _ in eval_txts])
 score_panel = {}
 sep = '&'
-metric = ['sm', 'wfm', 'hce'][2]
+metric = ['sm', 'wfm', 'hce'][1]    # we used HCE for DIS for wFm for others.
 
 for idx_et, eval_txt in enumerate(eval_txts):
     with open(eval_txt, 'r') as f:
@@ -72,5 +72,5 @@ if config.task == 'DIS5K':
 info4good_models.append(lines[-1])
 info = ''.join(info4good_models)
 print(info)
-with open(os.path.join('e_results', 'eval.txt'), 'w') as f:
+with open(os.path.join('e_results', 'eval-{}_best_on_{}.txt'.format(config.task, metric)), 'w') as f:
     f.write(info + '\n')
