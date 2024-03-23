@@ -56,12 +56,22 @@ Download backbone weights from [my google-drive folder](https://drive.google.com
 
 #### Well-trained weights:
 
-Download the `BiRefNet_*.pth` from [[**stuff**](https://drive.google.com/drive/u/0/folders/1s2Xe0cjq-2ctnJBR24563yMSCOu4CcxM)].
+Download the `BiRefNet-{TASK}_{EPOCH}.pth` from [[**stuff**](https://drive.google.com/drive/u/0/folders/1s2Xe0cjq-2ctnJBR24563yMSCOu4CcxM)].
 
-The results might be a bit different from those in the original paper, you can see them in the `performances_all_ckpts` folder in **stuff**. Due to the very high cost I used (A100-80G x 8) which many people cannot afford to (including myself....),  I re-trained BiRefNet on a single A100-40G only and achieve the performance on the same level. It means you can directly train the model on a single GPU with 36.5G+ memory.
+The results might be a bit different from those in the original paper, you can see them in the `performances_all_ckpts` folder in **stuff**. Due to the very high cost I used (A100-80G x 8) which many people cannot afford to (including myself....),  I re-trained BiRefNet on a single A100-40G only and achieve the performance on the same level. It means you can directly train the model on a single GPU with 36.5G+ memory. (I personally paid a lot for renting an A100-40G to re-train BiRefNet on the three tasks... T_T. Hope it can help you.)
 
 But if you have more and more powerful GPUs, you can set GPU IDs and increase the batch size in `config.py` to accelerate the training. We have made all this kind of things adaptive in scripts to seamlessly switch between single-card training and multi-card training. Enjoy it :)
 
+#### Some of my messages:
+
+This project was originally built for DIS only. But after the updates one by one, I made it larger and larger with many functions embedded together. Finally, you can **use it for any binary image segmentation tasks**, such as DIS/COD/SOD, medical image segmentation, anomaly segmentation, etc. You can eaily open/close below things (usually in `config.py`):
++ Backbone choices: Swin_v1, PVT_v2, ConvNets, ...
++ Weighted losses: BCE, IoU, SSIM, MAE, Reg, ...
++ Adversarial loss for binary segmentation (proposed in my previous work [MCCL](https://arxiv.org/pdf/2302.14485.pdf)).
++ Training tricks: multi-scale supervision, freezing backbone, multi-scale input...
++ Data collator: loading all in memory, smooth combination of different datasets for combined training and test.
++ ...
+I really hope you enjoy this project and use it in more works to achieve new SOTAs.
 
 
 ### Quantitative Results

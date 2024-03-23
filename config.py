@@ -75,6 +75,11 @@ class Config():
         # Data
         self.data_root_dir = os.path.join(self.sys_home_dir, 'datasets/dis')
         self.task = ['DIS5K', 'COD', 'HRSOD'][0]
+        self.training_set = {
+            'DIS5K': 'DIS-TR',
+            'COD': 'TR-COD10K+TR-CAMO',
+            'HRSOD': ['TR-DUTS', 'TR-HRSOD+TR-UHRSD', 'TR-DUTS+TR-HRSOD+TR-UHRSD'][1]
+        }[self.task]
         self.preproc_methods = ['flip', 'enhance', 'rotate', 'pepper', 'crop'][:4]
 
         # Loss

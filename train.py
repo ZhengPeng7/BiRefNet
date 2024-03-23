@@ -77,12 +77,11 @@ def prepare_dataloader(dataset: torch.utils.data.Dataset, batch_size: int, to_be
 
 def init_data_loaders(to_be_distributed):
     # Prepare dataset
-    training_set = {'DIS5K': 'DIS-TR', 'COD': 'TR-COD10K+TR-CAMO', 'HRSOD': ['TR-DUTS', 'TR-DUTS+TR-HRSOD+TR-UHRSD'][0]}[config.task]
     train_loader = prepare_dataloader(
-        MyData(datasets=training_set, image_size=config.size, is_train=True),
+        MyData(datasets=config.training_set, image_size=config.size, is_train=True),
         config.batch_size, to_be_distributed=to_be_distributed, is_train=True
     )
-    print(len(train_loader), "batches of train dataloader {} have been created.".format(training_set))
+    print(len(train_loader), "batches of train dataloader {} have been created.".format(config.training_set))
     test_loaders = {}
     for testset in args.testsets:
         _data_loader_test = prepare_dataloader(
