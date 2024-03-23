@@ -65,6 +65,7 @@ But if you have more and more powerful GPUs, you can set GPU IDs and increase th
 #### Some of my messages:
 
 This project was originally built for DIS only. But after the updates one by one, I made it larger and larger with many functions embedded together. Finally, you can **use it for any binary image segmentation tasks**, such as DIS/COD/SOD, medical image segmentation, anomaly segmentation, etc. You can eaily open/close below things (usually in `config.py`):
++ Multi-GPU training: open/close with one variable.
 + Backbone choices: Swin_v1, PVT_v2, ConvNets, ...
 + Weighted losses: BCE, IoU, SSIM, MAE, Reg, ...
 + Adversarial loss for binary segmentation (proposed in my previous work [MCCL](https://arxiv.org/pdf/2302.14485.pdf)).
