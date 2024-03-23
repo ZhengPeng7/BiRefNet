@@ -58,7 +58,7 @@ Download backbone weights from [my google-drive folder](https://drive.google.com
 
 Download the `BiRefNet-{TASK}_{EPOCH}.pth` from [[**stuff**](https://drive.google.com/drive/u/0/folders/1s2Xe0cjq-2ctnJBR24563yMSCOu4CcxM)].
 
-The results might be a bit different from those in the original paper, you can see them in the `performances_all_ckpts` folder in **stuff**. Due to the very high cost I used (A100-80G x 8) which many people cannot afford to (including myself....),  I re-trained BiRefNet on a single A100-40G only and achieve the performance on the same level. It means you can directly train the model on a single GPU with 36.5G+ memory. (I personally paid a lot for renting an A100-40G to re-train BiRefNet on the three tasks... T_T. Hope it can help you.)
+The results might be a bit different from those in the original paper, you can see them in the `performances_all_ckpts` folder in **stuff**. Due to the very high cost I used (A100-80G x 8) which many people cannot afford to (including myself....),  I re-trained BiRefNet on a single A100-40G only and achieve the performance on the same level. It means you can directly train the model on a single GPU with 36.5G+ memory. BTW, 5.5G GPU memory is needed for inference in 1024x1024. (I personally paid a lot for renting an A100-40G to re-train BiRefNet on the three tasks... T_T. Hope it can help you.)
 
 But if you have more and more powerful GPUs, you can set GPU IDs and increase the batch size in `config.py` to accelerate the training. We have made all this kind of things adaptive in scripts to seamlessly switch between single-card training and multi-card training. Enjoy it :)
 
