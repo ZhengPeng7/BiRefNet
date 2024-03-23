@@ -94,9 +94,6 @@ if __name__ == '__main__':
             'HRSOD': '+'.join(['DAVIS-S', 'TE-HRSOD', 'TE-UHRSD', 'TE-DUTS', 'DUT-OMRON'][:])
         }[config.task])
     parser.add_argument(
-        '--model_lst', type=str, help='candidate competitors',
-        default=os.path.join('ckpt', 'tmp'))
-    parser.add_argument(
         '--save_dir', type=str, help='candidate competitors',
         default='e_results')
     parser.add_argument(
