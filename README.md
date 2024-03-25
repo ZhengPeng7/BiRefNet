@@ -57,7 +57,7 @@ Download backbone weights from [my google-drive folder](https://drive.google.com
 
 #### Well-trained weights:
 
-Download the `BiRefNet_{TASK}-{EPOCH}.pth` from [[**stuff**](https://drive.google.com/drive/u/0/folders/1s2Xe0cjq-2ctnJBR24563yMSCOu4CcxM)].
+Download the `BiRefNet_{TASK}_{EPOCH}.pth` from [[**stuff**](https://drive.google.com/drive/u/0/folders/1s2Xe0cjq-2ctnJBR24563yMSCOu4CcxM)].
 
 The results might be a bit different from those in the original paper, you can see them in the `performances_all_ckpts` folder in **stuff**. Due to the very high cost I used (A100-80G x 8) which many people cannot afford to (including myself....),  I re-trained BiRefNet on a single A100-40G only and achieve the performance on the same level (even better). It means you can directly train the model on a single GPU with 36.5G+ memory. BTW, 5.5G GPU memory is needed for inference in 1024x1024. (I personally paid a lot for renting an A100-40G to re-train BiRefNet on the three tasks... T_T. Hope it can help you.)
 
