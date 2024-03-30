@@ -23,8 +23,8 @@ class Config():
         self.refine_iteration = 1
         self.freeze_bb = False
         self.precisionHigh = True
-        self.compile = True
-        self.load_all = True
+        self.compile = 0
+        self.load_all = 0
         self.verbose_eval = True
 
         self.size = 1024
@@ -44,12 +44,16 @@ class Config():
         self.bb = [
             'vgg16', 'vgg16bn', 'resnet50',         # 0, 1, 2
             'pvt_v2_b2', 'pvt_v2_b5',               # 3-bs10, 4-bs5
-            'swin_v1_b', 'swin_v1_l'                # 5-bs9, 6-bs6
+            'swin_v1_b', 'swin_v1_l',               # 5-bs9, 6-bs6
+            'swin_v1_t', 'swin_v1_s',               # 7, 8
+            'pvt_v2_b0', 'pvt_v2_b1',               # 9, 10
         ][6]
         self.lateral_channels_in_collection = {
             'vgg16': [512, 256, 128, 64], 'vgg16bn': [512, 256, 128, 64], 'resnet50': [1024, 512, 256, 64],
             'pvt_v2_b2': [512, 320, 128, 64], 'pvt_v2_b5': [512, 320, 128, 64],
             'swin_v1_b': [1024, 512, 256, 128], 'swin_v1_l': [1536, 768, 384, 192],
+            'swin_v1_t': [768, 384, 192, 96], 'swin_v1_s': [768, 384, 192, 96],
+            'pvt_v2_b0': [256, 160, 64, 32], 'pvt_v2_b1': [512, 320, 128, 64],
         }[self.bb]
         if self.mul_scl_ipt == 'cat':
             self.lateral_channels_in_collection = [channel * 2 for channel in self.lateral_channels_in_collection]
@@ -61,6 +65,10 @@ class Config():
             'pvt_v2_b5': os.path.join(self.weights_root_dir, ['pvt_v2_b5.pth', 'pvt_v2_b5_22k.pth'][0]),
             'swin_v1_b': os.path.join(self.weights_root_dir, ['swin_base_patch4_window12_384_22kto1k.pth', 'swin_base_patch4_window12_384_22k.pth'][0]),
             'swin_v1_l': os.path.join(self.weights_root_dir, ['swin_large_patch4_window12_384_22kto1k.pth', 'swin_large_patch4_window12_384_22k.pth'][0]),
+            'swin_v1_t': os.path.join(self.weights_root_dir, ['swin_tiny_patch4_window7_224_22kto1k_finetune.pth'][0]),
+            'swin_v1_s': os.path.join(self.weights_root_dir, ['swin_small_patch4_window7_224_22kto1k_finetune.pth'][0]),
+            'pvt_v2_b0': os.path.join(self.weights_root_dir, ['pvt_v2_b0.pth'][0]),
+            'pvt_v2_b1': os.path.join(self.weights_root_dir, ['pvt_v2_b1.pth'][0]),
         }
 
         # Training
