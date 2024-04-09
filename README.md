@@ -36,8 +36,12 @@ Our BiRefNet has achieved SOTA on many similar HR tasks:
 We found there've been some 3rd party applications based on our BiRefNet. Many thanks for their contribution to the community!  
 Choose the one you like to try with clicks instead of codes:  
 1. **User Interface**:
+   + [fal.ai/birefnet](https://fal.ai/models/birefnet): this project on `fal.ai` encapsulates BiRefNet **online** with more useful options in UI and **API** to call the model.
+     <p align="center"><img src="https://drive.google.com/uc?export=view&id=1rNk81YV_Pzb2GykrzfGvX6T7KBXR0wrA" width="720" /></p>
    + [viperyl/ComfyUI-BiRefNet](https://github.com/viperyl/ComfyUI-BiRefNet): this project packs BiRefNet as **ComfyUI nodes**, and makes this SOTA model easier use for everyone.
+     <p align="center"><img src="https://drive.google.com/uc?export=view&id=1KfxCQUUa2y9T-aysEaeVVjCUt3Z0zSkL" width="720" /></p>
    + [ZHO-ZHO-ZHO/ComfyUI-BiRefNet-ZHO](https://github.com/ZHO-ZHO-ZHO/ComfyUI-BiRefNet-ZHO): this project further improves the UI for BiRefNet in ComfyUI, especially for **video data**.
+     <p align="center"><img src="https://drive.google.com/uc?export=view&id=1GOqEreyS7ENzTPN0RqxEjaA76RpMlkYM" width="720" /></p>
 
 ## Usage
 
