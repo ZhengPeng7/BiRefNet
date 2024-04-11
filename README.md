@@ -30,18 +30,30 @@ Our BiRefNet has achieved SOTA on many similar HR tasks:
 
 **HRSOD**: [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/bilateral-reference-for-high-resolution/rgb-salient-object-detection-on-davis-s)](https://paperswithcode.com/sota/rgb-salient-object-detection-on-davis-s?p=bilateral-reference-for-high-resolution) [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/bilateral-reference-for-high-resolution/rgb-salient-object-detection-on-hrsod)](https://paperswithcode.com/sota/rgb-salient-object-detection-on-hrsod?p=bilateral-reference-for-high-resolution) [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/bilateral-reference-for-high-resolution/rgb-salient-object-detection-on-uhrsd)](https://paperswithcode.com/sota/rgb-salient-object-detection-on-uhrsd?p=bilateral-reference-for-high-resolution) [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/bilateral-reference-for-high-resolution/salient-object-detection-on-duts-te)](https://paperswithcode.com/sota/salient-object-detection-on-duts-te?p=bilateral-reference-for-high-resolution) [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/bilateral-reference-for-high-resolution/salient-object-detection-on-dut-omron)](https://paperswithcode.com/sota/salient-object-detection-on-dut-omron?p=bilateral-reference-for-high-resolution)
 
-## Third-Party Applications
+## Third-Party Creation
 > Concerning edge devices with less computing power, we provide a lightweight version with `swin_v1_tiny` as the backbone, which is x4+ faster and x5+ smaller. The details can be found in [this issue](https://github.com/ZhengPeng7/BiRefNet/issues/11#issuecomment-2041033576) and links there.
 
 We found there've been some 3rd party applications based on our BiRefNet. Many thanks for their contribution to the community!  
 Choose the one you like to try with clicks instead of codes:  
-1. **User Interface**:
-   + [fal.ai/birefnet](https://fal.ai/models/birefnet): this project on `fal.ai` encapsulates BiRefNet **online** with more useful options in UI and **API** to call the model.
-     <p align="center"><img src="https://drive.google.com/uc?export=view&id=1rNk81YV_Pzb2GykrzfGvX6T7KBXR0wrA" width="720" /></p>
-   + [viperyl/ComfyUI-BiRefNet](https://github.com/viperyl/ComfyUI-BiRefNet): this project packs BiRefNet as **ComfyUI nodes**, and makes this SOTA model easier use for everyone.
-     <p align="center"><img src="https://drive.google.com/uc?export=view&id=1KfxCQUUa2y9T-aysEaeVVjCUt3Z0zSkL" width="720" /></p>
-   + [ZHO-ZHO-ZHO/ComfyUI-BiRefNet-ZHO](https://github.com/ZHO-ZHO-ZHO/ComfyUI-BiRefNet-ZHO): this project further improves the UI for BiRefNet in ComfyUI, especially for **video data**.
-     <p align="center"><img src="https://drive.google.com/uc?export=view&id=1GOqEreyS7ENzTPN0RqxEjaA76RpMlkYM" width="720" /></p>
+1. **Applications**:
+   + Thanks [**fal.ai/birefnet**](https://fal.ai/models/birefnet): this project on `fal.ai` encapsulates BiRefNet **online** with more useful options in **UI** and **API** to call the model.
+     <p align="center"><img src="https://drive.google.com/uc?export=view&id=1rNk81YV_Pzb2GykrzfGvX6T7KBXR0wrA" width="960" /></p>
+
+   + Thanks [**ZHO-ZHO-ZHO/ComfyUI-BiRefNet-ZHO**](https://github.com/ZHO-ZHO-ZHO/ComfyUI-BiRefNet-ZHO): this project further improves the **UI** for BiRefNet in ComfyUI, especially for **video data**.
+     <p align="center"><img src="https://drive.google.com/uc?export=view&id=1GOqEreyS7ENzTPN0RqxEjaA76RpMlkYM" width="960" /></p>
+     
+     <https://github.com/ZhengPeng7/BiRefNet/assets/25921713/3a1c7ab2-9847-4dac-8935-43a2d3cd2671>
+
+   + Thanks [**viperyl/ComfyUI-BiRefNet**](https://github.com/viperyl/ComfyUI-BiRefNet): this project packs BiRefNet as **ComfyUI nodes**, and makes this SOTA model easier use for everyone.
+     <p align="center"><img src="https://drive.google.com/uc?export=view&id=1KfxCQUUa2y9T-aysEaeVVjCUt3Z0zSkL" width="960" /></p>
+
+2. **More Visual Comparisons**
+   + Thanks [**twitter.com/toyxyz3**](https://twitter.com/toyxyz3) for the comparison with more background-removal methods:
+
+    <https://github.com/ZhengPeng7/BiRefNet/assets/25921713/1a32860c-0893-49dd-b557-c2e35a83c160>
+
+    <https://github.com/ZhengPeng7/BiRefNet/assets/25921713/40136198-01cc-4106-81f9-81c985f02e31>
+
 
 ## Usage
 
