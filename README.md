@@ -48,11 +48,15 @@ Choose the one you like to try with clicks instead of codes:
      <p align="center"><img src="https://drive.google.com/uc?export=view&id=1KfxCQUUa2y9T-aysEaeVVjCUt3Z0zSkL" width="960" /></p>
 
 2. **More Visual Comparisons**
-   + Thanks [**twitter.com/toyxyz3**](https://twitter.com/toyxyz3) for the comparison with more background-removal methods:
+   + Thanks [**twitter.com/ZHOZHO672070**](https://twitter.com/ZHOZHO672070) for the comparison with more background-removal methods in images:
 
-    <https://github.com/ZhengPeng7/BiRefNet/assets/25921713/1a32860c-0893-49dd-b557-c2e35a83c160>
+     <img src="https://drive.google.com/uc?export=view&id=1nvVIFt_Ezs-crPSQxUDqkUBz598fTe63" />
+
+   + Thanks [**twitter.com/toyxyz3**](https://twitter.com/toyxyz3) for the comparison with more background-removal methods in videos:
 
     <https://github.com/ZhengPeng7/BiRefNet/assets/25921713/40136198-01cc-4106-81f9-81c985f02e31>
+
+    <https://github.com/ZhengPeng7/BiRefNet/assets/25921713/1a32860c-0893-49dd-b557-c2e35a83c160>
 
 
 ## Usage
