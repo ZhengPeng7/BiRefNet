@@ -15,6 +15,7 @@ This repo is the official implementation of "[**Bilateral Reference for High-Res
 > [Wanli Ouyang](https://scholar.google.com/citations?user=pw_0Z_UAAAAJ), &
 > [Nicu Sebe](https://scholar.google.com/citations?user=stFCYOAAAAAJ).
 
+
 [[**arXiv**](https://arxiv.org/abs/2401.03407)] [[**code**](https://github.com/ZhengPeng7/BiRefNet)] [[**stuff**](https://drive.google.com/drive/u/0/folders/1s2Xe0cjq-2ctnJBR24563yMSCOu4CcxM)] 
 
 Our BiRefNet has achieved SOTA on many similar HR tasks:
