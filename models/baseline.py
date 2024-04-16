@@ -7,6 +7,7 @@ import torch.nn.functional as F
 from torchvision.models import vgg16, vgg16_bn
 from torchvision.models import resnet50
 from kornia.filters import laplacian
+from huggingface_hub import PyTorchModelHubMixin
 
 from config import Config
 from dataset import class_labels_TR_sorted
@@ -19,7 +20,12 @@ from models.refinement.refiner import Refiner, RefinerPVTInChannels4, RefUNet
 from models.refinement.stem_layer import StemLayer
 
 
-class BiRefNet(nn.Module):
+class BiRefNet(nn.Module,
+               PyTorchModelHubMixin,
+               library_name="BiRefNet",
+               repo_url="https://github.com/NeuralCarver/Michelangelo",
+               tags=["image-to-image"]
+               ):
     def __init__(self, bb_pretrained=True):
         super(BiRefNet, self).__init__()
         self.config = Config()

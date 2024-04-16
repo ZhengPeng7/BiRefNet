@@ -9,3 +9,4 @@ prettytable
 scipy
 scikit-image
 kornia
+huggingface_hub>=0.22
