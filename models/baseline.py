@@ -23,7 +23,7 @@ from models.refinement.stem_layer import StemLayer
 class BiRefNet(nn.Module,
                PyTorchModelHubMixin,
                library_name="BiRefNet",
-               repo_url="https://github.com/NeuralCarver/Michelangelo",
+               repo_url="https://github.com/ZhengPeng7/BiRefNet",
                tags=["image-to-image"]
                ):
     def __init__(self, bb_pretrained=True):
