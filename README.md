@@ -2,7 +2,7 @@
 
 |            *DIS-Sample_1*        |             *DIS-Sample_2*        |
 | :------------------------------: | :-------------------------------: |
-| <img src="https://drive.google.com/uc?export=view&id=1ItXaA26iYnE8XQ_GgNLy71MOWePoS2-g" /> |  <img src="https://drive.google.com/uc?export=view&id=1Z-esCujQF_uEa_YJjkibc3NUrW4aR_d4" /> |
+| <img src="https://drive.google.com/thumbnail?id=1ItXaA26iYnE8XQ_GgNLy71MOWePoS2-g&sz=w400" /> |  <img src="https://drive.google.com/thumbnail?id=1Z-esCujQF_uEa_YJjkibc3NUrW4aR_d4&sz=w400" /> |
 
 This repo is the official implementation of "[**Bilateral Reference for High-Resolution Dichotomous Image Segmentation**](https://arxiv.org/pdf/2401.03407.pdf)" (___arXiv 2024___).
 
@@ -30,7 +30,7 @@ Our BiRefNet has achieved SOTA on many similar HR tasks:
 
 + **Inference and evaluation** of your given weights: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1MaEiBfJ4xIaZZn0DqKrhydHB8X97hNXl#scrollTo=DJ4meUYjia6S)
 + **Online Inference with GUI** with adjustable resolutions: [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/ZhengPeng7/BiRefNet_demo)  
-<img src="https://drive.google.com/uc?export=view&id=12XmDhKtO1o2fEvBu4OE4ULVB2BK0ecWi" />
+<img src="https://drive.google.com/thumbnail?id=12XmDhKtO1o2fEvBu4OE4ULVB2BK0ecWi&sz=w1620" />
 
 ## Third-Party Creations
 > Concerning edge devices with less computing power, we provide a lightweight version with `swin_v1_tiny` as the backbone, which is x4+ faster and x5+ smaller. The details can be found in [this issue](https://github.com/ZhengPeng7/BiRefNet/issues/11#issuecomment-2041033576) and links there.
@@ -39,20 +39,20 @@ We found there've been some 3rd party applications based on our BiRefNet. Many t
 Choose the one you like to try with clicks instead of codes:  
 1. **Applications**:
    + Thanks [**fal.ai/birefnet**](https://fal.ai/models/birefnet): this project on `fal.ai` encapsulates BiRefNet **online** with more useful options in **UI** and **API** to call the model.
-     <p align="center"><img src="https://drive.google.com/uc?export=view&id=1rNk81YV_Pzb2GykrzfGvX6T7KBXR0wrA" width="960" /></p>
+     <p align="center"><img src="https://drive.google.com/thumbnail?id=1rNk81YV_Pzb2GykrzfGvX6T7KBXR0wrA&sz=w1620" /></p>
 
    + Thanks [**ZHO-ZHO-ZHO/ComfyUI-BiRefNet-ZHO**](https://github.com/ZHO-ZHO-ZHO/ComfyUI-BiRefNet-ZHO): this project further improves the **UI** for BiRefNet in ComfyUI, especially for **video data**.
-     <p align="center"><img src="https://drive.google.com/uc?export=view&id=1GOqEreyS7ENzTPN0RqxEjaA76RpMlkYM" width="960" /></p>
+     <p align="center"><img src="https://drive.google.com/thumbnail?id=1GOqEreyS7ENzTPN0RqxEjaA76RpMlkYM&sz=w1620" /></p>
      
      <https://github.com/ZhengPeng7/BiRefNet/assets/25921713/3a1c7ab2-9847-4dac-8935-43a2d3cd2671>
 
    + Thanks [**viperyl/ComfyUI-BiRefNet**](https://github.com/viperyl/ComfyUI-BiRefNet): this project packs BiRefNet as **ComfyUI nodes**, and makes this SOTA model easier use for everyone.
-     <p align="center"><img src="https://drive.google.com/uc?export=view&id=1KfxCQUUa2y9T-aysEaeVVjCUt3Z0zSkL" width="960" /></p>
+     <p align="center"><img src="https://drive.google.com/thumbnail?id=1KfxCQUUa2y9T-aysEaeVVjCUt3Z0zSkL&sz=w1620" /></p>
 
 2. **More Visual Comparisons**
    + Thanks [**twitter.com/ZHOZHO672070**](https://twitter.com/ZHOZHO672070) for the comparison with more background-removal methods in images:
 
-     <img src="https://drive.google.com/uc?export=view&id=1nvVIFt_Ezs-crPSQxUDqkUBz598fTe63" />
+     <img src="https://drive.google.com/thumbnail?id=1nvVIFt_Ezs-crPSQxUDqkUBz598fTe63&sz=w1620" />
 
    + Thanks [**twitter.com/toyxyz3**](https://twitter.com/toyxyz3) for the comparison with more background-removal methods in videos:
 
