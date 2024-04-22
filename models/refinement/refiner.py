@@ -65,7 +65,7 @@ class Refiner(nn.Module):
         super(Refiner, self).__init__()
         self.config = Config()
         self.epoch = 1
-        self.stem_layer = StemLayer(in_channels=in_channels, inter_channels=48, out_channels=3)
+        self.stem_layer = StemLayer(in_channels=in_channels, inter_channels=48, out_channels=3, norm_layer='BN' if self.config.batch_size > 1 else 'LN')
         self.bb = build_backbone(self.config.bb)
 
         lateral_channels_in_collection = {

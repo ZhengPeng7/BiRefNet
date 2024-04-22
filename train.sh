@@ -3,7 +3,7 @@
 # DIS/COD/HRSOD: epochs,val_last,step:[500,200,10]/[150,50,10]/[150,50,10] 
 method="$1"
 epochs=600
-val_last=100
+val_last=200
 step=10
 testsets=NO     # Non-existing folder to skip.
 # testsets=TE-COD10K   # for COD

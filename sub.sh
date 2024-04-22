@@ -2,7 +2,7 @@
 # Example: ./sub.sh tmp_proj 0,1,2,3 3 --> Use 0,1,2,3 for training, release GPUs, use GPU:3 for inference.
 
 method=${1:-"BSL"}
-devices=${2:-0}
+devices=${2:-0,1,2,3,4,5,6,7}
 
 # srun --nodes=1 --nodelist=Master,Slave1,Slave2,Slave3,Slave4,Slave5 \
 # --ntasks-per-node=1 \

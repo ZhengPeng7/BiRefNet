@@ -19,8 +19,8 @@ class BasicDecBlk(nn.Module):
         elif config.dec_att == 'ASPPDeformable':
             self.dec_att = ASPPDeformable(in_channels=inter_channels)
         self.conv_out = nn.Conv2d(inter_channels, out_channels, 3, 1, padding=1)
-        self.bn_in = nn.BatchNorm2d(inter_channels)
-        self.bn_out = nn.BatchNorm2d(out_channels)
+        self.bn_in = nn.BatchNorm2d(inter_channels) if config.batch_size > 1 else nn.Identity()
+        self.bn_out = nn.BatchNorm2d(out_channels) if config.batch_size > 1 else nn.Identity()
 
     def forward(self, x):
         x = self.conv_in(x)
@@ -41,7 +41,7 @@ class ResBlk(nn.Module):
         inter_channels = in_channels // 4 if config.dec_channels_inter == 'adap' else 64
 
         self.conv_in = nn.Conv2d(in_channels, inter_channels, 3, 1, padding=1)
-        self.bn_in = nn.BatchNorm2d(inter_channels)
+        self.bn_in = nn.BatchNorm2d(inter_channels) if config.batch_size > 1 else nn.Identity()
         self.relu_in = nn.ReLU(inplace=True)
 
         if config.dec_att == 'ASPP':
@@ -50,7 +50,7 @@ class ResBlk(nn.Module):
             self.dec_att = ASPPDeformable(in_channels=inter_channels)
 
         self.conv_out = nn.Conv2d(inter_channels, out_channels, 3, 1, padding=1)
-        self.bn_out = nn.BatchNorm2d(out_channels)
+        self.bn_out = nn.BatchNorm2d(out_channels) if config.batch_size > 1 else nn.Identity()
         
         self.conv_resi = nn.Conv2d(in_channels, out_channels, 1, 1, 0)
 
