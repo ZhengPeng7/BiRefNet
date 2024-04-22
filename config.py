@@ -33,9 +33,9 @@ class Config():
         self.dec_blk = ['BasicDecBlk', 'ResBlk', 'HierarAttDecBlk'][0]
 
         # TRAINING settings
-        self.batch_size = 4
+        self.batch_size = 2
         self.IoU_finetune_last_epochs = [0, -30][1]        # choose 0 to skip
-        self.lr = 1e-4 * math.sqrt(self.batch_size / 4)     # adapt the lr linearly
+        self.lr = 1e-5 * math.sqrt(self.batch_size / 4)     # adapt the lr linearly
         self.size = 1024
         self.num_workers = max(4, self.batch_size)          # will be decrease to min(it, batch_size) at the initialization of the data_loader
 
