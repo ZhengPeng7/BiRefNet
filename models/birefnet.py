@@ -41,14 +41,6 @@ class BiRefNet(nn.Module):
             ])
 
         self.decoder = Decoder(channels)
-        
-        if self.config.locate_head:
-            self.locate_header = nn.ModuleList([
-                BasicDecBlk(channels[0], channels[-1]),
-                nn.Sequential(
-                    nn.Conv2d(channels[-1], 1, 1, 1, 0),
-                )
-            ])
 
         if self.config.ender:
             self.dec_end = nn.Sequential(
@@ -104,20 +96,6 @@ class BiRefNet(nn.Module):
                 dim=1
             )
         return (x1, x2, x3, x4), class_preds
-
-    # def forward_loc(self, x):
-    #     ########## Encoder ##########
-    #     (x1, x2, x3, x4), class_preds = self.forward_enc(x)
-    #     if self.config.squeeze_block:
-    #         x4 = self.squeeze_module(x4)
-    #     if self.config.locate_head:
-    #         locate_preds = self.locate_header[1](
-    #             F.interpolate(
-    #                 self.locate_header[0](
-    #                     F.interpolate(x4, size=x2.shape[2:], mode='bilinear', align_corners=True)
-    #                 ), size=x.shape[2:], mode='bilinear', align_corners=True
-    #             )
-    #         )
 
     def forward_ori(self, x):
         ########## Encoder ##########

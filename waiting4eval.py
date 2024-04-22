@@ -10,7 +10,7 @@ import argparse
 import torch
 
 from config import Config
-from models.baseline import BiRefNet
+from models.birefnet import BiRefNet
 from dataset import MyData
 from evaluation.valid import valid
 

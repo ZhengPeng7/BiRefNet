@@ -9,7 +9,7 @@ from torch.autograd import Variable
 from config import Config
 from loss import PixLoss, ClsLoss
 from dataset import MyData
-from models.baseline import BiRefNet
+from models.birefnet import BiRefNet
 from utils import Logger, AverageMeter, set_seed, check_state_dict
 from evaluation.valid import valid
 

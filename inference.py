@@ -7,7 +7,7 @@ import torch
 from torch import nn
 
 from dataset import MyData
-from models.baseline import BiRefNet
+from models.birefnet import BiRefNet
 from utils import save_tensor_img, check_state_dict
 from config import Config
 
