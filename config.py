@@ -6,7 +6,7 @@ import torch
 class Config():
     def __init__(self) -> None:
         # PATH settings
-        self.sys_home_dir = '/root'     # Make up your file system as: SYS_HOME_DIR/codes/dis/BiRefNet, SYS_HOME_DIR/datasets/dis/xx, SYS_HOME_DIR/weights/xx
+        self.sys_home_dir = os.environ['HOME']     # Make up your file system as: SYS_HOME_DIR/codes/dis/BiRefNet, SYS_HOME_DIR/datasets/dis/xx, SYS_HOME_DIR/weights/xx
 
         # TASK settings
         self.task = ['DIS5K', 'COD', 'HRSOD'][0]
@@ -76,7 +76,7 @@ class Config():
 
         # TRAINING settings - inactive
         self.preproc_methods = ['flip', 'enhance', 'rotate', 'pepper', 'crop'][:4]
-        self.optimizer = ['Adam', 'AdamW'][0]
+        self.optimizer = ['Adam', 'AdamW'][1]
         self.lr_decay_epochs = [1e5]    # Set to negative N to decay the lr in the last N-th epoch.
         self.lr_decay_rate = 0.5
         # Loss
