@@ -9,11 +9,13 @@ class Config():
         self.sys_home_dir = os.environ['HOME']     # Make up your file system as: SYS_HOME_DIR/codes/dis/BiRefNet, SYS_HOME_DIR/datasets/dis/xx, SYS_HOME_DIR/weights/xx
 
         # TASK settings
-        self.task = ['DIS5K', 'COD', 'HRSOD'][0]
+        self.task = ['DIS5K', 'COD', 'HRSOD', 'DIS5K+HRSOD+HRS10K', 'P3M-10k'][0]
         self.training_set = {
             'DIS5K': 'DIS-TR',
             'COD': 'TR-COD10K+TR-CAMO',
-            'HRSOD': ['TR-DUTS', 'TR-HRSOD+TR-UHRSD', 'TR-DUTS+TR-HRSOD+TR-UHRSD'][1]
+            'HRSOD': ['TR-DUTS', 'TR-HRSOD+TR-UHRSD', 'TR-DUTS+TR-HRSOD+TR-UHRSD'][1],
+            'DIS5K+HRSOD+HRS10K': 'DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4+DIS-TR+TE-HRS10K+TE-HRSOD+TE-UHRSD+TR-HRS10K+TR-HRSOD+TR-UHRSD',     # leave DIS-VD for evaluation.
+            'P3M-10k': 'TR-P3M-10k',
         }[self.task]
 
         # Faster-Training settings
@@ -34,7 +36,16 @@ class Config():
 
         # TRAINING settings
         self.batch_size = 4
-        self.IoU_finetune_last_epochs = [0, -100][1]        # choose 0 to skip
+        self.IoU_finetune_last_epochs = [
+            0,
+            {
+                'DIS5K': -100,
+                'COD': -30,
+                'HRSOD': -30,
+                'DIS5K+HRSOD+HRS10K': -50,
+                'P3M-10k': -30,
+            }[self.task]
+        ][1]    # choose 0 to skip
         self.lr = 1e-4 * math.sqrt(self.batch_size / 4)     # adapt the lr linearly
         self.size = 1024
         self.num_workers = max(4, self.batch_size)          # will be decrease to min(it, batch_size) at the initialization of the data_loader

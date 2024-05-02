@@ -159,6 +159,7 @@ class Decoder(nn.Module):
             DBlock = SimpleConvs
             ic = 64
             ipt_cha_opt = 1
+            self.ipt_blk5 = DBlock(2**10*3 if self.split else 3, [N_dec_ipt, channels[0]//8][ipt_cha_opt], inter_channels=ic)
             self.ipt_blk4 = DBlock(2**8*3 if self.split else 3, [N_dec_ipt, channels[0]//8][ipt_cha_opt], inter_channels=ic)
             self.ipt_blk3 = DBlock(2**6*3 if self.split else 3, [N_dec_ipt, channels[1]//8][ipt_cha_opt], inter_channels=ic)
             self.ipt_blk2 = DBlock(2**4*3 if self.split else 3, [N_dec_ipt, channels[2]//8][ipt_cha_opt], inter_channels=ic)
@@ -166,7 +167,7 @@ class Decoder(nn.Module):
         else:
             self.split = None
 
-        self.decoder_block4 = DecoderBlock(channels[0], channels[1])
+        self.decoder_block4 = DecoderBlock(channels[0]+([N_dec_ipt, channels[0]//8][ipt_cha_opt] if self.config.dec_ipt else 0), channels[1])
         self.decoder_block3 = DecoderBlock(channels[1]+([N_dec_ipt, channels[0]//8][ipt_cha_opt] if self.config.dec_ipt else 0), channels[2])
         self.decoder_block2 = DecoderBlock(channels[2]+([N_dec_ipt, channels[1]//8][ipt_cha_opt] if self.config.dec_ipt else 0), channels[3])
         self.decoder_block1 = DecoderBlock(channels[3]+([N_dec_ipt, channels[2]//8][ipt_cha_opt] if self.config.dec_ipt else 0), channels[3]//2)
@@ -183,15 +184,15 @@ class Decoder(nn.Module):
 
             if self.config.out_ref:
                 _N = 16
-                # self.gdt_convs_4 = nn.Sequential(nn.Conv2d(channels[1], _N, 3, 1, 1), nn.BatchNorm2d(_N) if self.config.batch_size > 1 else nn.Identity(), nn.ReLU(inplace=True))
+                self.gdt_convs_4 = nn.Sequential(nn.Conv2d(channels[1], _N, 3, 1, 1), nn.BatchNorm2d(_N) if self.config.batch_size > 1 else nn.Identity(), nn.ReLU(inplace=True))
                 self.gdt_convs_3 = nn.Sequential(nn.Conv2d(channels[2], _N, 3, 1, 1), nn.BatchNorm2d(_N) if self.config.batch_size > 1 else nn.Identity(), nn.ReLU(inplace=True))
                 self.gdt_convs_2 = nn.Sequential(nn.Conv2d(channels[3], _N, 3, 1, 1), nn.BatchNorm2d(_N) if self.config.batch_size > 1 else nn.Identity(), nn.ReLU(inplace=True))
 
-                # self.gdt_convs_pred_4 = nn.Sequential(nn.Conv2d(_N, 1, 1, 1, 0))
+                self.gdt_convs_pred_4 = nn.Sequential(nn.Conv2d(_N, 1, 1, 1, 0))
                 self.gdt_convs_pred_3 = nn.Sequential(nn.Conv2d(_N, 1, 1, 1, 0))
                 self.gdt_convs_pred_2 = nn.Sequential(nn.Conv2d(_N, 1, 1, 1, 0))
                 
-                # self.gdt_convs_attn_4 = nn.Sequential(nn.Conv2d(_N, 1, 1, 1, 0))
+                self.gdt_convs_attn_4 = nn.Sequential(nn.Conv2d(_N, 1, 1, 1, 0))
                 self.gdt_convs_attn_3 = nn.Sequential(nn.Conv2d(_N, 1, 1, 1, 0))
                 self.gdt_convs_attn_2 = nn.Sequential(nn.Conv2d(_N, 1, 1, 1, 0))
 
@@ -216,14 +217,31 @@ class Decoder(nn.Module):
         else:
             x, x1, x2, x3, x4 = features
         outs = []
+
+        if self.config.dec_ipt:
+            patches_batch = self.get_patches_batch(x, x4) if self.split else x
+            x4 = torch.cat((x4, self.ipt_blk5(F.interpolate(patches_batch, size=x4.shape[2:], mode='bilinear', align_corners=True))), 1)
         p4 = self.decoder_block4(x4)
         m4 = self.conv_ms_spvn_4(p4) if self.config.ms_supervision else None
+        if self.config.out_ref:
+            p4_gdt = self.gdt_convs_4(p4)
+            if self.training:
+                # >> GT:
+                m4_dia = m4
+                gdt_label_main_4 = gdt_gt * F.interpolate(m4_dia, size=gdt_gt.shape[2:], mode='bilinear', align_corners=True)
+                outs_gdt_label.append(gdt_label_main_4)
+                # >> Pred:
+                gdt_pred_4 = self.gdt_convs_pred_4(p4_gdt)
+                outs_gdt_pred.append(gdt_pred_4)
+            gdt_attn_4 = self.gdt_convs_attn_4(p4_gdt).sigmoid()
+            # >> Finally:
+            p4 = p4 * gdt_attn_4
         _p4 = F.interpolate(p4, size=x3.shape[2:], mode='bilinear', align_corners=True)
         _p3 = _p4 + self.lateral_block4(x3)
+
         if self.config.dec_ipt:
             patches_batch = self.get_patches_batch(x, _p3) if self.split else x
             _p3 = torch.cat((_p3, self.ipt_blk4(F.interpolate(patches_batch, size=x3.shape[2:], mode='bilinear', align_corners=True))), 1)
-
         p3 = self.decoder_block3(_p3)
         m3 = self.conv_ms_spvn_3(p3) if self.config.ms_supervision else None
         if self.config.out_ref:
@@ -246,10 +264,10 @@ class Decoder(nn.Module):
             p3 = p3 * gdt_attn_3
         _p3 = F.interpolate(p3, size=x2.shape[2:], mode='bilinear', align_corners=True)
         _p2 = _p3 + self.lateral_block3(x2)
+
         if self.config.dec_ipt:
             patches_batch = self.get_patches_batch(x, _p2) if self.split else x
             _p2 = torch.cat((_p2, self.ipt_blk3(F.interpolate(patches_batch, size=x2.shape[2:], mode='bilinear', align_corners=True))), 1)
-
         p2 = self.decoder_block2(_p2)
         m2 = self.conv_ms_spvn_2(p2) if self.config.ms_supervision else None
         if self.config.out_ref:
@@ -267,12 +285,13 @@ class Decoder(nn.Module):
             p2 = p2 * gdt_attn_2
         _p2 = F.interpolate(p2, size=x1.shape[2:], mode='bilinear', align_corners=True)
         _p1 = _p2 + self.lateral_block2(x1)
+
         if self.config.dec_ipt:
             patches_batch = self.get_patches_batch(x, _p1) if self.split else x
             _p1 = torch.cat((_p1, self.ipt_blk2(F.interpolate(patches_batch, size=x1.shape[2:], mode='bilinear', align_corners=True))), 1)
-
         _p1 = self.decoder_block1(_p1)
         _p1 = F.interpolate(_p1, size=x.shape[2:], mode='bilinear', align_corners=True)
+
         if self.config.dec_ipt:
             patches_batch = self.get_patches_batch(x, _p1) if self.split else x
             _p1 = torch.cat((_p1, self.ipt_blk1(F.interpolate(patches_batch, size=x.shape[2:], mode='bilinear', align_corners=True))), 1)

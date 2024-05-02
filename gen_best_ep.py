@@ -12,20 +12,25 @@ score_panel = {}
 sep = '&'
 metric = ['sm', 'wfm', 'hce'][1]    # we used HCE for DIS for wFm for others.
 
+current_line_nums = []
 for idx_et, eval_txt in enumerate(eval_txts):
     with open(eval_txt, 'r') as f:
         lines = [l for l in f.readlines()[3:] if '.' in l]
-    for idx_line, line in enumerate(lines):
+    current_line_nums.append(len(lines))
+for idx_et, eval_txt in enumerate(eval_txts):
+    with open(eval_txt, 'r') as f:
+        lines = [l for l in f.readlines()[3:] if '.' in l]
+    for idx_line, line in enumerate(lines[:min(current_line_nums)]):    # Consist line numbers by the minimal result file.
         properties = line.strip().strip(sep).split(sep)
         dataset = properties[0].strip()
         ckpt = properties[1].strip()
         if int(ckpt.split('--ep')[-1].strip()) < 0:
             continue
         targe_idx = {
-            'sm': [5, 2, 2],
-            'wfm': [3, 3, 8],
-            'hce': [7, -1, -1]
-        }[metric][['DIS5K', 'COD', 'HRSOD'].index(config.task)]
+            'sm': [5, 2, 2, 5, 2],
+            'wfm': [3, 3, 8, 3, 8],
+            'hce': [7, -1, -1, 7, -1]
+        }[metric][['DIS5K', 'COD', 'HRSOD', 'DIS5K+HRSOD+HRS10K', 'P3M-10k'].index(config.task)]
         if metric != 'hce':
             score_sm = float(properties[targe_idx].strip())
         else:
@@ -61,7 +66,7 @@ for good_model in good_models:
                 for idx_score, metric_score in enumerate(metric_scores):
                     testset_mean_values[metric_names[idx_score]].append(metric_score)
 
-if config.task == 'DIS5K':
+if 'DIS5K' in config.task:
     testset_mean_values_lst = ['{:<4}'.format(int(np.mean(v_lst[:-1]).round())) if name == 'HCE' else '{:.3f}'.format(np.mean(v_lst[:-1])).lstrip('0') for name, v_lst in testset_mean_values.items()]  # [:-1] to remove DIS-VD
     sample_line_for_placing_mean_values = info4good_models[-2]
     numbers_placed_well = sample_line_for_placing_mean_values.replace(sample_line_for_placing_mean_values.split('&')[1].strip(), 'DIS-TEs').strip().split('&')[3:]

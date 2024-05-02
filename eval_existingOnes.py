@@ -33,6 +33,10 @@ def do_eval(opt):
             tb.field_names = ["Dataset", "Method", "Smeasure", "wFmeasure", "meanFm", "maxFm", "meanEm", "maxEm", 'MAE', "adpEm", "adpFm", "HCE"]
         elif config.task == 'HRSOD':
             tb.field_names = ["Dataset", "Method", "Smeasure", "maxFm", "meanEm", 'MAE', "maxEm", "meanFm", "wFmeasure", "adpEm", "adpFm", "HCE"]
+        elif config.task == 'DIS5K+HRSOD+HRS10K':
+            tb.field_names = ["Dataset", "Method", "maxFm", "wFmeasure", 'MAE', "Smeasure", "meanEm", "HCE", "maxEm", "meanFm", "adpEm", "adpFm"]
+        elif config.task == 'P3M-10k':
+            tb.field_names = ["Dataset", "Method", "Smeasure", "maxFm", "meanEm", 'MAE', "maxEm", "meanFm", "wFmeasure", "adpEm", "adpFm", "HCE"]
         else:
             tb.field_names = ["Dataset", "Method", "Smeasure", 'MAE', "maxEm", "meanEm", "maxFm", "meanFm", "wFmeasure", "adpEm", "adpFm", "HCE"]
         for _model_name in opt.model_lst[:]:
@@ -56,6 +60,16 @@ def do_eval(opt):
                     em['adp'].round(3), fm['adp'].round(3), int(hce.round()),
                 ]
             elif config.task == 'HRSOD':
+                scores = [
+                    sm.round(3), fm['curve'].max().round(3), em['curve'].mean().round(3), mae.round(3),
+                    em['curve'].max().round(3), fm['curve'].mean().round(3), wfm.round(3), em['adp'].round(3), fm['adp'].round(3), int(hce.round()),
+                ]
+            elif config.task == 'DIS5K+HRSOD+HRS10K':
+                scores = [
+                    fm['curve'].max().round(3), wfm.round(3), mae.round(3), sm.round(3), em['curve'].mean().round(3), int(hce.round()), 
+                    em['curve'].max().round(3), fm['curve'].mean().round(3), em['adp'].round(3), fm['adp'].round(3),
+                ]
+            elif config.task == 'P3M-10k':
                 scores = [
                     sm.round(3), fm['curve'].max().round(3), em['curve'].mean().round(3), mae.round(3),
                     em['curve'].max().round(3), fm['curve'].mean().round(3), wfm.round(3), em['adp'].round(3), fm['adp'].round(3), int(hce.round()),
@@ -91,7 +105,9 @@ if __name__ == '__main__':
         default={
             'DIS5K': '+'.join(['DIS-VD', 'DIS-TE1', 'DIS-TE2', 'DIS-TE3', 'DIS-TE4'][:]),
             'COD': '+'.join(['TE-COD10K', 'NC4K', 'TE-CAMO', 'CHAMELEON'][:]),
-            'HRSOD': '+'.join(['DAVIS-S', 'TE-HRSOD', 'TE-UHRSD', 'TE-DUTS', 'DUT-OMRON'][:])
+            'HRSOD': '+'.join(['DAVIS-S', 'TE-HRSOD', 'TE-UHRSD', 'TE-DUTS', 'DUT-OMRON'][:]),
+            'DIS5K+HRSOD+HRS10K': '+'.join(['DIS-VD'][:]),
+            'P3M-10k': '+'.join(['TE-P3M-500-P', 'TE-P3M-500-NP'][:]),
         }[config.task])
     parser.add_argument(
         '--save_dir', type=str, help='candidate competitors',
@@ -101,7 +117,7 @@ if __name__ == '__main__':
         default=False)
     parser.add_argument(
         '--metrics', type=str, help='candidate competitors',
-        default='+'.join(['S', 'MAE', 'E', 'F', 'WF', 'HCE'][:100 if config.task == 'DIS5K' else -1]))
+        default='+'.join(['S', 'MAE', 'E', 'F', 'WF', 'HCE'][:100 if 'DIS5K' in config.task else -1]))
     opt = parser.parse_args()
 
     os.makedirs(opt.save_dir, exist_ok=True)
