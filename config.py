@@ -13,7 +13,7 @@ class Config():
         self.training_set = {
             'DIS5K': 'DIS-TR',
             'COD': 'TR-COD10K+TR-CAMO',
-            'HRSOD': ['TR-DUTS', 'TR-HRSOD+TR-UHRSD', 'TR-DUTS+TR-HRSOD+TR-UHRSD'][1],
+            'HRSOD': ['TR-DUTS', 'TR-DUTS+TR-HRSOD', 'TR-DUTS+TR-UHRSD', 'TR-HRSOD+TR-UHRSD', 'TR-DUTS+TR-HRSOD+TR-UHRSD'][3],
             'DIS5K+HRSOD+HRS10K': 'DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4+DIS-TR+TE-HRS10K+TE-HRSOD+TE-UHRSD+TR-HRS10K+TR-HRSOD+TR-UHRSD',     # leave DIS-VD for evaluation.
             'P3M-10k': 'TR-P3M-10k',
         }[self.task]
@@ -102,6 +102,7 @@ class Config():
             'reg': 100 * 0,
             'ssim': 10 * 1,          # help contours,
             'cnt': 5 * 0,          # help contours
+            'structure': 5 * 0,    # structure loss
         }
         self.lambdas_cls = {
             'ce': 5.0

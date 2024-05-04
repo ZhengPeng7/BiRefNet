@@ -86,6 +86,23 @@ class IoULoss(torch.nn.Module):
         return IoU
 
 
+class StructureLoss(torch.nn.Module):
+    def __init__(self):
+        super(StructureLoss, self).__init__()
+
+    def forward(self, pred, target):
+        weit  = 1+5*torch.abs(F.avg_pool2d(target, kernel_size=31, stride=1, padding=15)-target)
+        wbce  = F.binary_cross_entropy_with_logits(pred, target, reduction='none')
+        wbce  = (weit*wbce).sum(dim=(2,3))/weit.sum(dim=(2,3))
+
+        pred  = torch.sigmoid(pred)
+        inter = ((pred * target) * weit).sum(dim=(2, 3))
+        union = ((pred + target) * weit).sum(dim=(2, 3))
+        wiou  = 1-(inter+1)/(union-inter+1)
+
+        return (wbce+wiou).mean()
+
+
 class PatchIoULoss(torch.nn.Module):
     def __init__(self):
         super(PatchIoULoss, self).__init__()
@@ -158,15 +175,16 @@ class PixLoss(nn.Module):
             self.criterions_last['reg'] = ThrReg_loss()
         if 'cnt' in self.lambdas_pix_last and self.lambdas_pix_last['cnt']:
             self.criterions_last['cnt'] = ContourLoss()
+        if 'structure' in self.lambdas_pix_last and self.lambdas_pix_last['structure']:
+            self.criterions_last['structure'] = StructureLoss()
 
     def forward(self, scaled_preds, gt):
         loss = 0.
         for _, pred_lvl in enumerate(scaled_preds):
             if pred_lvl.shape != gt.shape:
                 pred_lvl = nn.functional.interpolate(pred_lvl, size=gt.shape[2:], mode='bilinear', align_corners=True)
-            pred_lvl = pred_lvl.sigmoid()
             for criterion_name, criterion in self.criterions_last.items():
-                _loss = criterion(pred_lvl, gt) * self.lambdas_pix_last[criterion_name]
+                _loss = criterion(pred_lvl.sigmoid() if criterion_name not in ('structure',) else pred_lvl, gt) * self.lambdas_pix_last[criterion_name]
                 loss += _loss
                 # print(criterion_name, _loss.item())
         return loss

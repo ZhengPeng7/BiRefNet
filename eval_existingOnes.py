@@ -121,7 +121,7 @@ if __name__ == '__main__':
     opt = parser.parse_args()
 
     os.makedirs(opt.save_dir, exist_ok=True)
-    opt.model_lst = [m for m in sorted(os.listdir(opt.pred_root), key=lambda x: int(x.split('ep')[-1]), reverse=True) if int(m.split('ep')[-1]) % 1 == 0]
+    opt.model_lst = [m for m in sorted(os.listdir(opt.pred_root), key=lambda x: int(x.split('epoch_')[-1]), reverse=True) if int(m.split('epoch_')[-1]) % 1 == 0]
 
     # check the integrity of each candidates
     if opt.check_integrity:

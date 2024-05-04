@@ -111,7 +111,7 @@ def main():
         models_detected = [
             m for idx_m, m in enumerate(sorted(
                 glob(os.path.join(ckpt_dir, '*.pth')),
-                key=lambda x: int(x.rstrip('.pth').split('ep')[-1]), reverse=True
+                key=lambda x: int(x.rstrip('.pth').split('epoch_')[-1]), reverse=True
             )) if idx_m % args_eval.val_step == args_eval.program_id and m not in models_evaluated + models_evaluated_global
         ]
         if models_detected:
@@ -127,7 +127,7 @@ def main():
             # evaluate the current model
             state_dict = torch.load(model_not_evaluated_latest, map_location=device)
             model.load_state_dict(state_dict, strict=False)
-            validate_model(model, test_loaders, int(model_not_evaluated_latest.rstrip('.pth').split('ep')[-1]))
+            validate_model(model, test_loaders, int(model_not_evaluated_latest.rstrip('.pth').split('epoch_')[-1]))
             continous_sleep_time = 0
             print('Duration of this evaluation:', time() - time_st)
         else:

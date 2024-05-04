@@ -101,7 +101,7 @@ def init_models_optimizers(epochs, to_be_distributed):
             state_dict = torch.load(args.resume, map_location='cpu')
             state_dict = check_state_dict(state_dict)
             model.load_state_dict(state_dict)
-            epoch_st = int(args.resume.rstrip('.pth').split('ep')[-1]) + 1
+            epoch_st = int(args.resume.rstrip('.pth').split('epoch_')[-1]) + 1
         else:
             logger.info("=> no checkpoint found at '{}'".format(args.resume))
     if to_be_distributed:
@@ -301,7 +301,7 @@ def main():
         if epoch >= args.epochs - config.save_last and epoch % config.save_step == 0:
             torch.save(
                 trainer.model.module.state_dict() if to_be_distributed else trainer.model.state_dict(),
-                os.path.join(args.ckpt_dir, 'ep{}.pth'.format(epoch))
+                os.path.join(args.ckpt_dir, 'epoch_{}.pth'.format(epoch))
             )
         if config.val_step and epoch >= args.epochs - config.save_last and (args.epochs - epoch) % config.val_step == 0:
             if to_be_distributed:

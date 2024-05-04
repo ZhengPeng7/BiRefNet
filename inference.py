@@ -54,7 +54,7 @@ def main(args):
         model = BiRefNet(bb_pretrained=False)
     weights_lst = sorted(
         glob(os.path.join(args.ckpt_folder, '*.pth')) if args.ckpt_folder else [args.ckpt],
-        key=lambda x: int(x.split('ep')[-1].split('.pth')[0]),
+        key=lambda x: int(x.split('epoch_')[-1].split('.pth')[0]),
         reverse=True
     )
     for testset in args.testsets.split('+'):
@@ -64,7 +64,7 @@ def main(args):
             batch_size=config.batch_size_valid, shuffle=False, num_workers=config.num_workers, pin_memory=True
         )
         for weights in weights_lst:
-            if int(weights.strip('.pth').split('ep')[-1]) % 1 != 0:
+            if int(weights.strip('.pth').split('epoch_')[-1]) % 1 != 0:
                 continue
             print('\tInferencing {}...'.format(weights))
             # model.load_state_dict(torch.load(weights, map_location='cpu'))
