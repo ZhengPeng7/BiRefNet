@@ -1,10 +1,15 @@
 #!/bin/bash
 # Run script
-# DIS/COD/HRSOD/massive/P3M-10k: epochs,val_last,step:[600,200,10]/[150,50,10]/[150,50,10]/[300,100,10]/[150,50,10]
+# Settings of training & test for different tasks.
 method="$1"
-epochs=600
-val_last=200
-step=10
+task=$(python3 config.py)
+case "${task}" in
+    "DIS5K") epochs=600 && val_last=200 && step=10 ;;
+    "COD") epochs=150 && val_last=50 && step=5 ;;
+    "HRSOD") epochs=150 && val_last=50 && step=5 ;;
+    "DIS5K+HRSOD+HRS10K") epochs=300 && val_last=50 && step=5 ;;
+    "P3M-10k") epochs=150 && val_last=50 && step=5 ;;
+esac
 testsets=NO     # Non-existing folder to skip.
 # testsets=TE-COD10K   # for COD
 

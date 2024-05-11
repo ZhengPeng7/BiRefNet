@@ -1,6 +1,5 @@
 import os
 import math
-import torch
 
 
 class Config():
@@ -13,7 +12,7 @@ class Config():
         self.training_set = {
             'DIS5K': ['DIS-TR', 'DIS-TR+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4'][0],
             'COD': 'TR-COD10K+TR-CAMO',
-            'HRSOD': ['TR-DUTS', 'TR-DUTS+TR-HRSOD', 'TR-DUTS+TR-UHRSD', 'TR-HRSOD+TR-UHRSD', 'TR-DUTS+TR-HRSOD+TR-UHRSD'][3],
+            'HRSOD': ['TR-DUTS', 'TR-HRSOD', 'TR-UHRSD', 'TR-DUTS+TR-HRSOD', 'TR-DUTS+TR-UHRSD', 'TR-HRSOD+TR-UHRSD', 'TR-DUTS+TR-HRSOD+TR-UHRSD'][5],
             'DIS5K+HRSOD+HRS10K': 'DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4+DIS-TR+TE-HRS10K+TE-HRSOD+TE-UHRSD+TR-HRS10K+TR-HRSOD+TR-UHRSD',     # leave DIS-VD for evaluation.
             'P3M-10k': 'TR-P3M-10k',
         }[self.task]
@@ -39,14 +38,14 @@ class Config():
         self.IoU_finetune_last_epochs = [
             0,
             {
-                'DIS5K': -100,
-                'COD': -30,
-                'HRSOD': -30,
-                'DIS5K+HRSOD+HRS10K': -50,
-                'P3M-10k': -30,
+                'DIS5K': -50,
+                'COD': -20,
+                'HRSOD': -20,
+                'DIS5K+HRSOD+HRS10K': -20,
+                'P3M-10k': -20,
             }[self.task]
         ][1]    # choose 0 to skip
-        self.lr = 1e-4 * math.sqrt(self.batch_size / 4)     # adapt the lr linearly
+        self.lr = (1e-4 if 'DIS5K' in self.task else 1e-5) * math.sqrt(self.batch_size / 4)     # DIS needs high lr to converge faster. Adapt the lr linearly
         self.size = 1024
         self.num_workers = max(4, self.batch_size)          # will be decrease to min(it, batch_size) at the initialization of the data_loader
 
@@ -76,7 +75,7 @@ class Config():
         self.progressive_ref = self.refine and True
         self.ender = self.progressive_ref and False
         self.scale = self.progressive_ref and 2
-        self.auxiliary_classification = False
+        self.auxiliary_classification = False       # Only for DIS5K, where class labels are saved in `dataset.py`.
         self.refine_iteration = 1
         self.freeze_bb = False
         self.model = [
@@ -131,13 +130,22 @@ class Config():
         self.SDPA_enabled = False    # Bugs. Slower and errors occur in multi-GPUs
 
         # others
-        self.device = [0, 'cpu'][0 if torch.cuda.is_available() else 1]     # .to(0) == .to('cuda:0')
+        self.device = [0, 'cpu'][0]     # .to(0) == .to('cuda:0')
 
         self.batch_size_valid = 1
         self.rand_seed = 7
         run_sh_file = [f for f in os.listdir('.') if 'train.sh' == f] + [os.path.join('..', f) for f in os.listdir('..') if 'train.sh' == f]
         with open(run_sh_file[0], 'r') as f:
             lines = f.readlines()
-            self.save_last = int([l.strip() for l in lines if 'val_last=' in l][0].split('=')[-1])
-            self.save_step = int([l.strip() for l in lines if 'step=' in l][0].split('=')[-1])
+            self.save_last = int([l.strip() for l in lines if '"{}")'.format(self.task) in l and 'val_last=' in l][0].split('val_last=')[-1].split()[0])
+            self.save_step = int([l.strip() for l in lines if '"{}")'.format(self.task) in l and 'step=' in l][0].split('step=')[-1].split()[0])
         self.val_step = [0, self.save_step][0]
+
+    def print_task(self) -> None:
+        # Return task for choosing settings in shell scripts.
+        print(self.task)
+
+if __name__ == '__main__':
+    config = Config()
+    config.print_task()
+    

@@ -8,24 +8,21 @@ CUDA_VISIBLE_DEVICES=${devices} python inference.py --pred_root ${pred_root}
 echo Inference finished at $(date)
 
 # Evaluation
-log_dir=e_logs
-mkdir ${log_dir}
+log_dir=e_logs && mkdir ${log_dir}
 
-testsets=DIS-VD  && nohup python eval_existingOnes.py --pred_root ${pred_root} --data_lst ${testsets} > ${log_dir}/eval_${testsets}.out 2>&1 &
-testsets=DIS-TE1 && nohup python eval_existingOnes.py --pred_root ${pred_root} --data_lst ${testsets} > ${log_dir}/eval_${testsets}.out 2>&1 &
-testsets=DIS-TE2 && nohup python eval_existingOnes.py --pred_root ${pred_root} --data_lst ${testsets} > ${log_dir}/eval_${testsets}.out 2>&1 &
-testsets=DIS-TE3 && nohup python eval_existingOnes.py --pred_root ${pred_root} --data_lst ${testsets} > ${log_dir}/eval_${testsets}.out 2>&1 &
-testsets=DIS-TE4 && nohup python eval_existingOnes.py --pred_root ${pred_root} --data_lst ${testsets} > ${log_dir}/eval_${testsets}.out 2>&1 &
+task=$(python3 config.py)
+case "${task}" in
+    "DIS5K") testsets='DIS-VD,DIS-TE1,DIS-TE2,DIS-TE3,DIS-TE4' ;;
+    "COD") testsets='CHAMELEON,NC4K,TE-CAMO,TE-COD10K' ;;
+    "HRSOD") testsets='DAVIS-S,TE-HRSOD,TE-UHRSD,DUT-OMRON,TE-DUTS' ;;
+    "DIS5K+HRSOD+HRS10K") testsets='DIS-VD' ;;
+    "P3M-10k") testsets='TE-P3M-500-P,TE-P3M-500-NP' ;;
+esac
+testsets=(`echo ${testsets} | tr ',' ' '`) && testsets=${testsets[@]}
 
-# testsets=CHAMELEON  && nohup python eval_existingOnes.py --pred_root ${pred_root} --data_lst ${testsets} > ${log_dir}/eval_${testsets}.out 2>&1 &
-# testsets=NC4K && nohup python eval_existingOnes.py --pred_root ${pred_root} --data_lst ${testsets} > ${log_dir}/eval_${testsets}.out 2>&1 &
-# testsets=TE-CAMO && nohup python eval_existingOnes.py --pred_root ${pred_root} --data_lst ${testsets} > ${log_dir}/eval_${testsets}.out 2>&1 &
-# testsets=TE-COD10K && nohup python eval_existingOnes.py --pred_root ${pred_root} --data_lst ${testsets} > ${log_dir}/eval_${testsets}.out 2>&1 &
+for testset in ${testsets}; do
+    nohup python eval_existingOnes.py --pred_root ${pred_root} --data_lst ${testset} > ${log_dir}/eval_${testset}.out 2>&1 &
+done
 
-# testsets=DAVIS-S  && nohup python eval_existingOnes.py --pred_root ${pred_root} --data_lst ${testsets} > ${log_dir}/eval_${testsets}.out 2>&1 &
-# testsets=TE-HRSOD  && nohup python eval_existingOnes.py --pred_root ${pred_root} --data_lst ${testsets} > ${log_dir}/eval_${testsets}.out 2>&1 &
-# testsets=TE-UHRSD && nohup python eval_existingOnes.py --pred_root ${pred_root} --data_lst ${testsets} > ${log_dir}/eval_${testsets}.out 2>&1 &
-# testsets=DUT-OMRON && nohup python eval_existingOnes.py --pred_root ${pred_root} --data_lst ${testsets} > ${log_dir}/eval_${testsets}.out 2>&1 &
-# testsets=TE-DUTS && nohup python eval_existingOnes.py --pred_root ${pred_root} --data_lst ${testsets} > ${log_dir}/eval_${testsets}.out 2>&1 &
 
 echo Evaluation started at $(date)
