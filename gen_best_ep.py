@@ -15,6 +15,7 @@ if 'DIS5K' not in config.task:
     metrics.remove('hce')
 
 for metric in metrics:
+    print('Metric:', metric)
     current_line_nums = []
     for idx_et, eval_txt in enumerate(eval_txts):
         with open(eval_txt, 'r') as f:

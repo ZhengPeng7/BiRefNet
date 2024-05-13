@@ -52,10 +52,10 @@ class Config():
         # Backbone settings
         self.bb = [
             'vgg16', 'vgg16bn', 'resnet50',         # 0, 1, 2
-            'pvt_v2_b2', 'pvt_v2_b5',               # 3-bs10, 4-bs5
+            'swin_v1_t', 'swin_v1_s',               # 3, 4
             'swin_v1_b', 'swin_v1_l',               # 5-bs9, 6-bs4
-            'swin_v1_t', 'swin_v1_s',               # 7, 8
-            'pvt_v2_b0', 'pvt_v2_b1',               # 9, 10
+            'pvt_v2_b0', 'pvt_v2_b1',               # 7, 8
+            'pvt_v2_b2', 'pvt_v2_b5',               # 9-bs10, 10-bs5
         ][6]
         self.lateral_channels_in_collection = {
             'vgg16': [512, 256, 128, 64], 'vgg16bn': [512, 256, 128, 64], 'resnet50': [1024, 512, 256, 64],
