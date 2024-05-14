@@ -21,6 +21,7 @@ class Config():
         self.load_all = True
         self.compile = True
         self.precisionHigh = True
+        self.use_fp16 = True
 
         # MODEL settings
         self.ms_supervision = True
@@ -101,7 +102,7 @@ class Config():
             'reg': 100 * 0,
             'ssim': 10 * 1,          # help contours,
             'cnt': 5 * 0,          # help contours
-            'structure': 5 * 0,    # structure loss
+            'structure': 5 * 0,    # structure loss from codes of MVANet. A little improvement on DIS-TE[1,2,3], a bit more decrease on DIS-TE4.
         }
         self.lambdas_cls = {
             'ce': 5.0

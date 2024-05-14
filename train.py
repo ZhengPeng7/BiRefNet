@@ -17,6 +17,7 @@ import torch.multiprocessing as mp
 from torch.utils.data.distributed import DistributedSampler
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.distributed import init_process_group, destroy_process_group, get_rank
+from torch.cuda import amp
 
 
 parser = argparse.ArgumentParser(description='')
@@ -32,6 +33,10 @@ args = parser.parse_args()
 config = Config()
 if config.rand_seed:
     set_seed(config.rand_seed)
+
+# Half Precision
+use_fp16 = True
+scaler = amp.GradScaler(enabled=use_fp16)
 
 # DDP
 to_be_distributed = args.dist
@@ -138,7 +143,7 @@ class Trainer:
         self.model, self.optimizer, self.lr_scheduler = model_opt_lrsch
         self.train_loader, self.test_loaders = data_loaders
         if config.out_ref:
-            self.criterion_gdt = nn.BCELoss()
+            self.criterion_gdt = nn.BCELoss() if not config.use_fp16 else nn.BCEWithLogitsLoss()
 
         # Setting Losses
         self.pix_loss = PixLoss()
@@ -161,7 +166,7 @@ class Trainer:
             disc = disc.to(device)
         if config.compile:
             disc = torch.compile(disc, mode=['default', 'reduce-overhead', 'max-autotune'][0])
-        adv_criterion = nn.BCELoss()
+        adv_criterion = nn.BCELoss() if not config.use_fp16 else nn.BCEWithLogitsLoss()
         if config.optimizer == 'AdamW':
             optimizer_d = optim.AdamW(params=disc.parameters(), lr=config.lr, weight_decay=1e-2)
         elif config.optimizer == 'Adam':
@@ -177,50 +182,105 @@ class Trainer:
         inputs = batch[0].to(device)
         gts = batch[1].to(device)
         class_labels = batch[2].to(device)
-        scaled_preds, class_preds_lst = self.model(inputs)
-        if config.out_ref:
-            (outs_gdt_pred, outs_gdt_label), scaled_preds = scaled_preds
-            for _idx, (_gdt_pred, _gdt_label) in enumerate(zip(outs_gdt_pred, outs_gdt_label)):
-                _gdt_pred = nn.functional.interpolate(_gdt_pred, size=_gdt_label.shape[2:], mode='bilinear', align_corners=True).sigmoid()
-                _gdt_label = _gdt_label.sigmoid()
-                loss_gdt = self.criterion_gdt(_gdt_pred, _gdt_label) if _idx == 0 else self.criterion_gdt(_gdt_pred, _gdt_label) + loss_gdt
-            # self.loss_dict['loss_gdt'] = loss_gdt.item()
-        if None in class_preds_lst:
-            loss_cls = 0.
+        if use_fp16:
+            with amp.autocast(enabled=use_fp16):
+                scaled_preds, class_preds_lst = self.model(inputs)
+                if config.out_ref:
+                    (outs_gdt_pred, outs_gdt_label), scaled_preds = scaled_preds
+                    for _idx, (_gdt_pred, _gdt_label) in enumerate(zip(outs_gdt_pred, outs_gdt_label)):
+                        _gdt_pred = nn.functional.interpolate(_gdt_pred, size=_gdt_label.shape[2:], mode='bilinear', align_corners=True)#.sigmoid()
+                        # _gdt_label = _gdt_label.sigmoid()
+                        loss_gdt = self.criterion_gdt(_gdt_pred, _gdt_label) if _idx == 0 else self.criterion_gdt(_gdt_pred, _gdt_label) + loss_gdt
+                    # self.loss_dict['loss_gdt'] = loss_gdt.item()
+                if None in class_preds_lst:
+                    loss_cls = 0.
+                else:
+                    loss_cls = self.cls_loss(class_preds_lst, class_labels) * 1.0
+                    self.loss_dict['loss_cls'] = loss_cls.item()
+
+                # Loss
+                loss_pix = self.pix_loss(scaled_preds, torch.clamp(gts, 0, 1)) * 1.0
+                self.loss_dict['loss_pix'] = loss_pix.item()
+                # since there may be several losses for sal, the lambdas for them (lambdas_pix) are inside the loss.py
+                loss = loss_pix + loss_cls
+                if config.out_ref:
+                    loss = loss + loss_gdt * 1.0
+
+                if config.lambda_adv_g:
+                    # gen
+                    valid = Variable(torch.cuda.FloatTensor(scaled_preds[-1].shape[0], 1).fill_(1.0), requires_grad=False).to(device)
+                    adv_loss_g = self.adv_criterion(self.disc(scaled_preds[-1] * inputs), valid) * config.lambda_adv_g
+                    loss += adv_loss_g
+                    self.loss_dict['loss_adv'] = adv_loss_g.item()
+                    self.disc_update_for_odd += 1
+            # self.loss_log.update(loss.item(), inputs.size(0))
+            # self.optimizer.zero_grad()
+            # loss.backward()
+            # self.optimizer.step()
+            self.optimizer.zero_grad()
+            scaler.scale(loss).backward()
+            scaler.step(self.optimizer)
+            scaler.update()
+
+            if config.lambda_adv_g and self.disc_update_for_odd % 2 == 0:
+                # disc
+                fake = Variable(torch.cuda.FloatTensor(scaled_preds[-1].shape[0], 1).fill_(0.0), requires_grad=False).to(device)
+                adv_loss_real = self.adv_criterion(self.disc(gts * inputs), valid)
+                adv_loss_fake = self.adv_criterion(self.disc(scaled_preds[-1].detach() * inputs.detach()), fake)
+                adv_loss_d = (adv_loss_real + adv_loss_fake) / 2 * config.lambda_adv_d
+                self.loss_dict['loss_adv_d'] = adv_loss_d.item()
+                # self.optimizer_d.zero_grad()
+                # adv_loss_d.backward()
+                # self.optimizer_d.step()
+                self.optimizer_d.zero_grad()
+                scaler.scale(adv_loss_d).backward()
+                scaler.step(self.optimizer_d)
+                scaler.update()
         else:
-            loss_cls = self.cls_loss(class_preds_lst, class_labels) * 1.0
-            self.loss_dict['loss_cls'] = loss_cls.item()
+            scaled_preds, class_preds_lst = self.model(inputs)
+            if config.out_ref:
+                (outs_gdt_pred, outs_gdt_label), scaled_preds = scaled_preds
+                for _idx, (_gdt_pred, _gdt_label) in enumerate(zip(outs_gdt_pred, outs_gdt_label)):
+                    _gdt_pred = nn.functional.interpolate(_gdt_pred, size=_gdt_label.shape[2:], mode='bilinear', align_corners=True).sigmoid()
+                    _gdt_label = _gdt_label.sigmoid()
+                    loss_gdt = self.criterion_gdt(_gdt_pred, _gdt_label) if _idx == 0 else self.criterion_gdt(_gdt_pred, _gdt_label) + loss_gdt
+                # self.loss_dict['loss_gdt'] = loss_gdt.item()
+            if None in class_preds_lst:
+                loss_cls = 0.
+            else:
+                loss_cls = self.cls_loss(class_preds_lst, class_labels) * 1.0
+                self.loss_dict['loss_cls'] = loss_cls.item()
 
-        # Loss
-        loss_pix = self.pix_loss(scaled_preds, torch.clamp(gts, 0, 1)) * 1.0
-        self.loss_dict['loss_pix'] = loss_pix.item()
-        # since there may be several losses for sal, the lambdas for them (lambdas_pix) are inside the loss.py
-        loss = loss_pix + loss_cls
-        if config.out_ref:
-            loss = loss + loss_gdt * 1.0
+            # Loss
+            loss_pix = self.pix_loss(scaled_preds, torch.clamp(gts, 0, 1)) * 1.0
+            self.loss_dict['loss_pix'] = loss_pix.item()
+            # since there may be several losses for sal, the lambdas for them (lambdas_pix) are inside the loss.py
+            loss = loss_pix + loss_cls
+            if config.out_ref:
+                loss = loss + loss_gdt * 1.0
 
-        if config.lambda_adv_g:
-            # gen
-            valid = Variable(torch.cuda.FloatTensor(scaled_preds[-1].shape[0], 1).fill_(1.0), requires_grad=False).to(device)
-            adv_loss_g = self.adv_criterion(self.disc(scaled_preds[-1] * inputs), valid) * config.lambda_adv_g
-            loss += adv_loss_g
-            self.loss_dict['loss_adv'] = adv_loss_g.item()
-            self.disc_update_for_odd += 1
-        self.loss_log.update(loss.item(), inputs.size(0))
-        self.optimizer.zero_grad()
-        loss.backward()
-        self.optimizer.step()
+            if config.lambda_adv_g:
+                # gen
+                valid = Variable(torch.cuda.FloatTensor(scaled_preds[-1].shape[0], 1).fill_(1.0), requires_grad=False).to(device)
+                adv_loss_g = self.adv_criterion(self.disc(scaled_preds[-1] * inputs), valid) * config.lambda_adv_g
+                loss += adv_loss_g
+                self.loss_dict['loss_adv'] = adv_loss_g.item()
+                self.disc_update_for_odd += 1
+            self.loss_log.update(loss.item(), inputs.size(0))
+            self.optimizer.zero_grad()
+            loss.backward()
+            self.optimizer.step()
 
-        if config.lambda_adv_g and self.disc_update_for_odd % 2 == 0:
-            # disc
-            fake = Variable(torch.cuda.FloatTensor(scaled_preds[-1].shape[0], 1).fill_(0.0), requires_grad=False).to(device)
-            self.optimizer_d.zero_grad()
-            adv_loss_real = self.adv_criterion(self.disc(gts * inputs), valid)
-            adv_loss_fake = self.adv_criterion(self.disc(scaled_preds[-1].detach() * inputs.detach()), fake)
-            adv_loss_d = (adv_loss_real + adv_loss_fake) / 2 * config.lambda_adv_d
-            self.loss_dict['loss_adv_d'] = adv_loss_d.item()
-            adv_loss_d.backward()
-            self.optimizer_d.step()
+            if config.lambda_adv_g and self.disc_update_for_odd % 2 == 0:
+                # disc
+                fake = Variable(torch.cuda.FloatTensor(scaled_preds[-1].shape[0], 1).fill_(0.0), requires_grad=False).to(device)
+                adv_loss_real = self.adv_criterion(self.disc(gts * inputs), valid)
+                adv_loss_fake = self.adv_criterion(self.disc(scaled_preds[-1].detach() * inputs.detach()), fake)
+                adv_loss_d = (adv_loss_real + adv_loss_fake) / 2 * config.lambda_adv_d
+                self.loss_dict['loss_adv_d'] = adv_loss_d.item()
+                self.optimizer_d.zero_grad()
+                adv_loss_d.backward()
+                self.optimizer_d.step()
 
     def train_epoch(self, epoch):
         global logger_loss_idx
