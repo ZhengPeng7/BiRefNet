@@ -21,7 +21,7 @@ class Config():
         self.load_all = True
         self.compile = True
         self.precisionHigh = True
-        self.use_fp16 = True
+        self.use_fp16 = False
 
         # MODEL settings
         self.ms_supervision = True
