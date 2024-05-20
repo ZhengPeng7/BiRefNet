@@ -4,7 +4,7 @@
 method="$1"
 task=$(python3 config.py)
 case "${task}" in
-    "DIS5K") epochs=600 && val_last=200 && step=10 ;;
+    "DIS5K") epochs=600 && val_last=100 && step=5 ;;
     "COD") epochs=150 && val_last=50 && step=5 ;;
     "HRSOD") epochs=150 && val_last=50 && step=5 ;;
     "DIS5K+HRSOD+HRS10K") epochs=250 && val_last=50 && step=5 ;;
@@ -22,10 +22,10 @@ to_be_distributed=`echo ${nproc_per_node} | awk '{if($e > 0) print "True"; else 
 echo Training started at $(date)
 if [ ${to_be_distributed} == "True" ]
 then
-    # Adapt the nproc_per_node by the number of GPUs. Give 29500 as the default value of master_port.
+    # Adapt the nproc_per_node by the number of GPUs. Give 8889 as the default value of master_port.
     echo "Multi-GPU mode received..."
     CUDA_VISIBLE_DEVICES=${devices} \
-    torchrun --nproc_per_node $((nproc_per_node+1)) --master_port=$((29500+${3:-11})) \
+    torchrun --nproc_per_node $((nproc_per_node+1)) --master_port=${3:-8889} \
     train.py --ckpt_dir ckpt/${method} --epochs ${epochs} \
         --testsets ${testsets} \
         --dist ${to_be_distributed}

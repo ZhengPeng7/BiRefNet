@@ -21,7 +21,6 @@ class Config():
         self.load_all = True
         self.compile = True
         self.precisionHigh = True
-        self.use_fp16 = False
 
         # MODEL settings
         self.ms_supervision = True
@@ -128,6 +127,7 @@ class Config():
         # Callbacks - inactive
         self.verbose_eval = True
         self.only_S_MAE = False
+        self.use_fp16 = False   # Bugs. It may cause nan in training.
         self.SDPA_enabled = False    # Bugs. Slower and errors occur in multi-GPUs
 
         # others
