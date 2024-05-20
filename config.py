@@ -19,7 +19,10 @@ class Config():
 
         # Faster-Training settings
         self.load_all = True
-        self.compile = True
+        self.compile = True     # 1. Trigger CPU memory leak in some extend, which is an inherent problem of PyTorch.
+                                #   Machines with > 70GB CPU memory can run the whole training on DIS5K with default setting.
+                                # 2. Higher PyTorch version may fix it: https://github.com/pytorch/pytorch/issues/119607.
+                                # 3. But compile in Pytorch > 2.0.1 seems to bring no acceleration for training.
         self.precisionHigh = True
 
         # MODEL settings
