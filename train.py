@@ -34,9 +34,9 @@ config = Config()
 if config.rand_seed:
     set_seed(config.rand_seed)
 
-# Half Precision
-use_fp16 = True
-scaler = amp.GradScaler(enabled=use_fp16)
+if config.use_fp16:
+    # Half Precision
+    scaler = amp.GradScaler(enabled=config.use_fp16)
 
 # DDP
 to_be_distributed = args.dist
@@ -182,8 +182,8 @@ class Trainer:
         inputs = batch[0].to(device)
         gts = batch[1].to(device)
         class_labels = batch[2].to(device)
-        if use_fp16:
-            with amp.autocast(enabled=use_fp16):
+        if config.use_fp16:
+            with amp.autocast(enabled=config.use_fp16):
                 scaled_preds, class_preds_lst = self.model(inputs)
                 if config.out_ref:
                     (outs_gdt_pred, outs_gdt_label), scaled_preds = scaled_preds
