@@ -30,7 +30,7 @@ def do_eval(opt):
         if config.task == 'DIS5K':
             tb.field_names = ["Dataset", "Method", "maxFm", "wFmeasure", 'MAE', "Smeasure", "meanEm", "HCE", "maxEm", "meanFm", "adpEm", "adpFm"]
         elif config.task == 'COD':
-            tb.field_names = ["Dataset", "Method", "Smeasure", "wFmeasure", "meanFm", "maxFm", "meanEm", "maxEm", 'MAE', "adpEm", "adpFm", "HCE"]
+            tb.field_names = ["Dataset", "Method", "Smeasure", "wFmeasure", "meanFm", "meanEm", "maxEm", 'MAE', "maxFm", "adpEm", "adpFm", "HCE"]
         elif config.task == 'HRSOD':
             tb.field_names = ["Dataset", "Method", "Smeasure", "maxFm", "meanEm", 'MAE', "maxEm", "meanFm", "wFmeasure", "adpEm", "adpFm", "HCE"]
         elif config.task == 'DIS5K+HRSOD+HRS10K':
@@ -56,8 +56,8 @@ def do_eval(opt):
                 ]
             elif config.task == 'COD':
                 scores = [
-                    sm.round(3), wfm.round(3), fm['curve'].mean().round(3), fm['curve'].max().round(3), em['curve'].mean().round(3), em['curve'].max().round(3), mae.round(3),
-                    em['adp'].round(3), fm['adp'].round(3), int(hce.round()),
+                    sm.round(3), wfm.round(3), fm['curve'].mean().round(3), em['curve'].mean().round(3), em['curve'].max().round(3), mae.round(3),
+                    fm['curve'].max().round(3), em['adp'].round(3), fm['adp'].round(3), int(hce.round()),
                 ]
             elif config.task == 'HRSOD':
                 scores = [
