@@ -106,6 +106,7 @@ def init_models_optimizers(epochs, to_be_distributed):
             state_dict = torch.load(args.resume, map_location='cpu')
             state_dict = check_state_dict(state_dict)
             model.load_state_dict(state_dict)
+            global epoch_st
             epoch_st = int(args.resume.rstrip('.pth').split('epoch_')[-1]) + 1
         else:
             logger.info("=> no checkpoint found at '{}'".format(args.resume))
