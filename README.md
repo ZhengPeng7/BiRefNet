@@ -75,7 +75,7 @@ Our BiRefNet has achieved SOTA on many similar HR tasks:
 
 
 
-<details><summary>Segmentation with Box <b>Guidance</b>:</summary>
+<details><summary>Segmentation with box <b>guidance</b>:</summary>
 
 ​	*In progress...*
 
@@ -83,7 +83,7 @@ Our BiRefNet has achieved SOTA on many similar HR tasks:
 
 
 
-<details><summary>Model <b>Efficiency</b>:</summary><p>
+<details><summary>Model <b>efficiency</b>:</summary><p>
 
 > All tests are conducted on a single A100 GPU.
 
