@@ -15,7 +15,6 @@ This repo is the official implementation of "[**Bilateral Reference for High-Res
 > [Wanli Ouyang](https://scholar.google.com/citations?user=pw_0Z_UAAAAJ), &
 > [Nicu Sebe](https://scholar.google.com/citations?user=stFCYOAAAAAJ).
 
-
 [[**arXiv**](https://arxiv.org/abs/2401.03407)] [[**code**](https://github.com/ZhengPeng7/BiRefNet)] [[**stuff**](https://drive.google.com/drive/folders/1s2Xe0cjq-2ctnJBR24563yMSCOu4CcxM)] 
 
 Our BiRefNet has achieved SOTA on many similar HR tasks:
@@ -33,7 +32,61 @@ Our BiRefNet has achieved SOTA on many similar HR tasks:
 + Online **Single Image Inference** on Colab: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/14Dqg7oeBkFEtchaHLNpig2BcdkZEogba?usp=drive_link)
 <img src="https://drive.google.com/thumbnail?id=12XmDhKtO1o2fEvBu4OE4ULVB2BK0ecWi&sz=w1620" />
 
+## Model Zoo
+
+> For more general use of our BiRefNet, I managed to extend the original adademic one to more general ones for better application in real life.
+>
+> Datasets and datasets are suggested to download from official pages. But you can also download the packaged ones: [DIS](https://drive.google.com/drive/folders/1hZW6tAGPJwo9mPS7qGGGdpxuvuXiyoMJ?usp=drive_link), [HRSOD](https://drive.google.com/drive/folders/18_hAE3QM4cwAzEAKXuSNtKjmgFXTQXZN?usp=drive_link), [COD](https://drive.google.com/drive/folders/1EyHmKWsXfaCR9O0BiZEc3roZbRcs4ECO?usp=drive_link), [Backbones](https://drive.google.com/drive/folders/1cmce_emsS8A5ha5XT2c_CZiJzlLM81ms?usp=drive_link).
+>
+> Find performances (almost all metrics) of all models in the `exp-TASK_SETTINGS` folders in [[**stuff**](https://drive.google.com/drive/folders/1s2Xe0cjq-2ctnJBR24563yMSCOu4CcxM)].
+
+<details><summary>Models in the original paper, for **comparison on benchmarks**:</summary>
+
+| Task  |        Training Sets        |   Backbone    |                           Download                           |
+| :---: | :-------------------------: | :-----------: | :----------------------------------------------------------: |
+|  DIS  |          DIS5K-TR           | swin_v1_large | [google-drive](https://drive.google.com/file/d/1J90LucvDQaS3R_-9E7QUh1mgJ8eQvccb/view?usp=drive_link) |
+|  COD  |     COD10K-TR, CAMO-TR      | swin_v1_large | [google-drive](https://drive.google.com/file/d/1tM5M72k7a8aKF-dYy-QXaqvfEhbFaWkC/view?usp=drive_link) |
+| HRSOD |           DUTS-TR           | swin_v1_large | [google-drive](https://drive.google.com/file/d/1f7L0Pb1Y3RkOMbqLCW_zO31dik9AiUFa/view?usp=drive_link) |
+| HRSOD |          HRSOD-TR           | swin_v1_large |                         google-drive                         |
+| HRSOD |          UHRSD-TR           | swin_v1_large |                         google-drive                         |
+| HRSOD |      DUTS-TR, HRSOD-TR      | swin_v1_large | [google-drive](https://drive.google.com/file/d/1WJooyTkhoDLllaqwbpur_9Hle0XTHEs_/view?usp=drive_link) |
+| HRSOD |      DUTS-TR, UHRSD-TR      | swin_v1_large | [google-drive](https://drive.google.com/file/d/1Pu1mv3ORobJatIuUoEuZaWDl2ylP3Gw7/view?usp=drive_link) |
+| HRSOD |     HRSOD-TR, UHRSD-TR      | swin_v1_large | [google-drive](https://drive.google.com/file/d/1xEh7fsgWGaS5c3IffMswasv0_u-aVM9E/view?usp=drive_link) |
+| HRSOD | DUTS-TR, HRSOD-TR, UHRSD-TR | swin_v1_large | [google-drive](https://drive.google.com/file/d/13FaxyyOwyCddfZn2vZo1xG1KNZ3cZ-6B/view?usp=drive_link) |
+
+</details>
+
+<details><summary>Models trained with customed data setting, for **general use in practical application**:</summary>
+
+|      Task       |                        Training Sets                         |   Backbone    | Test Set | Metric (S, wF[, HCE]) |                           Download                           |
+| :-------------: | :----------------------------------------------------------: | :-----------: | :------: | :-------------------: | :----------------------------------------------------------: |
+| **general use** | DIS5K-TR,DIS-TEs, DUTS-TR_TE,HRSOD-TR_TE,UHRSD-TR_TE, HRS10K-TR_TE | swin_v1_large |  DIS-VD  |  0.889, 0.840, 1152   | [google-drive](https://drive.google.com/file/d/1J90LucvDQaS3R_-9E7QUh1mgJ8eQvccb/view?usp=drive_link) |
+| **general use** |                      DIS5K-TR, DIS-TEs                       | swin_v1_large |  DIS-VD  |  0.907, 0.865, 1059   | [google-drive](https://drive.google.com/file/d/1P6NJzG3Jf1sl7js2q1CPC3yqvBn_O8UJ/view?usp=drive_link) |
+
+</details>
+
+<details><summary>Segmentation with Box **Guidance**:</summary>
+
+​	*In progress...*
+
+<details><summary>Model Efficiency</summary>
+
+> All tests are conducted on a single A100-40G GPU.
+
+| BiRefNet |   Backbone    | #Params | torch.compile (default), before inference | FPS  |
+| :------: | :-----------: | :-----: | :---------------------------------------: | :--: |
+|          | swin_v1_large |         |                                           |  10  |
+|          | swin_v1_large |         |                     ✅                     |  12  |
+|          | swin_v1_tiny  |         |                                           |  40  |
+|          | swin_v1_base  |         |                                           |      |
+|          |   pvt_v2_b2   |         |                                           |  30  |
+
+</details>
+
+
+
 ## Third-Party Creations
+
 > Concerning edge devices with less computing power, we provide a lightweight version with `swin_v1_tiny` as the backbone, which is x4+ faster and x5+ smaller. The details can be found in [this issue](https://github.com/ZhengPeng7/BiRefNet/issues/11#issuecomment-2041033576) and links there.
 
 We found there've been some 3rd party applications based on our BiRefNet. Many thanks for their contribution to the community!  
