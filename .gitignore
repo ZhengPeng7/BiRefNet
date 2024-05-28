@@ -8,6 +8,8 @@ nohup.out*
 tmp*
 *.pth
 core-*-python-*
+.DS_Store
+__MACOSX/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
