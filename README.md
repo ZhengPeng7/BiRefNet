@@ -62,12 +62,13 @@ Our BiRefNet has achieved SOTA on many similar HR tasks:
 
 
 
-<details><summary>Models trained with customed data setting, for **general use in practical application**:</summary>
+<details><summary>Models trained with customed data (massive, portrait), for **general use in practical application**:</summary>
 
-|      Task       |                        Training Sets                         |   Backbone    | Test Set | Metric (S, wF[, HCE]) |                           Download                           |
-| :-------------: | :----------------------------------------------------------: | :-----------: | :------: | :-------------------: | :----------------------------------------------------------: |
-| **general use** | DIS5K-TR,DIS-TEs, DUTS-TR_TE,HRSOD-TR_TE,UHRSD-TR_TE, HRS10K-TR_TE | swin_v1_large |  DIS-VD  |  0.889, 0.840, 1152   | [google-drive](https://drive.google.com/file/d/1J90LucvDQaS3R_-9E7QUh1mgJ8eQvccb/view?usp=drive_link) |
-| **general use** |                      DIS5K-TR, DIS-TEs                       | swin_v1_large |  DIS-VD  |  0.907, 0.865, 1059   | [google-drive](https://drive.google.com/file/d/1P6NJzG3Jf1sl7js2q1CPC3yqvBn_O8UJ/view?usp=drive_link) |
+|           Task            |                        Training Sets                         |   Backbone    | Test Set  | Metric (S, wF[, HCE]) |                           Download                           |
+| :-----------------------: | :----------------------------------------------------------: | :-----------: | :-------: | :-------------------: | :----------------------------------------------------------: |
+|      **general use**      | DIS5K-TR,DIS-TEs, DUTS-TR_TE,HRSOD-TR_TE,UHRSD-TR_TE, HRS10K-TR_TE | swin_v1_large |  DIS-VD   |  0.889, 0.840, 1152   | [google-drive](https://drive.google.com/file/d/1J90LucvDQaS3R_-9E7QUh1mgJ8eQvccb/view?usp=drive_link) |
+|      **general use**      |                      DIS5K-TR, DIS-TEs                       | swin_v1_large |  DIS-VD   |  0.907, 0.865, 1059   | [google-drive](https://drive.google.com/file/d/1P6NJzG3Jf1sl7js2q1CPC3yqvBn_O8UJ/view?usp=drive_link) |
+| **portrait segmentation** |                           P3M-10k                            | swin_v1_large | P3M-500-P |     0.982, 0.990      | [google-drive](https://drive.google.com/file/d/1vrjPoOGj05iSxb4MMeznX5k67VlyfZX5/view?usp=drive_link) |
 
 </details>
 
