@@ -32,6 +32,8 @@ Our BiRefNet has achieved SOTA on many similar HR tasks:
 + Online **Single Image Inference** on Colab: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/14Dqg7oeBkFEtchaHLNpig2BcdkZEogba?usp=drive_link)
 <img src="https://drive.google.com/thumbnail?id=12XmDhKtO1o2fEvBu4OE4ULVB2BK0ecWi&sz=w1620" />
 
+
+
 ## Model Zoo
 
 > For more general use of our BiRefNet, I managed to extend the original adademic one to more general ones for better application in real life.
@@ -40,7 +42,9 @@ Our BiRefNet has achieved SOTA on many similar HR tasks:
 >
 > Find performances (almost all metrics) of all models in the `exp-TASK_SETTINGS` folders in [[**stuff**](https://drive.google.com/drive/folders/1s2Xe0cjq-2ctnJBR24563yMSCOu4CcxM)].
 
-<details><summary>Models in the original paper, for **comparison on benchmarks**:</summary>
+
+
+<details><summary>Models in the original paper, for **comparison on benchmarks**:</summary><p>
 
 | Task  |        Training Sets        |   Backbone    |                           Download                           |
 | :---: | :-------------------------: | :-----------: | :----------------------------------------------------------: |
@@ -56,6 +60,8 @@ Our BiRefNet has achieved SOTA on many similar HR tasks:
 
 </details>
 
+
+
 <details><summary>Models trained with customed data setting, for **general use in practical application**:</summary>
 
 |      Task       |                        Training Sets                         |   Backbone    | Test Set | Metric (S, wF[, HCE]) |                           Download                           |
@@ -65,11 +71,17 @@ Our BiRefNet has achieved SOTA on many similar HR tasks:
 
 </details>
 
+
+
 <details><summary>Segmentation with Box **Guidance**:</summary>
 
 ​	*In progress...*
 
-<details><summary>Model Efficiency</summary>
+</details>
+
+
+
+<details><summary>Model Efficiency</summary><p>
 
 > All tests are conducted on a single A100-40G GPU.
 
