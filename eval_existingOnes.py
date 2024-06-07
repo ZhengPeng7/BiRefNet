@@ -16,15 +16,15 @@ config = Config()
 def do_eval(opt):
     # evaluation for whole dataset
     # dataset first in evaluation
-    for _data_name in opt.data_lst.split('+'):
-        pred_data_dir =  sorted(glob(os.path.join(opt.pred_root, opt.model_lst[0], _data_name)))
+    for _data_name in args.data_lst.split('+'):
+        pred_data_dir =  sorted(glob(os.path.join(args.pred_root, args.model_lst[0], _data_name)))
         if not pred_data_dir:
             print('Skip dataset {}.'.format(_data_name))
             continue
-        gt_src = os.path.join(opt.gt_root, _data_name)
+        gt_src = os.path.join(args.gt_root, _data_name)
         gt_paths = sorted(glob(os.path.join(gt_src, 'gt', '*')))
         print('#' * 20, _data_name, '#' * 20)
-        filename = os.path.join(opt.save_dir, '{}_eval.txt'.format(_data_name))
+        filename = os.path.join(args.save_dir, '{}_eval.txt'.format(_data_name))
         tb = pt.PrettyTable()
         tb.vertical_char = '&'
         if config.task == 'DIS5K':
@@ -39,14 +39,14 @@ def do_eval(opt):
             tb.field_names = ["Dataset", "Method", "Smeasure", "maxFm", "meanEm", 'MAE', "maxEm", "meanFm", "wFmeasure", "adpEm", "adpFm", "HCE"]
         else:
             tb.field_names = ["Dataset", "Method", "Smeasure", 'MAE', "maxEm", "meanEm", "maxFm", "meanFm", "wFmeasure", "adpEm", "adpFm", "HCE"]
-        for _model_name in opt.model_lst[:]:
+        for _model_name in args.model_lst[:]:
             print('\t', 'Evaluating model: {}...'.format(_model_name))
-            pred_paths = [p.replace(opt.gt_root, os.path.join(opt.pred_root, _model_name)).replace('/gt/', '/') for p in gt_paths]
+            pred_paths = [p.replace(args.gt_root, os.path.join(args.pred_root, _model_name)).replace('/gt/', '/') for p in gt_paths]
             # print(pred_paths[:1], gt_paths[:1])
             em, sm, fm, mae, wfm, hce = evaluator(
                 gt_paths=gt_paths,
                 pred_paths=pred_paths,
-                metrics=opt.metrics.split('+'),
+                metrics=args.metrics.split('+'),
                 verbose=config.verbose_eval
             )
             if config.task == 'DIS5K':
@@ -118,17 +118,20 @@ if __name__ == '__main__':
     parser.add_argument(
         '--metrics', type=str, help='candidate competitors',
         default='+'.join(['S', 'MAE', 'E', 'F', 'WF', 'HCE'][:100 if 'DIS5K' in config.task else -1]))
-    opt = parser.parse_args()
+    args = parser.parse_args()
 
-    os.makedirs(opt.save_dir, exist_ok=True)
-    opt.model_lst = [m for m in sorted(os.listdir(opt.pred_root), key=lambda x: int(x.split('epoch_')[-1]), reverse=True) if int(m.split('epoch_')[-1]) % 1 == 0]
+    os.makedirs(args.save_dir, exist_ok=True)
+    try:
+        args.model_lst = [m for m in sorted(os.listdir(args.pred_root), key=lambda x: int(x.split('epoch_')[-1]), reverse=True) if int(m.split('epoch_')[-1]) % 1 == 0]
+    except:
+        args.model_lst = [m for m in sorted(os.listdir(args.pred_root))]
 
     # check the integrity of each candidates
-    if opt.check_integrity:
-        for _data_name in opt.data_lst.split('+'):
-            for _model_name in opt.model_lst:
-                gt_pth = os.path.join(opt.gt_root, _data_name)
-                pred_pth = os.path.join(opt.pred_root, _model_name, _data_name)
+    if args.check_integrity:
+        for _data_name in args.data_lst.split('+'):
+            for _model_name in args.model_lst:
+                gt_pth = os.path.join(args.gt_root, _data_name)
+                pred_pth = os.path.join(args.pred_root, _model_name, _data_name)
                 if not sorted(os.listdir(gt_pth)) == sorted(os.listdir(pred_pth)):
                     print(len(sorted(os.listdir(gt_pth))), len(sorted(os.listdir(pred_pth))))
                     print('The {} Dataset of {} Model is not matching to the ground-truth'.format(_data_name, _model_name))
