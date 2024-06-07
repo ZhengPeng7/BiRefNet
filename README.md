@@ -85,15 +85,9 @@ Our BiRefNet has achieved SOTA on many similar HR tasks:
 
 <details><summary>Model <b>efficiency</b>:</summary><p>
 
-> All tests are conducted on a single A100 GPU.
+> Screenshot from the original paper. All tests are conducted on a single A100 GPU.
 
-| BiRefNet |   Backbone    | #Params | torch.compile (default), before inference | FPS  |
-| :------: | :-----------: | :-----: | :---------------------------------------: | :--: |
-|          | swin_v1_large |         |                                           |  10  |
-|          | swin_v1_large |         |                     ✅                     |  12  |
-|          | swin_v1_tiny  |         |                                           |  40  |
-|          | swin_v1_base  |         |                                           |      |
-|          |   pvt_v2_b2   |         |                                           |  30  |
+<img src="https://drive.google.com/thumbnail?id=1mTfSD_qt-rFO1t8DRQcyIa5cgWLf1w2-&sz=h300" />  <img src="https://drive.google.com/thumbnail?id=1F_OURIWILVe4u1rSz-aqt6ur__bAef25&sz=h300" />
 
 </details>
 
@@ -183,17 +177,17 @@ I really hope you enjoy this project and use it in more works to achieve new SOT
 
 ### Quantitative Results
 
-![quan_dis](./materials/quan_dis.png)
+<p align="center"><img src="https://drive.google.com/thumbnail?id=184e84BwLuNu1FytSAQ2EnANZ0RFHKPip&sz=w1620" /></p>
 
-![quan_cod_hrsod](./materials/quan_cod_hrsod.png)
+<p align="center"><img src="https://drive.google.com/thumbnail?id=1W0mi0ZiYbqsaGuohNXU8Gh7Zj4M3neFg&sz=w1620" /></p>
 
 
 
 ### Qualitative Results
 
-![qual_dis](./materials/qual_dis.png)
+<p align="center"><img src="https://drive.google.com/thumbnail?id=1TYZF8pVZc2V0V6g3ik4iAr9iKvJ8BNrf&sz=w1620" /></p>
 
-![qual_cod](./materials/qual_cod.png)
+<p align="center"><img src="https://drive.google.com/thumbnail?id=1ZGHC32CAdT9cwRloPzOCKWCrVQZvUAlJ&sz=w1620" /></p>
 
 
 
