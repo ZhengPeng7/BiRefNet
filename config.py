@@ -16,6 +16,7 @@ class Config():
             'DIS5K+HRSOD+HRS10K': 'DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4+DIS-TR+TE-HRS10K+TE-HRSOD+TE-UHRSD+TR-HRS10K+TR-HRSOD+TR-UHRSD',     # leave DIS-VD for evaluation.
             'P3M-10k': 'TR-P3M-10k',
         }[self.task]
+        self.prompt4loc = False
 
         # Faster-Training settings
         self.load_all = True

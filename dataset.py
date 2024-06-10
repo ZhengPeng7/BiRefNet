@@ -82,7 +82,6 @@ class MyData(data.Dataset):
                     self.cls_name2id[label_path.split('/')[-1].split('#')[3]] if self.is_train and config.auxiliary_classification else -1
                 )
 
-
     def __getitem__(self, index):
 
         if self.load_all:

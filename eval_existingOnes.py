@@ -13,7 +13,7 @@ from config import Config
 config = Config()
 
 
-def do_eval(opt):
+def do_eval(args):
     # evaluation for whole dataset
     # dataset first in evaluation
     for _data_name in args.data_lst.split('+'):
@@ -139,4 +139,4 @@ if __name__ == '__main__':
         print('>>> skip check the integrity of each candidates')
 
     # start engine
-    do_eval(opt)
+    do_eval(args)

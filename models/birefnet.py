@@ -1,11 +1,6 @@
 import torch
 import torch.nn as nn
-from collections import OrderedDict
-import torch
-import torch.nn as nn
 import torch.nn.functional as F
-from torchvision.models import vgg16, vgg16_bn
-from torchvision.models import resnet50
 from kornia.filters import laplacian
 
 from config import Config
@@ -109,37 +104,6 @@ class BiRefNet(nn.Module):
         scaled_preds = self.decoder(features)
         return scaled_preds, class_preds
 
-    # def forward_ref(self, x, pred):
-    #     # refine patch-level segmentation
-    #     if pred.shape[2:] != x.shape[2:]:
-    #         pred = F.interpolate(pred, size=x.shape[2:], mode='bilinear', align_corners=True)
-    #     # pred = pred.sigmoid()
-    #     if self.config.refine == 'itself':
-    #         x = self.stem_layer(torch.cat([x, pred], dim=1))
-    #         scaled_preds, class_preds = self.forward_ori(x)
-    #     else:
-    #         scaled_preds = self.refiner([x, pred])
-    #         class_preds = None
-    #     return scaled_preds, class_preds
-
-    # def forward_ref_end(self, x):
-    #     # remove the grids of concatenated preds
-    #     return self.dec_end(x) if self.config.ender else x
-
-
-    # def forward(self, x):
-    #     if self.config.refine:
-    #         scaled_preds, class_preds_ori = self.forward_ori(F.interpolate(x, size=(x.shape[2]//4, x.shape[3]//4), mode='bilinear', align_corners=True))
-    #         class_preds_lst = [class_preds_ori]
-    #         for _ in range(self.config.refine_iteration):
-    #             scaled_preds_ref, class_preds_ref = self.forward_ref(x, scaled_preds[-1])
-    #             scaled_preds += scaled_preds_ref
-    #             class_preds_lst.append(class_preds_ref)
-    #     else:
-    #         scaled_preds, class_preds = self.forward_ori(x)
-    #         class_preds_lst = [class_preds]
-    #     return [scaled_preds, class_preds_lst] if self.training else scaled_preds
-
     def forward(self, x):
         scaled_preds, class_preds = self.forward_ori(x)
         class_preds_lst = [class_preds]
@@ -195,7 +159,6 @@ class Decoder(nn.Module):
                 self.gdt_convs_attn_4 = nn.Sequential(nn.Conv2d(_N, 1, 1, 1, 0))
                 self.gdt_convs_attn_3 = nn.Sequential(nn.Conv2d(_N, 1, 1, 1, 0))
                 self.gdt_convs_attn_2 = nn.Sequential(nn.Conv2d(_N, 1, 1, 1, 0))
-
 
     def get_patches_batch(self, x, p):
         _size_h, _size_w = p.shape[2:]
