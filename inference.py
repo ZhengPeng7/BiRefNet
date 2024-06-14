@@ -4,7 +4,6 @@ from glob import glob
 from tqdm import tqdm
 import cv2
 import torch
-from torch import nn
 
 from dataset import MyData
 from models.birefnet import BiRefNet
@@ -29,7 +28,7 @@ def inference(model, data_loader_test, pred_root, method, testset, device=0):
         os.makedirs(os.path.join(pred_root, method, testset), exist_ok=True)
 
         for idx_sample in range(scaled_preds.shape[0]):
-            res = nn.functional.interpolate(
+            res = torch.nn.functional.interpolate(
                 scaled_preds[idx_sample].unsqueeze(0),
                 size=cv2.imread(label_paths[idx_sample], cv2.IMREAD_GRAYSCALE).shape[:2],
                 mode='bilinear',

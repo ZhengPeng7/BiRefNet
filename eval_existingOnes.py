@@ -1,10 +1,7 @@
 import os
-import cv2
 import argparse
 from glob import glob
-from tqdm import tqdm
 import prettytable as pt
-import numpy as np
 
 from evaluation.evaluate import evaluator
 from config import Config
