@@ -9,3 +9,4 @@ prettytable
 scipy
 scikit-image
 kornia
+numpy==1.23.1
