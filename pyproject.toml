@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "birefnet"
+version = "0.1.0"
+description = "Bilateral Reference for High-Resolution Dichotomous Image Segmentation"
+authors = ["Your Name <you@example.com>"]
+license = "MIT License"
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.10"
+torch = "2.0.1"
+torchvision = "0.15.2"
+opencv-python = "^4.10.0.84"
+tqdm = "^4.66.4"
+timm = "^1.0.7"
+prettytable = "^3.10.0"
+scipy = "^1.14.0"
+scikit-image = "^0.24.0"
+kornia = "^0.7.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
