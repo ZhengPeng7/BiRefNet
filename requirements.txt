@@ -2,6 +2,7 @@
 torch==2.0.1
 --extra-index-url https://download.pytorch.org/whl/cu118
 torchvision==0.15.2
+numpy<2
 opencv-python
 tqdm
 timm
