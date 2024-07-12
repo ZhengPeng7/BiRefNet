@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from kornia.filters import laplacian
+from huggingface_hub import PyTorchModelHubMixin
 
 from config import Config
 from dataset import class_labels_TR_sorted
@@ -14,7 +15,13 @@ from models.refinement.refiner import Refiner, RefinerPVTInChannels4, RefUNet
 from models.refinement.stem_layer import StemLayer
 
 
-class BiRefNet(nn.Module):
+class BiRefNet(
+    nn.Module,
+    PyTorchModelHubMixin,
+    library_name="birefnet",
+    repo_url="https://github.com/ZhengPeng7/BiRefNet",
+    tags=['Image Segmentation', 'Background Removal', 'Mask Generation', 'Dichotomous Image Segmentation', 'Camouflaged Object Detection', 'Salient Object Detection']
+):
     def __init__(self, bb_pretrained=True):
         super(BiRefNet, self).__init__()
         self.config = Config()

@@ -4,9 +4,12 @@ torch==2.0.1
 torchvision==0.15.2
 numpy<2
 opencv-python
-tqdm
 timm
-prettytable
 scipy
 scikit-image
 kornia
+
+tqdm
+prettytable
+
+huggingface_hub
