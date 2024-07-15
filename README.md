@@ -17,7 +17,7 @@ This repo is the official implementation of "[**Bilateral Reference for High-Res
 
 [[**arXiv**](https://arxiv.org/abs/2401.03407)] [[**code**](https://github.com/ZhengPeng7/BiRefNet)] [[**stuff**](https://drive.google.com/drive/folders/1s2Xe0cjq-2ctnJBR24563yMSCOu4CcxM)]  [[**中文版**](https://drive.google.com/file/d/1aBnJ_R9lbnC2dm8dqD0-pzP2Cu-U1Xpt/view?usp=drive_link)] 
 
-## Load BiRefNet in _ONE LINE_ by HuggingFace, check more info here --> [![BiRefNet](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Models-blue)](https://huggingface.co/ZhengPeng7/birefnet):
+## :rocket: Load BiRefNet in _ONE LINE_ by HuggingFace, check more info here --> [![BiRefNet](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Models-blue)](https://huggingface.co/ZhengPeng7/birefnet):
 ```python
 from transformers import AutoModelForImageSegmentation
 birefnet = AutoModelForImageSegmentation.from_pretrained('zhengpeng7/birefnet', trust_remote_code=True)
