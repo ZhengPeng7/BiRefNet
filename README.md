@@ -1,4 +1,32 @@
-# <p align=center>`Bilateral Reference for High-Resolution Dichotomous Image Segmentation`</p>
+<h1 align="center">Bilateral Reference for High-Resolution Dichotomous Image Segmentation</h1>
+
+<div align='center'>
+    <a href='https://scholar.google.com/citations?user=TZRzWOsAAAAJ' target='_blank'><strong>Peng Zheng</strong></a><sup> 1,4,5,6</sup>&emsp;
+    <a href='https://scholar.google.com/citations?user=0uPb8MMAAAAJ' target='_blank'><strong>Dehong Gao</strong></a><sup> 2</sup>&emsp;
+    <a href='https://scholar.google.com/citations?user=kakwJ5QAAAAJ' target='_blank'><strong>Deng-Ping Fan</strong></a><sup> 1*</sup>&emsp;
+    <a href='https://scholar.google.com/citations?user=9cMQrVsAAAAJ' target='_blank'><strong>Li Liu</strong></a><sup> 3</sup>&emsp;
+    <a href='https://scholar.google.com/citations?user=qQP6WXIAAAAJ' target='_blank'><strong>Jorma Laaksonen</strong></a><sup> 4</sup>&emsp;
+    <a href='https://scholar.google.com/citations?user=pw_0Z_UAAAAJ' target='_blank'><strong>Wanli Ouyang</strong></a><sup> 5</sup>&emsp;
+    <a href='https://scholar.google.com/citations?user=stFCYOAAAAAJ' target='_blank'><strong>Nicu Sebe</strong></a><sup> 6</sup>&emsp;
+</div>
+
+<div align='center'>
+    <sup>1 </sup>Nankai University&emsp; <sup>2 </sup>Northwestern Polytechnical University&emsp; <sup>3 </sup>National University of Defense Technology&emsp; <sup>4 </sup>Aalto University&emsp; <sup>5 </sup>Shanghai AI Laboratory&emsp; <sup>6 </sup>University of Trento&emsp;
+</div>
+
+<div align="center" style="display: flex; justify-content: center; flex-wrap: wrap;">
+  <a href='https://arxiv.org/pdf/2401.03407'><img src='https://img.shields.io/badge/arXiv-BiRefNet-red'></a>&emsp; 
+  <a href='https://arxiv.org/pdf/2401.03407'><img src='https://img.shields.io/badge/中文版-BiRefNet-red'></a>&emsp; 
+  <a href='https://www.birefnet.top'><img src='https://img.shields.io/badge/Page-BiRefNet-green'></a>&emsp; 
+  <a href='https://huggingface.co/spaces/ZhengPeng7/BiRefNet_demo'><img src='https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue'></a>&emsp; 
+  <a href='https://huggingface.co/ZhengPeng7/birefnet'><img src='https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Models-blue'></a>&emsp; 
+  <a href='LICENSE'><img src='https://img.shields.io/badge/License-MIT-yellow'></a>&emsp; 
+</div>
+
+<!-- + **Inference and evaluation** of your given weights: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]()
++ **Online Inference with GUI** with adjustable resolutions: [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/ZhengPeng7/BiRefNet_demo)  
++ Online **Single Image Inference** on Colab: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/14Dqg7oeBkFEtchaHLNpig2BcdkZEogba?usp=drive_link)
+<img src="https://drive.google.com/thumbnail?id=12XmDhKtO1o2fEvBu4OE4ULVB2BK0ecWi&sz=w1620" /> -->
 
 |            *DIS-Sample_1*        |             *DIS-Sample_2*        |
 | :------------------------------: | :-------------------------------: |
@@ -6,18 +34,8 @@
 
 This repo is the official implementation of "[**Bilateral Reference for High-Resolution Dichotomous Image Segmentation**](https://arxiv.org/pdf/2401.03407.pdf)" (___arXiv 2024___).
 
-> **Authors:**
-> [Peng Zheng](https://scholar.google.com/citations?user=TZRzWOsAAAAJ),
-> [Dehong Gao](https://scholar.google.com/citations?user=0uPb8MMAAAAJ),
-> [Deng-Ping Fan](https://scholar.google.com/citations?user=kakwJ5QAAAAJ),
-> [Li Liu](https://scholar.google.com/citations?user=9cMQrVsAAAAJ),
-> [Jorma Laaksonen](https://scholar.google.com/citations?user=qQP6WXIAAAAJ),
-> [Wanli Ouyang](https://scholar.google.com/citations?user=pw_0Z_UAAAAJ), &
-> [Nicu Sebe](https://scholar.google.com/citations?user=stFCYOAAAAAJ).
 
-[[**arXiv**](https://arxiv.org/abs/2401.03407)] [[**code**](https://github.com/ZhengPeng7/BiRefNet)] [[**stuff**](https://drive.google.com/drive/folders/1s2Xe0cjq-2ctnJBR24563yMSCOu4CcxM)]  [[**中文版**](https://drive.google.com/file/d/1aBnJ_R9lbnC2dm8dqD0-pzP2Cu-U1Xpt/view?usp=drive_link)] 
-
-## :rocket: Load BiRefNet in _ONE LINE_ by HuggingFace, check more info here --> [![BiRefNet](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Models-blue)](https://huggingface.co/ZhengPeng7/birefnet):
+## :rocket: Load BiRefNet in _ONE LINE_ by HuggingFace, check more -> [![BiRefNet](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Models-blue)](https://huggingface.co/ZhengPeng7/birefnet):
 ```python
 from transformers import AutoModelForImageSegmentation
 birefnet = AutoModelForImageSegmentation.from_pretrained('zhengpeng7/birefnet', trust_remote_code=True)
@@ -163,7 +181,7 @@ Choose the one you like to try with clicks instead of codes:
 
 ```shell
 # PyTorch==2.0.1 is used for faster training with compilation.
-conda create -n dis python=3.9 -y && conda activate dis
+conda create -n birefnet python=3.9 -y && conda activate birefnet
 pip install -r requirements.txt
 ```
 
@@ -175,13 +193,15 @@ Download combined training / test sets I have organized well from: [DIS](https:/
 
 Download backbone weights from [my google-drive folder](https://drive.google.com/drive/folders/1s2Xe0cjq-2ctnJBR24563yMSCOu4CcxM) or their official pages.
 
-#### Run
+## Run
 
 ```shell
 # Train & Test & Evaluation
 ./train_test.sh RUN_NAME GPU_NUMBERS_FOR_TRAINING GPU_NUMBERS_FOR_TEST
+# Example: ./train_test.sh tmp-proj 0,1,2,3,4,5,6,7 0
+
 # See train.sh / test.sh for only training / test-evaluation.
-# After the evluation, run `gen_best_ep.py` to select the best ckpt from a specific metric (you choose it from Sm, wFm, HCE (DIS only)).
+# After the evaluation, run `gen_best_ep.py` to select the best ckpt from a specific metric (you choose it from Sm, wFm, HCE (DIS only)).
 ```
 
 #### Well-trained weights:
