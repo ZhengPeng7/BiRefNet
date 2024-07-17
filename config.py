@@ -8,7 +8,7 @@ class Config():
         self.sys_home_dir = os.environ['HOME']     # Make up your file system as: SYS_HOME_DIR/codes/dis/BiRefNet, SYS_HOME_DIR/datasets/dis/xx, SYS_HOME_DIR/weights/xx
 
         # TASK settings
-        self.task = ['DIS5K', 'COD', 'HRSOD', 'General', 'Portrait'][-1]
+        self.task = ['DIS5K', 'COD', 'HRSOD', 'General', 'Portrait'][0]
         self.training_set = {
             'DIS5K': ['DIS-TR', 'DIS-TR+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4'][0],
             'COD': 'TR-COD10K+TR-CAMO',
