@@ -8,19 +8,19 @@ class Config():
         self.sys_home_dir = os.environ['HOME']     # Make up your file system as: SYS_HOME_DIR/codes/dis/BiRefNet, SYS_HOME_DIR/datasets/dis/xx, SYS_HOME_DIR/weights/xx
 
         # TASK settings
-        self.task = ['DIS5K', 'COD', 'HRSOD', 'DIS5K+HRSOD+HRS10K', 'P3M-10k'][0]
+        self.task = ['DIS5K', 'COD', 'HRSOD', 'General', 'Portrait'][-1]
         self.training_set = {
             'DIS5K': ['DIS-TR', 'DIS-TR+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4'][0],
             'COD': 'TR-COD10K+TR-CAMO',
             'HRSOD': ['TR-DUTS', 'TR-HRSOD', 'TR-UHRSD', 'TR-DUTS+TR-HRSOD', 'TR-DUTS+TR-UHRSD', 'TR-HRSOD+TR-UHRSD', 'TR-DUTS+TR-HRSOD+TR-UHRSD'][5],
-            'DIS5K+HRSOD+HRS10K': 'DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4+DIS-TR+TE-HRS10K+TE-HRSOD+TE-UHRSD+TR-HRS10K+TR-HRSOD+TR-UHRSD',     # leave DIS-VD for evaluation.
-            'P3M-10k': 'TR-P3M-10k',
+            'General': 'DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4+DIS-TR+TR-HRSOD+TE-HRSOD+TR-HRS10K+TE-HRS10K+TR-UHRSD+TE-UHRSD+TR-P3M-10k+TE-P3M-500-NP+TE-P3M-500-P+TR-humans',    # leave DIS-VD for evaluation.
+            'Portrait': 'TR-P3M-10k+TE-P3M-500-NP+TR-humans',
         }[self.task]
         self.prompt4loc = ['dense', 'sparse'][0]
 
         # Faster-Training settings
-        self.load_all = True
-        self.compile = True     # 1. Trigger CPU memory leak in some extend, which is an inherent problem of PyTorch.
+        self.load_all = 0
+        self.compile = 0     # 1. Trigger CPU memory leak in some extend, which is an inherent problem of PyTorch.
                                 #   Machines with > 70GB CPU memory can run the whole training on DIS5K with default setting.
                                 # 2. Higher PyTorch version may fix it: https://github.com/pytorch/pytorch/issues/119607.
                                 # 3. But compile in Pytorch > 2.0.1 seems to bring no acceleration for training.
@@ -45,8 +45,8 @@ class Config():
                 'DIS5K': -50,
                 'COD': -20,
                 'HRSOD': -20,
-                'DIS5K+HRSOD+HRS10K': -20,
-                'P3M-10k': -20,
+                'General': -20,
+                'Portrait': -20,
             }[self.task]
         ][1]    # choose 0 to skip
         self.lr = (1e-4 if 'DIS5K' in self.task else 1e-5) * math.sqrt(self.batch_size / 4)     # DIS needs high lr to converge faster. Adapt the lr linearly

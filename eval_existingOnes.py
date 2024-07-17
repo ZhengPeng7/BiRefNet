@@ -30,9 +30,9 @@ def do_eval(args):
             tb.field_names = ["Dataset", "Method", "Smeasure", "wFmeasure", "meanFm", "meanEm", "maxEm", 'MAE', "maxFm", "adpEm", "adpFm", "HCE"]
         elif config.task == 'HRSOD':
             tb.field_names = ["Dataset", "Method", "Smeasure", "maxFm", "meanEm", 'MAE', "maxEm", "meanFm", "wFmeasure", "adpEm", "adpFm", "HCE"]
-        elif config.task == 'DIS5K+HRSOD+HRS10K':
+        elif config.task == 'General':
             tb.field_names = ["Dataset", "Method", "maxFm", "wFmeasure", 'MAE', "Smeasure", "meanEm", "HCE", "maxEm", "meanFm", "adpEm", "adpFm"]
-        elif config.task == 'P3M-10k':
+        elif config.task == 'Portrait':
             tb.field_names = ["Dataset", "Method", "Smeasure", "maxFm", "meanEm", 'MAE', "maxEm", "meanFm", "wFmeasure", "adpEm", "adpFm", "HCE"]
         else:
             tb.field_names = ["Dataset", "Method", "Smeasure", 'MAE', "maxEm", "meanEm", "maxFm", "meanFm", "wFmeasure", "adpEm", "adpFm", "HCE"]
@@ -61,12 +61,12 @@ def do_eval(args):
                     sm.round(3), fm['curve'].max().round(3), em['curve'].mean().round(3), mae.round(3),
                     em['curve'].max().round(3), fm['curve'].mean().round(3), wfm.round(3), em['adp'].round(3), fm['adp'].round(3), int(hce.round()),
                 ]
-            elif config.task == 'DIS5K+HRSOD+HRS10K':
+            elif config.task == 'General':
                 scores = [
                     fm['curve'].max().round(3), wfm.round(3), mae.round(3), sm.round(3), em['curve'].mean().round(3), int(hce.round()), 
                     em['curve'].max().round(3), fm['curve'].mean().round(3), em['adp'].round(3), fm['adp'].round(3),
                 ]
-            elif config.task == 'P3M-10k':
+            elif config.task == 'Portrait':
                 scores = [
                     sm.round(3), fm['curve'].max().round(3), em['curve'].mean().round(3), mae.round(3),
                     em['curve'].max().round(3), fm['curve'].mean().round(3), wfm.round(3), em['adp'].round(3), fm['adp'].round(3), int(hce.round()),
@@ -103,8 +103,8 @@ if __name__ == '__main__':
             'DIS5K': '+'.join(['DIS-VD', 'DIS-TE1', 'DIS-TE2', 'DIS-TE3', 'DIS-TE4'][:]),
             'COD': '+'.join(['TE-COD10K', 'NC4K', 'TE-CAMO', 'CHAMELEON'][:]),
             'HRSOD': '+'.join(['DAVIS-S', 'TE-HRSOD', 'TE-UHRSD', 'TE-DUTS', 'DUT-OMRON'][:]),
-            'DIS5K+HRSOD+HRS10K': '+'.join(['DIS-VD'][:]),
-            'P3M-10k': '+'.join(['TE-P3M-500-P', 'TE-P3M-500-NP'][:]),
+            'General': '+'.join(['DIS-VD'][:]),
+            'Portrait': '+'.join(['TE-P3M-500-P'][:]),
         }[config.task])
     parser.add_argument(
         '--save_dir', type=str, help='candidate competitors',

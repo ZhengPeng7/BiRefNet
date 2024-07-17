@@ -120,7 +120,7 @@ Our BiRefNet has achieved SOTA on many similar HR tasks:
 
 
 
-<details><summary>Models trained with customed data (massive, portrait), for <b>general use in practical application</b>:</summary>
+<details><summary>Models trained with customed data (general, portrait), for <b>general use in practical application</b>:</summary>
 
 |           Task            |                        Training Sets                         |   Backbone    | Test Set  | Metric (S, wF[, HCE]) |                           Download                           |
 | :-----------------------: | :----------------------------------------------------------: | :-----------: | :-------: | :-------------------: | :----------------------------------------------------------: |
