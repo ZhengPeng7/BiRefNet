@@ -7,7 +7,7 @@ case "${task}" in
     "DIS5K") epochs=600 && val_last=100 && step=5 ;;
     "COD") epochs=150 && val_last=50 && step=5 ;;
     "HRSOD") epochs=150 && val_last=50 && step=5 ;;
-    "General") epochs=250 && val_last=50 && step=5 ;;
+    "General") epochs=250 && val_last=50 && step=2 ;;
     "Portrait") epochs=150 && val_last=50 && step=5 ;;
 esac
 testsets=NO     # Non-existing folder to skip.
@@ -25,7 +25,7 @@ then
     # Adapt the nproc_per_node by the number of GPUs. Give 8989 as the default value of master_port.
     echo "Multi-GPU mode received..."
     CUDA_VISIBLE_DEVICES=${devices} \
-    torchrun --nproc_per_node $((nproc_per_node+1)) --master_port=${3:-8989} \
+    torchrun --nproc_per_node $((nproc_per_node+1)) --master_port=${3:-8999} \
     train.py --ckpt_dir ckpt/${method} --epochs ${epochs} \
         --testsets ${testsets} \
         --dist ${to_be_distributed}
