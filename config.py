@@ -19,7 +19,7 @@ class Config():
         self.prompt4loc = ['dense', 'sparse'][0]
 
         # Faster-Training settings
-        self.load_all = True
+        self.load_all = True    # Turn it on/off by your case. It may consume a lot of CPU memory. And for multi-GPU (N), it would cost N times the CPU memory to load the data.
         self.use_fp16 = False   # It may cause nan in training.
         self.compile = True and (not self.use_fp16)     # 1. Trigger CPU memory leak in some extend, which is an inherent problem of PyTorch.
                                                         #   Machines with > 70GB CPU memory can run the whole training on DIS5K with default setting.
