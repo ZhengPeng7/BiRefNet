@@ -40,6 +40,8 @@ class MyData(data.Dataset):
         self.is_train = is_train
         self.load_all = config.load_all
         self.device = config.device
+        valid_extensions = ['.png', '.jpg', '.PNG', '.JPG', '.JPEG']
+
         if self.is_train and config.auxiliary_classification:
             self.cls_name2id = {_name: _id for _id, _name in enumerate(class_labels_TR_sorted)}
         self.transform_image = transforms.Compose([
@@ -56,10 +58,10 @@ class MyData(data.Dataset):
         self.image_paths = []
         for dataset in datasets.split('+'):
             image_root = os.path.join(dataset_root, dataset, 'im')
-            self.image_paths += [os.path.join(image_root, p) for p in os.listdir(image_root)]
+            self.image_paths += [os.path.join(image_root, p) for p in os.listdir(image_root) if any(p.endswith(ext) for ext in valid_extensions)]
         self.label_paths = []
         for p in self.image_paths:
-            for ext in ['.png', '.jpg', '.PNG', '.JPG', '.JPEG']:
+            for ext in valid_extensions:
                 ## 'im' and 'gt' may need modifying
                 p_gt = p.replace('/im/', '/gt/')[:-(len(p.split('.')[-1])+1)] + ext
                 file_exists = False
@@ -69,6 +71,10 @@ class MyData(data.Dataset):
                     break
             if not file_exists:
                 print('Not exists:', p_gt)
+
+        if len(self.label_paths) != len(self.image_paths):
+            raise ValueError(f"There are different numbers of images ({len(self.label_paths)}) and labels ({len(self.image_paths)})")
+
         if self.load_all:
             self.images_loaded, self.labels_loaded = [], []
             self.class_labels_loaded = []
