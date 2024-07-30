@@ -127,7 +127,7 @@ Our BiRefNet has achieved SOTA on many similar HR tasks:
 |      **general use**      | DIS5K-TR,DIS-TEs, DUTS-TR_TE,HRSOD-TR_TE,UHRSD-TR_TE, HRS10K-TR_TE, TR-P3M-10k, TE-P3M-500-NP, TE-P3M-500-P, TR-humans | swin_v1_large |  DIS-VD   |  0.911, 0.875, 1069   | [google-drive](https://drive.google.com/file/d/1_IfUnu8Fpfn-nerB89FzdNXQ7zk6FKxc/view?usp=drive_link) |
 |      **general use**      | DIS5K-TR,DIS-TEs, DUTS-TR_TE,HRSOD-TR_TE,UHRSD-TR_TE, HRS10K-TR_TE | swin_v1_tiny  |  DIS-VD   |  0.867, 0.809, 1182   | [google-drive](https://drive.google.com/file/d/16gDZISjNp7rKi5vsJm6_fbYF8ZBK8AoF/view?usp=drive_link) |
 |      **general use**      |                      DIS5K-TR, DIS-TEs                       | swin_v1_large |  DIS-VD   |  0.907, 0.865, 1059   | [google-drive](https://drive.google.com/file/d/1P6NJzG3Jf1sl7js2q1CPC3yqvBn_O8UJ/view?usp=drive_link) |
-| **portrait segmentation** |                           P3M-10k                            | swin_v1_large | P3M-500-P |     0.982, 0.990      | [google-drive](https://drive.google.com/file/d/1vrjPoOGj05iSxb4MMeznX5k67VlyfZX5/view?usp=drive_link) |
+| **portrait segmentation** |                           [P3M-10k](https://github.com/JizhiziLi/P3M), [humans](https://huggingface.co/datasets/schirrmacher/humans)                            | swin_v1_large | P3M-500-P |     0.983, 0.989      | [google-drive](https://drive.google.com/file/d/10qg8uzmUUVO0axHKL641iUJpypr1SQN8/view?usp=drive_link) |
 
 </details>
 
