@@ -28,7 +28,7 @@ then
     torchrun --nproc_per_node $((nproc_per_node+1)) --master_port=${3:-8999} \
     train.py --ckpt_dir ckpt/${method} --epochs ${epochs} \
         --testsets ${testsets} \
-        --dist ${to_be_distributed}
+        --dist ${to_be_distributed} \
         --resume xx/xx-epoch_244.pth
 else
     echo "Single-GPU mode received..."
