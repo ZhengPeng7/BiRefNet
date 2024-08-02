@@ -26,7 +26,7 @@
 
 <div align="center" style="display: flex; justify-content: center; flex-wrap: wrap;">
   <a href='https://huggingface.co/spaces/ZhengPeng7/BiRefNet_demo'><img src='https://img.shields.io/badge/%F0%9F%A4%97%20HF%20Spaces-BiRefNet-blue'></a>&ensp; 
-  <a href='https://huggingface.co/ZhengPeng7/birefnet'><img src='https://img.shields.io/badge/%F0%9F%A4%97%20HF%20Models-BiRefNet-blue'></a>&ensp; 
+  <a href='https://huggingface.co/ZhengPeng7/BiRefNet'><img src='https://img.shields.io/badge/%F0%9F%A4%97%20HF%20Models-BiRefNet-blue'></a>&ensp; 
 </div>
 
 <div align="center" style="display: flex; justify-content: center; flex-wrap: wrap;">
@@ -45,7 +45,7 @@ This repo is the official implementation of "[**Bilateral Reference for High-Res
 ## :rocket: Load BiRefNet in _ONE LINE_ by HuggingFace, check more -> [![BiRefNet](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Models-blue)](https://huggingface.co/ZhengPeng7/birefnet):
 ```python
 from transformers import AutoModelForImageSegmentation
-birefnet = AutoModelForImageSegmentation.from_pretrained('zhengpeng7/birefnet', trust_remote_code=True)
+birefnet = AutoModelForImageSegmentation.from_pretrained('zhengpeng7/BiRefNet', trust_remote_code=True)
 ```
 
 
@@ -125,7 +125,7 @@ Our BiRefNet has achieved SOTA on many similar HR tasks:
 |           Task            |                        Training Sets                         |   Backbone    | Test Set  | Metric (S, wF[, HCE]) |                           Download                           |
 | :-----------------------: | :----------------------------------------------------------: | :-----------: | :-------: | :-------------------: | :----------------------------------------------------------: |
 |      **general use**      | DIS5K-TR,DIS-TEs, DUTS-TR_TE,HRSOD-TR_TE,UHRSD-TR_TE, HRS10K-TR_TE, TR-P3M-10k, TE-P3M-500-NP, TE-P3M-500-P, TR-humans | swin_v1_large |  DIS-VD   |  0.911, 0.875, 1069   | [google-drive](https://drive.google.com/file/d/1_IfUnu8Fpfn-nerB89FzdNXQ7zk6FKxc/view?usp=drive_link) |
-|      **general use**      | DIS5K-TR,DIS-TEs, DUTS-TR_TE,HRSOD-TR_TE,UHRSD-TR_TE, HRS10K-TR_TE | swin_v1_tiny  |  DIS-VD   |  0.867, 0.809, 1182   | [google-drive](https://drive.google.com/file/d/16gDZISjNp7rKi5vsJm6_fbYF8ZBK8AoF/view?usp=drive_link) |
+|      **general use**      | DIS5K-TR,DIS-TEs, DUTS-TR_TE,HRSOD-TR_TE,UHRSD-TR_TE, HRS10K-TR_TE, TR-P3M-10k, TE-P3M-500-NP, TE-P3M-500-P, TR-humans | swin_v1_tiny |  DIS-VD   |  0.882, 0.830, 1175   | [google-drive](https://drive.google.com/file/d/1fzInDWiE2n65tmjaHDSZpqhL0VME6-Yl/view?usp=drive_link) |
 |      **general use**      |                      DIS5K-TR, DIS-TEs                       | swin_v1_large |  DIS-VD   |  0.907, 0.865, 1059   | [google-drive](https://drive.google.com/file/d/1P6NJzG3Jf1sl7js2q1CPC3yqvBn_O8UJ/view?usp=drive_link) |
 | **portrait segmentation** |                           [P3M-10k](https://github.com/JizhiziLi/P3M), [humans](https://huggingface.co/datasets/schirrmacher/humans)                            | swin_v1_large | P3M-500-P |     0.983, 0.989      | [google-drive](https://drive.google.com/file/d/10qg8uzmUUVO0axHKL641iUJpypr1SQN8/view?usp=drive_link) |
 

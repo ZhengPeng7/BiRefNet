@@ -169,6 +169,8 @@ class PixLoss(nn.Module):
             self.criterions_last['iou_patch'] = PatchIoULoss()
         if 'ssim' in self.lambdas_pix_last and self.lambdas_pix_last['ssim']:
             self.criterions_last['ssim'] = SSIMLoss()
+        if 'mae' in self.lambdas_pix_last and self.lambdas_pix_last['mae']:
+            self.criterions_last['mae'] = nn.L1Loss()
         if 'mse' in self.lambdas_pix_last and self.lambdas_pix_last['mse']:
             self.criterions_last['mse'] = nn.MSELoss()
         if 'reg' in self.lambdas_pix_last and self.lambdas_pix_last['reg']:

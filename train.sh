@@ -29,13 +29,14 @@ then
     train.py --ckpt_dir ckpt/${method} --epochs ${epochs} \
         --testsets ${testsets} \
         --dist ${to_be_distributed}
+        --resume xx/xx-epoch_244.pth
 else
     echo "Single-GPU mode received..."
     CUDA_VISIBLE_DEVICES=${devices} \
     python train.py --ckpt_dir ckpt/${method} --epochs ${epochs} \
         --testsets ${testsets} \
         --dist ${to_be_distributed} \
-        --resume ckpt/xx/ep100.pth
+        --resume xx/xx-epoch_244.pth
 fi
 
 echo Training finished at $(date)

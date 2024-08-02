@@ -101,6 +101,7 @@ class Config():
             'bce': 30 * 1,          # high performance
             'iou': 0.5 * 1,         # 0 / 255
             'iou_patch': 0.5 * 0,   # 0 / 255, win_size = (64, 64)
+            'mae': 150 * 0,
             'mse': 150 * 0,         # can smooth the saliency map
             'triplet': 3 * 0,
             'reg': 100 * 0,
