@@ -47,7 +47,7 @@ class Config():
                 'COD': -20,
                 'HRSOD': -20,
                 'General': -20,
-                'Portrait': -20,
+                'Portrait': -10,
             }[self.task]
         ][1]    # choose 0 to skip
         self.lr = (1e-4 if 'DIS5K' in self.task else 1e-5) * math.sqrt(self.batch_size / 4)     # DIS needs high lr to converge faster. Adapt the lr linearly
@@ -101,8 +101,8 @@ class Config():
             'bce': 30 * 1,          # high performance
             'iou': 0.5 * 1,         # 0 / 255
             'iou_patch': 0.5 * 0,   # 0 / 255, win_size = (64, 64)
-            'mae': 150 * 0,
-            'mse': 150 * 0,         # can smooth the saliency map
+            'mae': 30 * 1,
+            'mse': 30 * 0,         # can smooth the saliency map
             'triplet': 3 * 0,
             'reg': 100 * 0,
             'ssim': 10 * 1,          # help contours,
