@@ -14,7 +14,7 @@ class Config():
             'COD': 'TR-COD10K+TR-CAMO',
             'HRSOD': ['TR-DUTS', 'TR-HRSOD', 'TR-UHRSD', 'TR-DUTS+TR-HRSOD', 'TR-DUTS+TR-UHRSD', 'TR-HRSOD+TR-UHRSD', 'TR-DUTS+TR-HRSOD+TR-UHRSD'][5],
             'General': 'DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4+DIS-TR+TR-HRSOD+TE-HRSOD+TR-HRS10K+TE-HRS10K+TR-UHRSD+TE-UHRSD+TR-P3M-10k+TE-P3M-500-NP+TE-P3M-500-P+TR-humans',    # leave DIS-VD for evaluation.
-            'Portrait': 'TR-P3M-10k+TE-P3M-500-NP+TR-humans',
+            'Portrait': 'TR-P3M-10k+TE-P3M-500-NP+TR-humans+TR-Distrinctions-646',
         }[self.task]
         self.prompt4loc = ['dense', 'sparse'][0]
 
@@ -101,7 +101,7 @@ class Config():
             'bce': 30 * 1,          # high performance
             'iou': 0.5 * 1,         # 0 / 255
             'iou_patch': 0.5 * 0,   # 0 / 255, win_size = (64, 64)
-            'mae': 30 * 1,
+            'mae': 30 * (self.task in ['Portrait']),
             'mse': 30 * 0,         # can smooth the saliency map
             'triplet': 3 * 0,
             'reg': 100 * 0,
