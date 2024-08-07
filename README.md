@@ -274,4 +274,5 @@ I really hope you enjoy this project and use it in more works to achieve new SOT
 
 ## Contact
 
-Any question, discussion or even complaint, feel free to leave issues here or send me e-mails (zhengpeng0108@gmail.com).
+Any questions, discussions, or even complaints, feel free to leave issues here or send me e-mails (zhengpeng0108@gmail.com). You can also join the Discord Group (https://discord.gg/d9NN5sgFrq) or QQ Group (https://qm.qq.com/q/y6WPy7WOIK) if you want to talk a lot publicly.
+
