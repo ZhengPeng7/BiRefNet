@@ -40,17 +40,18 @@
 This repo is the official implementation of "[**Bilateral Reference for High-Resolution Dichotomous Image Segmentation**](https://arxiv.org/pdf/2401.03407)" (___CAAI AIR 2024___).
 
 ## News :newspaper:
+* **`Jul 30, 2024`:** Thanks to @not-lain for his kind efforts in adding BiRefNet to the official huggingface.js [repo](https://github.com/huggingface/huggingface.js/blob/3a8651fbc6508920475564a692bf0e5b601d9343/packages/tasks/src/model-libraries-snippets.ts#L763).
 * **`Jul 28, 2024`:** We released the [Colab demo for box-guided segmentation](https://colab.research.google.com/drive/1B6aKZ3ekcvKMkSBn0N5mCASLUYMp0whK).
 * **`Jul 15, 2024`:** We deployed our BiRefNet on [Hugging Face Models](https://huggingface.co/ZhengPeng7/BiRefNet) for users to easily load it in one line code.
 * **`Jun 21, 2024`:** We released and uploaded the Chinese version of our original paper to my [GDrive](https://drive.google.com/file/d/1aBnJ_R9lbnC2dm8dqD0-pzP2Cu-U1Xpt/view).
 * **`May 28, 2024`:** We hold a [model zoo](https://github.com/ZhengPeng7/BiRefNet?tab=readme-ov-file#model-zoo) with well-trained weights of our BiRefNet in different sizes and for different tasks, including general use, portrait segmentation, DIS, HRSOD, COD, etc.
 * **`May 7, 2024`:**  We also released the [Colab demo for single image inference](https://colab.research.google.com/drive/14Dqg7oeBkFEtchaHLNpig2BcdkZEogba). Many thanks to @rishabh063 for his support on it.
 * **`Apr 9, 2024`:**  Thanks to [Features and Labels Inc.](https://fal.ai/) for deploying a cool online BiRefNet [inference API](https://fal.ai/models/fal-ai/birefnet/playground) and providing me with strong GPU resources for further experiments!
-* **`Mar 7, 2024`:**  We released BiRefNet codes, the well-trained weights for all tasks in the original papers, and all related stuff in my [GDrive folder](https://drive.google.com/drive/folders/1s2Xe0cjq-2ctnJBR24563yMSCOu4CcxM). Meanwhile, we also deployed our BiRefNet on [Hugging Face Spaces](https://huggingface.co/spaces/ZhengPeng7/BiRefNet_demo) for easier online use and release the [Colab demo for inference and evaluation](https://colab.research.google.com/drive/1MaEiBfJ4xIaZZn0DqKrhydHB8X97hNXl).
+* **`Mar 7, 2024`:**  We released BiRefNet codes, the well-trained weights for all tasks in the original papers, and all related stuff in my [GDrive folder](https://drive.google.com/drive/folders/1s2Xe0cjq-2ctnJBR24563yMSCOu4CcxM). Meanwhile, we also deployed our BiRefNet on [Hugging Face Spaces](https://huggingface.co/spaces/ZhengPeng7/BiRefNet_demo) for easier online use and released the [Colab demo for inference and evaluation](https://colab.research.google.com/drive/1MaEiBfJ4xIaZZn0DqKrhydHB8X97hNXl).
 * **`Jan 7, 2024`:**  We released our paper on [arXiv](https://arxiv.org/abs/2305.15272).
 
 
-## :rocket: Load BiRefNet in _ONE LINE_ by HuggingFace, check more: [![BiRefNet](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Models-blue)](https://huggingface.co/ZhengPeng7/birefnet):
+## :rocket: Load BiRefNet in _ONE LINE_ by HuggingFace, check more: [![BiRefNet](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Models-blue)](https://huggingface.co/ZhengPeng7/birefnet)
 ```python
 from transformers import AutoModelForImageSegmentation
 birefnet = AutoModelForImageSegmentation.from_pretrained('zhengpeng7/BiRefNet', trust_remote_code=True)
