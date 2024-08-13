@@ -56,7 +56,9 @@ This repo is the official implementation of "[**Bilateral Reference for High-Res
 from transformers import AutoModelForImageSegmentation
 birefnet = AutoModelForImageSegmentation.from_pretrained('zhengpeng7/BiRefNet', trust_remote_code=True)
 ```
-
+## Inference Partner:
+We are really happy to collaborate with [FAL](https://fal.ai) to deploy the **inference API** of BiRefNet. You can access this service via the link below:
++ https://fal.ai/models/fal-ai/birefnet
 
 Our BiRefNet has achieved SOTA on many similar HR tasks:
 
@@ -246,7 +248,7 @@ I really hope you enjoy this project and use it in more works to achieve new SOT
 
 ### Quantitative Results
 
-<p align="center"><img src="https://drive.google.com/thumbnail?id=184e84BwLuNu1FytSAQ2EnANZ0RFHKPip&sz=w1620" /></p>
+<p align="center"><img src="https://drive.google.com/thumbnail?id=1Ymkh8WN16XMTBOS8dmPTg5eAf-NIl2m5&sz=w1620" /></p>
 
 <p align="center"><img src="https://drive.google.com/thumbnail?id=1W0mi0ZiYbqsaGuohNXU8Gh7Zj4M3neFg&sz=w1620" /></p>
 
