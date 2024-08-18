@@ -36,10 +36,18 @@ def evaluator(gt_paths, pred_paths, metrics=['S', 'MAE', 'E', 'F', 'WF', 'HCE'],
         pred = pred_paths[idx_sample]
 
         pred = pred[:-4] + '.png'
-        if os.path.exists(pred):
+        valid_extensions = ['.png', '.jpg', '.PNG', '.JPG', '.JPEG']
+        file_exists = False
+        for ext in valid_extensions:
+            if os.path.exists(pred[:-4] + ext):
+                pred = pred[:-4] + ext
+                file_exists = True
+                break
+        if file_exists:
             pred_ary = cv2.imread(pred, cv2.IMREAD_GRAYSCALE)
         else:
-            pred_ary = cv2.imread(pred.replace('.png', '.jpg'), cv2.IMREAD_GRAYSCALE)
+            print('Not exists:', pred)
+
         gt_ary = cv2.imread(gt, cv2.IMREAD_GRAYSCALE)
         pred_ary = cv2.resize(pred_ary, (gt_ary.shape[1], gt_ary.shape[0]))
 
