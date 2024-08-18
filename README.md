@@ -40,6 +40,7 @@
 This repo is the official implementation of "[**Bilateral Reference for High-Resolution Dichotomous Image Segmentation**](https://arxiv.org/pdf/2401.03407)" (___CAAI AIR 2024___).
 
 ## News :newspaper:
+* **`Aug 19, 2024`:** We uploaded the ONNX model files of all weights in the [GitHub release](https://github.com/ZhengPeng7/BiRefNet/releases/tag/v1) and [GDrive folder](https://drive.google.com/drive/u/0/folders/1kZM55bwsRdS__bdnsXpkmH6QPyza-9-N).
 * **`Jul 30, 2024`:** Thanks to @not-lain for his kind efforts in adding BiRefNet to the official huggingface.js [repo](https://github.com/huggingface/huggingface.js/blob/3a8651fbc6508920475564a692bf0e5b601d9343/packages/tasks/src/model-libraries-snippets.ts#L763).
 * **`Jul 28, 2024`:** We released the [Colab demo for box-guided segmentation](https://colab.research.google.com/drive/1B6aKZ3ekcvKMkSBn0N5mCASLUYMp0whK).
 * **`Jul 15, 2024`:** We deployed our BiRefNet on [Hugging Face Models](https://huggingface.co/ZhengPeng7/BiRefNet) for users to easily load it in one line code.
@@ -161,6 +162,19 @@ Our BiRefNet has achieved SOTA on many similar HR tasks:
 </details>
 
 
+
+<details><summary><b>ONNX</b> conversion:</summary>
+
+> We converted from `.pth` weights files to `.onnx` files.  
+> We referred a lot to the [Kazuhito00/BiRefNet-ONNX-Sample](https://github.com/Kazuhito00/BiRefNet-ONNX-Sample), many thanks to @Kazuhito00.
+
++ Check our [Colab demo for ONNX conversion](https://colab.research.google.com/drive/1z6OruR52LOvDDpnp516F-N4EyPGrp5om#scrollTo=mj3nbp-Cl6Lw) or the [notebook file for local running](https://drive.google.com/file/d/1cgL2qyvOO5q3ySfhytypX46swdQwZLrJ/view?usp=drive_link), where you can do the conversion/inference by yourself and find all relevant info.
++ As tested, BiRefNets with SwinL (default backbone) cost `~90%` more time (the inference costs `~165ms` on an A100 GPU) using ONNX files. Meanwhile, BiRefNets with SwinT (lightweight) cost `~75%` more time (the inference costs `~93.8ms` on an A100 GPU) using ONNX files. Input resolution is `1024x1024` as default.
++ The results of the original pth files and the converted onnx files are slightly different, which is acceptable.
++ Pay attention to the compatibility among `onnxruntime-gpu, CUDA, and CUDNN` (we use `torch==2.0.1, cuda=11.8` here).
+
+
+</details>
 
 ## Third-Party Creations
 
