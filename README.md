@@ -18,7 +18,7 @@
 
 <div align="center" style="display: flex; justify-content: center; flex-wrap: wrap;">
   <a href='https://arxiv.org/pdf/2401.03407'><img src='https://img.shields.io/badge/arXiv-Paper-red'></a>&ensp; 
-  <a href='https://drive.google.com/file/d/1aBnJ_R9lbnC2dm8dqD0-pzP2Cu-U1Xpt/view'><img src='https://img.shields.io/badge/中文版-Paper-red'></a>&ensp; 
+  <a href='https://drive.google.com/file/d/1FWvKDWTnK9RsiywfCsIxsnQzqv-dlO5u/view'><img src='https://img.shields.io/badge/中文版-Paper-red'></a>&ensp; 
   <a href='https://www.birefnet.top'><img src='https://img.shields.io/badge/Page-Project-red'></a>&ensp; 
   <a href='https://drive.google.com/drive/folders/1s2Xe0cjq-2ctnJBR24563yMSCOu4CcxM'><img src='https://img.shields.io/badge/GDrive-Stuff-green'></a>&ensp; 
   <a href='LICENSE'><img src='https://img.shields.io/badge/License-MIT-yellow'></a>&ensp; 
