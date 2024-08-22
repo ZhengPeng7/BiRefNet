@@ -4,8 +4,12 @@ import math
 
 class Config():
     def __init__(self) -> None:
-        # PATH settings
-        self.sys_home_dir = os.environ['HOME']     # Make up your file system as: SYS_HOME_DIR/codes/dis/BiRefNet, SYS_HOME_DIR/datasets/dis/xx, SYS_HOME_DIR/weights/xx
+              # PATH settings
+        # Make up your file system as: SYS_HOME_DIR/codes/dis/BiRefNet, SYS_HOME_DIR/datasets/dis/xx, SYS_HOME_DIR/weights/xx
+        if os.name == 'nt': 
+            self.sys_home_dir = os.environ['USERPROFILE'] # For windows system
+        else:
+            self.sys_home_dir = os.environ['HOME'] # For Linux system
 
         # TASK settings
         self.task = ['DIS5K', 'COD', 'HRSOD', 'General', 'Portrait'][0]
