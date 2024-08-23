@@ -285,6 +285,8 @@ I really hope you enjoy this project and use it in more works to achieve new SOT
   title={Bilateral Reference for High-Resolution Dichotomous Image Segmentation},
   author={Zheng, Peng and Gao, Dehong and Fan, Deng-Ping and Liu, Li and Laaksonen, Jorma and Ouyang, Wanli and Sebe, Nicu},
   journal={CAAI Artificial Intelligence Research},
+  volume = {3},
+  pages = {9150038},
   year={2024}
 }
 ```
