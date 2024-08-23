@@ -17,6 +17,7 @@
 </div>
 
 <div align="center" style="display: flex; justify-content: center; flex-wrap: wrap;">
+  <a href='https://www.sciopen.com/article/pdf/10.26599/AIR.2024.9150038.pdf'><img src='https://img.shields.io/badge/Journal-Paper-red'></a>&ensp; 
   <a href='https://arxiv.org/pdf/2401.03407'><img src='https://img.shields.io/badge/arXiv-Paper-red'></a>&ensp; 
   <a href='https://drive.google.com/file/d/1FWvKDWTnK9RsiywfCsIxsnQzqv-dlO5u/view'><img src='https://img.shields.io/badge/中文版-Paper-red'></a>&ensp; 
   <a href='https://www.birefnet.top'><img src='https://img.shields.io/badge/Page-Project-red'></a>&ensp; 
@@ -40,6 +41,7 @@
 This repo is the official implementation of "[**Bilateral Reference for High-Resolution Dichotomous Image Segmentation**](https://arxiv.org/pdf/2401.03407)" (___CAAI AIR 2024___).
 
 ## News :newspaper:
+* **`Aug 23, 2024`:** Our BiRefNet is now officially released [online](https://www.sciopen.com/article/10.26599/AIR.2024.9150038) on CAAI AIR journal. And thanks to the [press release](https://www.eurekalert.org/news-releases/1055380).
 * **`Aug 19, 2024`:** We uploaded the ONNX model files of all weights in the [GitHub release](https://github.com/ZhengPeng7/BiRefNet/releases/tag/v1) and [GDrive folder](https://drive.google.com/drive/u/0/folders/1kZM55bwsRdS__bdnsXpkmH6QPyza-9-N).
 * **`Jul 30, 2024`:** Thanks to @not-lain for his kind efforts in adding BiRefNet to the official huggingface.js [repo](https://github.com/huggingface/huggingface.js/blob/3a8651fbc6508920475564a692bf0e5b601d9343/packages/tasks/src/model-libraries-snippets.ts#L763).
 * **`Jul 28, 2024`:** We released the [Colab demo for box-guided segmentation](https://colab.research.google.com/drive/1B6aKZ3ekcvKMkSBn0N5mCASLUYMp0whK).
