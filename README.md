@@ -28,7 +28,7 @@
 </div>
 
 <div align="center" style="display: flex; justify-content: center; flex-wrap: wrap;">
-  <a href='https://colab.research.google.com/drive/14Dqg7oeBkFEtchaHLNpig2BcdkZEogba'><img src='https://img.shields.io/badge/Single_Image_Inference-F9AB00?style=for-the-badge&logo=googlecolab&color=525252'></a>&ensp; 
+  <a href='https://colab.research.google.com/drive/14Dqg7oeBkFEtchaHLNpig2BcdkZEogba'><img src='https://img.shields.io/badge/Multiple_Images_Inference-F9AB00?style=for-the-badge&logo=googlecolab&color=525252'></a>&ensp; 
   <a href='https://colab.research.google.com/drive/1MaEiBfJ4xIaZZn0DqKrhydHB8X97hNXl'><img src='https://img.shields.io/badge/Inference_&_Evaluation-F9AB00?style=for-the-badge&logo=googlecolab&color=525252'></a>&ensp; 
   <a href='https://colab.research.google.com/drive/1B6aKZ3ekcvKMkSBn0N5mCASLUYMp0whK'><img src='https://img.shields.io/badge/Box_Guided_Segmentation-F9AB00?style=for-the-badge&logo=googlecolab&color=525252'></a>&ensp; 
 </div>
