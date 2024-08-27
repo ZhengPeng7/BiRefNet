@@ -108,9 +108,9 @@ Our BiRefNet has achieved SOTA on many similar HR tasks:
 
 ## Model Zoo
 
-> For more general use of our BiRefNet, I managed to extend the original adademic one to more general ones for better application in real life.
+> For more general use of our BiRefNet, I extended the original academic one to more general ones for better real-life application.
 >
-> Datasets and datasets are suggested to download from official pages. But you can also download the packaged ones: [DIS](https://drive.google.com/drive/folders/1hZW6tAGPJwo9mPS7qGGGdpxuvuXiyoMJ), [HRSOD](https://drive.google.com/drive/folders/18_hAE3QM4cwAzEAKXuSNtKjmgFXTQXZN), [COD](https://drive.google.com/drive/folders/1EyHmKWsXfaCR9O0BiZEc3roZbRcs4ECO), [Backbones](https://drive.google.com/drive/folders/1cmce_emsS8A5ha5XT2c_CZiJzlLM81ms).
+> Datasets and datasets are suggested to be downloaded from official pages. But you can also download the packaged ones: [DIS](https://drive.google.com/drive/folders/1hZW6tAGPJwo9mPS7qGGGdpxuvuXiyoMJ), [HRSOD](https://drive.google.com/drive/folders/18_hAE3QM4cwAzEAKXuSNtKjmgFXTQXZN), [COD](https://drive.google.com/drive/folders/1EyHmKWsXfaCR9O0BiZEc3roZbRcs4ECO), [Backbones](https://drive.google.com/drive/folders/1cmce_emsS8A5ha5XT2c_CZiJzlLM81ms).
 >
 > Find performances (almost all metrics) of all models in the `exp-TASK_SETTINGS` folders in [[**stuff**](https://drive.google.com/drive/folders/1s2Xe0cjq-2ctnJBR24563yMSCOu4CcxM)].
 
@@ -185,6 +185,8 @@ Our BiRefNet has achieved SOTA on many similar HR tasks:
 We found there've been some 3rd party applications based on our BiRefNet. Many thanks for their contribution to the community!  
 Choose the one you like to try with clicks instead of codes:  
 1. **Applications**:
+   + Thanks [**lbq779660843/BiRefNet-Tensorrt**](https://github.com/lbq779660843/BiRefNet-Tensorrt) and [**yuanyang1991/birefnet_tensorrt**](https://github.com/yuanyang1991/birefnet_tensorrt): they both provided the project to convert BiRefNet to **TensorRT**, which is faster and better for deployment. Their repos offer solid local establishment (Win and Linux) and [colab demo](https://colab.research.google.com/drive/1r8GkFPyMMO0OkMX6ih5FjZnUCQrl2SHV?usp=sharing), respectively.
+
    + Thanks [**dimitribarbot/sd-webui-birefnet**](https://github.com/dimitribarbot/sd-webui-birefnet): this project allows to add a BiRefNet section to the original **Stable Diffusion WebUI**'s Extras tab.
      <p align="center"><img src="https://drive.google.com/thumbnail?id=159bLXI71FWh4ZsHTvc-wApSN9ytVRmua&sz=w1620" /></p>
 
