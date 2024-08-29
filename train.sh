@@ -7,8 +7,8 @@ case "${task}" in
     "DIS5K") epochs=600 && val_last=100 && step=5 ;;
     "COD") epochs=150 && val_last=50 && step=5 ;;
     "HRSOD") epochs=150 && val_last=50 && step=5 ;;
-    "General") epochs=250 && val_last=50 && step=2 ;;
-    "Portrait") epochs=150 && val_last=50 && step=2 ;;
+    "General") epochs=250 && val_last=50 && step=5 ;;
+    "Matting") epochs=100 && val_last=20 && step=2 ;;
 esac
 testsets=NO     # Non-existing folder to skip.
 # testsets=TE-COD10K   # for COD

@@ -25,22 +25,22 @@ def do_eval(args):
         tb = pt.PrettyTable()
         tb.vertical_char = '&'
         if config.task == 'DIS5K':
-            tb.field_names = ["Dataset", "Method", "maxFm", "wFmeasure", 'MAE', "Smeasure", "meanEm", "HCE", "maxEm", "meanFm", "adpEm", "adpFm"]
+            tb.field_names = ["Dataset", "Method", "maxFm", "wFmeasure", 'MAE', "Smeasure", "meanEm", "HCE", "maxEm", "meanFm", "adpEm", "adpFm", 'mBA', 'maxBIoU', 'meanBIoU']
         elif config.task == 'COD':
-            tb.field_names = ["Dataset", "Method", "Smeasure", "wFmeasure", "meanFm", "meanEm", "maxEm", 'MAE', "maxFm", "adpEm", "adpFm", "HCE"]
+            tb.field_names = ["Dataset", "Method", "Smeasure", "wFmeasure", "meanFm", "meanEm", "maxEm", 'MAE', "maxFm", "adpEm", "adpFm", "HCE", 'mBA', 'maxBIoU', 'meanBIoU']
         elif config.task == 'HRSOD':
-            tb.field_names = ["Dataset", "Method", "Smeasure", "maxFm", "meanEm", 'MAE', "maxEm", "meanFm", "wFmeasure", "adpEm", "adpFm", "HCE"]
+            tb.field_names = ["Dataset", "Method", "Smeasure", "maxFm", "meanEm", 'MAE', "maxEm", "meanFm", "wFmeasure", "adpEm", "adpFm", "HCE", 'mBA', 'maxBIoU', 'meanBIoU']
         elif config.task == 'General':
-            tb.field_names = ["Dataset", "Method", "maxFm", "wFmeasure", 'MAE', "Smeasure", "meanEm", "HCE", "maxEm", "meanFm", "adpEm", "adpFm"]
-        elif config.task == 'Portrait':
-            tb.field_names = ["Dataset", "Method", "Smeasure", "maxFm", "meanEm", 'MAE', "maxEm", "meanFm", "wFmeasure", "adpEm", "adpFm", "HCE"]
+            tb.field_names = ["Dataset", "Method", "maxFm", "wFmeasure", 'MAE', "Smeasure", "meanEm", "HCE", "maxEm", "meanFm", "adpEm", "adpFm", 'mBA', 'maxBIoU', 'meanBIoU']
+        elif config.task == 'Matting':
+            tb.field_names = ["Dataset", "Method", "Smeasure", "maxFm", "meanEm", 'MSE', "maxEm", "meanFm", "wFmeasure", "adpEm", "adpFm", "HCE", 'mBA', 'maxBIoU', 'meanBIoU']
         else:
-            tb.field_names = ["Dataset", "Method", "Smeasure", 'MAE', "maxEm", "meanEm", "maxFm", "meanFm", "wFmeasure", "adpEm", "adpFm", "HCE"]
+            tb.field_names = ["Dataset", "Method", "Smeasure", 'MAE', "maxEm", "meanEm", "maxFm", "meanFm", "wFmeasure", "adpEm", "adpFm", "HCE", 'mBA', 'maxBIoU', 'meanBIoU']
         for _model_name in args.model_lst[:]:
             print('\t', 'Evaluating model: {}...'.format(_model_name))
             pred_paths = [p.replace(args.gt_root, os.path.join(args.pred_root, _model_name)).replace('/gt/', '/') for p in gt_paths]
             # print(pred_paths[:1], gt_paths[:1])
-            em, sm, fm, mae, wfm, hce = evaluator(
+            em, sm, fm, mae, wfm, hce, mba, biou = evaluator(
                 gt_paths=gt_paths,
                 pred_paths=pred_paths,
                 metrics=args.metrics.split('+'),
@@ -50,34 +50,40 @@ def do_eval(args):
                 scores = [
                     fm['curve'].max().round(3), wfm.round(3), mae.round(3), sm.round(3), em['curve'].mean().round(3), int(hce.round()), 
                     em['curve'].max().round(3), fm['curve'].mean().round(3), em['adp'].round(3), fm['adp'].round(3),
+                    mba.round(3), biou['curve'].max().round(3), biou['curve'].mean().round(3),
                 ]
             elif config.task == 'COD':
                 scores = [
                     sm.round(3), wfm.round(3), fm['curve'].mean().round(3), em['curve'].mean().round(3), em['curve'].max().round(3), mae.round(3),
                     fm['curve'].max().round(3), em['adp'].round(3), fm['adp'].round(3), int(hce.round()),
+                    mba.round(3), biou['curve'].max().round(3), biou['curve'].mean().round(3),
                 ]
             elif config.task == 'HRSOD':
                 scores = [
                     sm.round(3), fm['curve'].max().round(3), em['curve'].mean().round(3), mae.round(3),
                     em['curve'].max().round(3), fm['curve'].mean().round(3), wfm.round(3), em['adp'].round(3), fm['adp'].round(3), int(hce.round()),
+                    mba.round(3), biou['curve'].max().round(3), biou['curve'].mean().round(3),
                 ]
             elif config.task == 'General':
                 scores = [
                     fm['curve'].max().round(3), wfm.round(3), mae.round(3), sm.round(3), em['curve'].mean().round(3), int(hce.round()), 
                     em['curve'].max().round(3), fm['curve'].mean().round(3), em['adp'].round(3), fm['adp'].round(3),
+                    mba.round(3), biou['curve'].max().round(3), biou['curve'].mean().round(3),
                 ]
-            elif config.task == 'Portrait':
+            elif config.task == 'Matting':
                 scores = [
-                    sm.round(3), fm['curve'].max().round(3), em['curve'].mean().round(3), mae.round(3),
+                    sm.round(3), fm['curve'].max().round(3), em['curve'].mean().round(3), mse.round(3),
                     em['curve'].max().round(3), fm['curve'].mean().round(3), wfm.round(3), em['adp'].round(3), fm['adp'].round(3), int(hce.round()),
+                    mba.round(3), biou['curve'].max().round(3), biou['curve'].mean().round(3),
                 ]
             else:
                 scores = [
                     sm.round(3), mae.round(3), em['curve'].max().round(3), em['curve'].mean().round(3),
                     fm['curve'].max().round(3), fm['curve'].mean().round(3), wfm.round(3),
                     em['adp'].round(3), fm['adp'].round(3), int(hce.round()),
+                    mba.round(3), biou['curve'].max().round(3), biou['curve'].mean().round(3),
                 ]
-            
+
             for idx_score, score in enumerate(scores):
                 scores[idx_score] = '.' + format(score, '.3f').split('.')[-1] if score <= 1  else format(score, '<4')
             records = [_data_name, _model_name] + scores
@@ -104,7 +110,7 @@ if __name__ == '__main__':
             'COD': '+'.join(['TE-COD10K', 'NC4K', 'TE-CAMO', 'CHAMELEON'][:]),
             'HRSOD': '+'.join(['DAVIS-S', 'TE-HRSOD', 'TE-UHRSD', 'TE-DUTS', 'DUT-OMRON'][:]),
             'General': '+'.join(['DIS-VD'][:]),
-            'Portrait': '+'.join(['TE-P3M-500-P'][:]),
+            'Matting': '+'.join(['TE-P3M-500-P'][:]),
         }[config.task])
     parser.add_argument(
         '--save_dir', type=str, help='candidate competitors',

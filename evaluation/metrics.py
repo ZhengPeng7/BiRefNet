@@ -15,17 +15,21 @@ _TYPE = np.float64
 def evaluator(gt_paths, pred_paths, metrics=['S', 'MAE', 'E', 'F', 'WF', 'HCE'], verbose=False):
     # define measures
     if 'E' in metrics:
-        EM = Emeasure()
+        EM = EMeasure()
     if 'S' in metrics:
-        SM = Smeasure()
+        SM = SMeasure()
     if 'F' in metrics:
-        FM = Fmeasure()
+        FM = FMeasure()
     if 'MAE' in metrics:
-        MAE = MAEmeasure()
+        MAE = MAEMeasure()
     if 'WF' in metrics:
-        WFM = WeightedFmeasure()
+        WFM = WeightedFMeasure()
     if 'HCE' in metrics:
         HCE = HCEMeasure()
+    if 'MBA' in metrics:
+        MBA = MBAMeasure()
+    if 'BIoU' in metrics:
+        BIoU = BIoUMeasure()
 
     if isinstance(gt_paths, list) and isinstance(pred_paths, list):
         # print(len(gt_paths), len(pred_paths))
@@ -74,6 +78,10 @@ def evaluator(gt_paths, pred_paths, metrics=['S', 'MAE', 'E', 'F', 'WF', 'HCE'],
                 os.makedirs(ske_save_dir, exist_ok=True)
                 cv2.imwrite(ske_path, ske_ary.astype(np.uint8) * 255)
             HCE.step(pred=pred_ary, gt=gt_ary, gt_ske=ske_ary)
+        if 'MBA' in metrics:
+            MBA.step(pred=pred_ary, gt=gt_ary)
+        if 'BIoU' in metrics:
+            BIoU.step(pred=pred_ary, gt=gt_ary)
 
     if 'E' in metrics:
         em = EM.get_results()['em']
@@ -99,8 +107,16 @@ def evaluator(gt_paths, pred_paths, metrics=['S', 'MAE', 'E', 'F', 'WF', 'HCE'],
         hce = HCE.get_results()['hce']
     else:
         hce = np.float64(-1)
+    if 'MBA' in metrics:
+        mba = MBA.get_results()['mba']
+    else:
+        mba = np.float64(-1)
+    if 'BIoU' in metrics:
+        biou = BIoU.get_results()['biou']
+    else:
+        biou = {'curve': np.array([np.float64(-1)])}
 
-    return em, sm, fm, mae, wfm, hce
+    return em, sm, fm, mae, wfm, hce, mba, biou
 
 
 def _prepare_data(pred: np.ndarray, gt: np.ndarray) -> tuple:
@@ -115,7 +131,7 @@ def _get_adaptive_threshold(matrix: np.ndarray, max_value: float = 1) -> float:
     return min(2 * matrix.mean(), max_value)
 
 
-class Fmeasure(object):
+class FMeasure(object):
     def __init__(self, beta: float = 0.3):
         self.beta = beta
         self.precisions = []
@@ -173,7 +189,7 @@ class Fmeasure(object):
                     pr=dict(p=precision, r=recall))
 
 
-class MAEmeasure(object):
+class MAEMeasure(object):
     def __init__(self):
         self.maes = []
 
@@ -192,7 +208,7 @@ class MAEmeasure(object):
         return dict(mae=mae)
 
 
-class Smeasure(object):
+class SMeasure(object):
     def __init__(self, alpha: float = 0.5):
         self.sms = []
         self.alpha = alpha
@@ -301,7 +317,7 @@ class Smeasure(object):
         return dict(sm=sm)
 
 
-class Emeasure(object):
+class EMeasure(object):
     def __init__(self):
         self.adaptive_ems = []
         self.changeable_ems = []
@@ -414,7 +430,7 @@ class Emeasure(object):
         return dict(em=dict(adp=adaptive_em, curve=changeable_em))
 
 
-class WeightedFmeasure(object):
+class WeightedFMeasure(object):
     def __init__(self, beta: float = 1):
         self.beta = beta
         self.weighted_fms = []
@@ -618,3 +634,130 @@ class HCEMeasure(object):
             pixel_cnt_ = pixel_cnt_ + len(boundaries_[i])
 
         return boundaries_, boundaries_len_, pixel_cnt_
+
+
+class MBAMeasure(object):
+    def __init__(self):
+        self.bas = []
+        self.all_h = 0
+        self.all_w = 0
+        self.all_max = 0
+
+    def step(self, pred: np.ndarray, gt: np.ndarray):
+        # pred, gt = _prepare_data(pred, gt)
+        
+        refined = gt.copy()
+
+        rmin = cmin = 0
+        rmax, cmax = gt.shape
+
+        self.all_h += rmax
+        self.all_w += cmax
+        self.all_max += max(rmax, cmax)
+
+        refined_h, refined_w = refined.shape
+        if refined_h != cmax:
+            refined = np.array(Image.fromarray(pred).resize((cmax, rmax), Image.BILINEAR))
+
+        if not(gt.sum() < 32*32):
+            if not((cmax==cmin) or (rmax==rmin)):
+                class_refined_prob = np.array(Image.fromarray(pred).resize((cmax-cmin, rmax-rmin), Image.BILINEAR))
+                refined[rmin:rmax, cmin:cmax] = class_refined_prob
+        
+        pred = pred > 128
+        gt = gt > 128
+
+        ba = self.cal_ba(pred, gt)
+        self.bas.append(ba)
+        
+    def get_disk_kernel(self, radius):
+        return cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (radius*2+1, radius*2+1))
+
+    def cal_ba(self, pred: np.ndarray, gt: np.ndarray) -> np.ndarray:
+        """
+        Calculate the mean absolute error.
+
+        :return: ba
+        """
+    
+        gt = gt.astype(np.uint8)
+        pred = pred.astype(np.uint8)
+
+        h, w = gt.shape
+
+        min_radius = 1
+        max_radius = (w+h)/300
+        num_steps = 5
+
+        pred_acc = [None] * num_steps
+
+        for i in range(num_steps):
+            curr_radius = min_radius + int((max_radius-min_radius)/num_steps*i)
+
+            kernel = self.get_disk_kernel(curr_radius)
+            boundary_region = cv2.morphologyEx(gt, cv2.MORPH_GRADIENT, kernel) > 0
+
+            gt_in_bound = gt[boundary_region]
+            pred_in_bound = pred[boundary_region]
+
+            num_edge_pixels = (boundary_region).sum()
+            num_pred_gd_pix = ((gt_in_bound) * (pred_in_bound) + (1-gt_in_bound) * (1-pred_in_bound)).sum()
+
+            pred_acc[i] = num_pred_gd_pix / num_edge_pixels
+
+        ba = sum(pred_acc)/num_steps
+        return ba
+
+    def get_results(self) -> dict:
+        mba = np.mean(np.array(self.bas, _TYPE))
+        return dict(mba=mba)
+
+
+class BIoUMeasure(object):
+    def __init__(self, dilation_ratio=0.02):
+        self.bious = []
+        self.dilation_ratio = dilation_ratio
+            
+    def mask_to_boundary(self, mask):
+        h, w = mask.shape
+        img_diag = np.sqrt(h ** 2 + w ** 2)
+        dilation = int(round(self.dilation_ratio * img_diag))
+        if dilation < 1:
+            dilation = 1
+        # Pad image so mask truncated by the image border is also considered as boundary.
+        new_mask = cv2.copyMakeBorder(mask, 1, 1, 1, 1, cv2.BORDER_CONSTANT, value=0)
+        kernel = np.ones((3, 3), dtype=np.uint8)
+        new_mask_erode = cv2.erode(new_mask, kernel, iterations=dilation)
+        mask_erode = new_mask_erode[1 : h + 1, 1 : w + 1]
+        # G_d intersects G in the paper.
+        return mask - mask_erode
+
+    def step(self, pred: np.ndarray, gt: np.ndarray):
+        pred, gt = _prepare_data(pred, gt)
+
+        bious = self.cal_biou(pred=pred, gt=gt)
+        self.bious.append(bious)
+
+    def cal_biou(self, pred, gt):
+        pred = (pred * 255).astype(np.uint8)
+        pred = self.mask_to_boundary(pred)
+        gt = (gt * 255).astype(np.uint8)
+        gt = self.mask_to_boundary(gt)
+        gt = gt > 128
+            
+        bins = np.linspace(0, 256, 257)
+        fg_hist, _ = np.histogram(pred[gt], bins=bins) # ture positive
+        bg_hist, _ = np.histogram(pred[~gt], bins=bins) # false positive
+        fg_w_thrs = np.cumsum(np.flip(fg_hist), axis=0) 
+        bg_w_thrs = np.cumsum(np.flip(bg_hist), axis=0)
+        TPs = fg_w_thrs
+        Ps = fg_w_thrs + bg_w_thrs # positives
+        Ps[Ps == 0] = 1 
+        T = max(np.count_nonzero(gt), 1)
+        
+        ious = TPs / (T + bg_w_thrs)
+        return ious
+
+    def get_results(self) -> dict:
+        biou = np.mean(np.array(self.bious, dtype=_TYPE), axis=0)
+        return dict(biou=dict(curve=biou))

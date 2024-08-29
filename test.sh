@@ -16,12 +16,13 @@ case "${task}" in
     "COD") testsets='CHAMELEON,NC4K,TE-CAMO,TE-COD10K' ;;
     "HRSOD") testsets='DAVIS-S,TE-HRSOD,TE-UHRSD,DUT-OMRON,TE-DUTS' ;;
     "General") testsets='DIS-VD' ;;
-    "Portrait") testsets='TE-P3M-500-P' ;;
+    "Matting") testsets='TE-P3M-500-P' ;;
 esac
 testsets=(`echo ${testsets} | tr ',' ' '`) && testsets=${testsets[@]}
 
 for testset in ${testsets}; do
-    nohup python eval_existingOnes.py --pred_root ${pred_root} --data_lst ${testset} > ${log_dir}/eval_${testset}.out 2>&1 &
+    python eval_existingOnes.py --pred_root ${pred_root} --data_lst ${testset} > ${log_dir}/eval_${testset}.out
+    # nohup python eval_existingOnes.py --pred_root ${pred_root} --data_lst ${testset} > ${log_dir}/eval_${testset}.out 2>&1 &
 done
 
 

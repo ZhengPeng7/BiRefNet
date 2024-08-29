@@ -12,18 +12,18 @@ class Config():
             self.sys_home_dir = os.environ['HOME'] # For Linux system
 
         # TASK settings
-        self.task = ['DIS5K', 'COD', 'HRSOD', 'General', 'Portrait'][0]
+        self.task = ['DIS5K', 'COD', 'HRSOD', 'General', 'Matting'][0]
         self.training_set = {
             'DIS5K': ['DIS-TR', 'DIS-TR+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4'][0],
             'COD': 'TR-COD10K+TR-CAMO',
             'HRSOD': ['TR-DUTS', 'TR-HRSOD', 'TR-UHRSD', 'TR-DUTS+TR-HRSOD', 'TR-DUTS+TR-UHRSD', 'TR-HRSOD+TR-UHRSD', 'TR-DUTS+TR-HRSOD+TR-UHRSD'][5],
             'General': 'DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4+DIS-TR+TR-HRSOD+TE-HRSOD+TR-HRS10K+TE-HRS10K+TR-UHRSD+TE-UHRSD+TR-P3M-10k+TE-P3M-500-NP+TE-P3M-500-P+TR-humans',    # leave DIS-VD for evaluation.
-            'Portrait': 'TR-P3M-10k+TE-P3M-500-NP+TR-humans+TR-Distrinctions-646',
+            'Matting': 'TR-P3M-10k+TE-P3M-500-NP+TR-humans+TR-Distrinctions-646',
         }[self.task]
         self.prompt4loc = ['dense', 'sparse'][0]
 
         # Faster-Training settings
-        self.load_all = True    # Turn it on/off by your case. It may consume a lot of CPU memory. And for multi-GPU (N), it would cost N times the CPU memory to load the data.
+        self.load_all = False    # Turn it on/off by your case. It may consume a lot of CPU memory. And for multi-GPU (N), it would cost N times the CPU memory to load the data.
         self.use_fp16 = False   # It may cause nan in training.
         self.compile = True and (not self.use_fp16)     # 1. Trigger CPU memory leak in some extend, which is an inherent problem of PyTorch.
                                                         #   Machines with > 70GB CPU memory can run the whole training on DIS5K with default setting.
@@ -51,7 +51,7 @@ class Config():
                 'COD': -20,
                 'HRSOD': -20,
                 'General': -20,
-                'Portrait': -10,
+                'Matting': -0,
             }[self.task]
         ][1]    # choose 0 to skip
         self.lr = (1e-4 if 'DIS5K' in self.task else 1e-5) * math.sqrt(self.batch_size / 4)     # DIS needs high lr to converge faster. Adapt the lr linearly
@@ -99,20 +99,36 @@ class Config():
         self.lr_decay_epochs = [1e5]    # Set to negative N to decay the lr in the last N-th epoch.
         self.lr_decay_rate = 0.5
         # Loss
-        self.lambdas_pix_last = {
-            # not 0 means opening this loss
-            # original rate -- 1 : 30 : 1.5 : 0.2, bce x 30
-            'bce': 30 * 1,          # high performance
-            'iou': 0.5 * 1,         # 0 / 255
-            'iou_patch': 0.5 * 0,   # 0 / 255, win_size = (64, 64)
-            'mae': 30 * (self.task in ['Portrait']),
-            'mse': 30 * 0,         # can smooth the saliency map
-            'triplet': 3 * 0,
-            'reg': 100 * 0,
-            'ssim': 10 * 1,          # help contours,
-            'cnt': 5 * 0,          # help contours
-            'structure': 5 * 0,    # structure loss from codes of MVANet. A little improvement on DIS-TE[1,2,3], a bit more decrease on DIS-TE4.
-        }
+        if self.task not in ['Matting']:
+            self.lambdas_pix_last = {
+                # not 0 means opening this loss
+                # original rate -- 1 : 30 : 1.5 : 0.2, bce x 30
+                'bce': 30 * 1,          # high performance
+                'iou': 0.5 * 1,         # 0 / 255
+                'iou_patch': 0.5 * 0,   # 0 / 255, win_size = (64, 64)
+                'mae': 30 * 0,
+                'mse': 30 * 0,         # can smooth the saliency map
+                'triplet': 3 * 0,
+                'reg': 100 * 0,
+                'ssim': 10 * 1,          # help contours,
+                'cnt': 5 * 0,          # help contours
+                'structure': 5 * 0,    # structure loss from codes of MVANet. A little improvement on DIS-TE[1,2,3], a bit more decrease on DIS-TE4.
+            }
+        else:
+            self.lambdas_pix_last = {
+                # not 0 means opening this loss
+                # original rate -- 1 : 30 : 1.5 : 0.2, bce x 30
+                'bce': 30 * 0,          # high performance
+                'iou': 0.5 * 0,         # 0 / 255
+                'iou_patch': 0.5 * 0,   # 0 / 255, win_size = (64, 64)
+                'mae': 100 * 1,
+                'mse': 30 * 0,         # can smooth the saliency map
+                'triplet': 3 * 0,
+                'reg': 100 * 0,
+                'ssim': 10 * 1,          # help contours,
+                'cnt': 5 * 0,          # help contours
+                'structure': 5 * 0,    # structure loss from codes of MVANet. A little improvement on DIS-TE[1,2,3], a bit more decrease on DIS-TE4.
+            }
         self.lambdas_cls = {
             'ce': 5.0
         }
