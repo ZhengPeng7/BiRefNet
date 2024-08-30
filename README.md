@@ -185,7 +185,15 @@ Our BiRefNet has achieved SOTA on many similar HR tasks:
 We found there've been some 3rd party applications based on our BiRefNet. Many thanks for their contribution to the community!  
 Choose the one you like to try with clicks instead of codes:  
 1. **Applications**:
-   + Thanks [**lbq779660843/BiRefNet-Tensorrt**](https://github.com/lbq779660843/BiRefNet-Tensorrt) and [**yuanyang1991/birefnet_tensorrt**](https://github.com/yuanyang1991/birefnet_tensorrt): they both provided the project to convert BiRefNet to **TensorRT**, which is faster and better for deployment. Their repos offer solid local establishment (Win and Linux) and [colab demo](https://colab.research.google.com/drive/1r8GkFPyMMO0OkMX6ih5FjZnUCQrl2SHV?usp=sharing), respectively.
+   + Thanks [**lbq779660843/BiRefNet-Tensorrt**](https://github.com/lbq779660843/BiRefNet-Tensorrt) and [**yuanyang1991/birefnet_tensorrt**](https://github.com/yuanyang1991/birefnet_tensorrt): they both provided the project to convert BiRefNet to **TensorRT**, which is faster and better for deployment. Their repos offer solid local establishment (Win and Linux) and [colab demo](https://colab.research.google.com/drive/1r8GkFPyMMO0OkMX6ih5FjZnUCQrl2SHV?usp=sharing), respectively. And @yuanyang1991 kindly offered the comparison among the inference efficiency of naive PyTorch, ONNX, and TensorRT on an RTX 4080S:
+
+| Methods | [Pytorch](https://drive.google.com/file/d/1_IfUnu8Fpfn-nerB89FzdNXQ7zk6FKxc/view) | [ONNX](https://drive.google.com/drive/u/0/folders/1kZM55bwsRdS__bdnsXpkmH6QPyza-9-N) | TensorRT |
+|:------------------------------------------------------------------------------------:|:--------------:|:--------------:|:--------------:|
+|  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;First Inference Time&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  |     0.71s      |     5.32s      |     **0.17s**      |
+
+| Methods | [Pytorch](https://drive.google.com/file/d/1_IfUnu8Fpfn-nerB89FzdNXQ7zk6FKxc/view) | [ONNX](https://drive.google.com/drive/u/0/folders/1kZM55bwsRdS__bdnsXpkmH6QPyza-9-N) | TensorRT |
+|:------------------------------------------------------------------------------------:|:--------------:|:--------------:|:--------------:|
+|  Avg Inf Time (excluding 1st)   |     0.15s      |     4.43s      |     **0.11s**      |
 
    + Thanks [**dimitribarbot/sd-webui-birefnet**](https://github.com/dimitribarbot/sd-webui-birefnet): this project allows to add a BiRefNet section to the original **Stable Diffusion WebUI**'s Extras tab.
      <p align="center"><img src="https://drive.google.com/thumbnail?id=159bLXI71FWh4ZsHTvc-wApSN9ytVRmua&sz=w1620" /></p>
