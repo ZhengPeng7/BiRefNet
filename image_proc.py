@@ -1,7 +1,59 @@
+import random
 from PIL import Image, ImageEnhance
-import random
 import numpy as np
-import random
+import cv2
+
+
+def fb_blur_fusion_foreground_estimator_2(image, alpha, blur_radius=90):
+    """
+    Thanks to the source: https://github.com/Photoroom/fast-foreground-estimation
+    Estimate the foreground image by applying a blur fusion method.
+
+    Args:
+        image (numpy.ndarray): The input image.
+        alpha (numpy.ndarray): The alpha matte.
+        blur_radius (int, optional): The blur radius for the fusion. Default is 90.
+
+    Returns:
+        numpy.ndarray: The estimated foreground image.
+    """
+    alpha = alpha[:, :, None]
+    foreground, blurred_background = fb_blur_fusion_foreground_estimator(
+        image, image, image, alpha, blur_radius
+    )
+    return fb_blur_fusion_foreground_estimator(
+        image, foreground, blurred_background, alpha, blur_radius=6
+    )[0]
+
+
+def fb_blur_fusion_foreground_estimator(image, foreground, background, alpha, blur_radius=90):
+    """
+    Perform blur fusion to estimate the foreground and background images.
+
+    Args:
+        image (numpy.ndarray): The input image.
+        foreground (numpy.ndarray): The initial foreground estimate.
+        background (numpy.ndarray): The initial background estimate.
+        alpha (numpy.ndarray): The alpha matte.
+        blur_radius (int, optional): The blur radius for the fusion. Default is 90.
+
+    Returns:
+        tuple: A tuple containing the estimated foreground and blurred background images.
+    """
+    blurred_alpha = cv2.blur(alpha, (blur_radius, blur_radius))[:, :, None]
+
+    blurred_foreground_alpha = cv2.blur(foreground * alpha, (blur_radius, blur_radius))
+    blurred_foreground = blurred_foreground_alpha / (blurred_alpha + 1e-5)
+
+    blurred_background_alpha = cv2.blur(background * (1 - alpha), (blur_radius, blur_radius))
+    blurred_background = blurred_background_alpha / ((1 - blurred_alpha) + 1e-5)
+
+    foreground = blurred_foreground + alpha * (
+            image - alpha * blurred_foreground - (1 - alpha) * blurred_background
+    )
+    foreground = np.clip(foreground, 0, 1)
+
+    return foreground, blurred_background
 
 
 def preproc(image, label, preproc_methods=['flip']):
