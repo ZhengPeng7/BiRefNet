@@ -12,7 +12,7 @@ _EPS = np.spacing(1)
 _TYPE = np.float64
 
 
-def evaluator(gt_paths, pred_paths, metrics=['S', 'MAE', 'E', 'F', 'WF', 'HCE'], verbose=False):
+def evaluator(gt_paths, pred_paths, metrics=['S', 'MAE', 'E', 'F', 'WF', 'MBA', 'BIoU', 'HCE'], verbose=False):
     # define measures
     if 'E' in metrics:
         EM = EMeasure()

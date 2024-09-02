@@ -11,7 +11,6 @@ from loss import PixLoss, ClsLoss
 from dataset import MyData
 from models.birefnet import BiRefNet
 from utils import Logger, AverageMeter, set_seed, check_state_dict
-from evaluation.valid import valid
 
 from torch.utils.data.distributed import DistributedSampler
 from torch.nn.parallel import DistributedDataParallel as DDP
@@ -286,10 +285,12 @@ class Trainer:
         global logger_loss_idx
         self.model.train()
         self.loss_dict = {}
-        if epoch > args.epochs + config.IoU_finetune_last_epochs:
-            self.pix_loss.lambdas_pix_last['bce'] *= 0
-            self.pix_loss.lambdas_pix_last['ssim'] *= 1
-            self.pix_loss.lambdas_pix_last['iou'] *= 0.5
+        if epoch > args.epochs + config.finetune_last_epochs[1]:
+            for k in self.pix_loss.lambdas_pix_last.keys():
+                if k.lower() == config.finetune_last_epochs[0].lower():
+                    self.pix_loss.lambdas_pix_last[k] = config.lambdas_pix_last[k] * 0.5
+                else:
+                    self.pix_loss.lambdas_pix_last[k] = 0
 
         for batch_idx, batch in enumerate(self.train_loader):
             self._train_batch(batch)
@@ -308,44 +309,6 @@ class Trainer:
             self.lr_scheduler_d.step()
         return self.loss_log.avg
 
-    def validate_model(self, epoch):
-        num_image_testset_all = {'DIS-VD': 470, 'DIS-TE1': 500, 'DIS-TE2': 500, 'DIS-TE3': 500, 'DIS-TE4': 500}
-        num_image_testset = {}
-        for testset in args.testsets:
-            if 'DIS-TE' in testset:
-                num_image_testset[testset] = num_image_testset_all[testset]
-        weighted_scores = {'f_max': 0, 'f_mean': 0, 'f_wfm': 0, 'sm': 0, 'e_max': 0, 'e_mean': 0, 'mae': 0}
-        len_all_data_loaders = 0
-        self.model.epoch = epoch
-        for testset, data_loader_test in self.test_loaders.items():
-            print('Validating {}...'.format(testset))
-            performance_dict = valid(
-                self.model,
-                data_loader_test,
-                pred_dir='.',
-                method=args.ckpt_dir.split('/')[-1] if args.ckpt_dir.split('/')[-1].strip('.').strip('/') else 'tmp_val',
-                testset=testset,
-                only_S_MAE=config.only_S_MAE,
-                device=device
-            )
-            print('Test set: {}:'.format(testset))
-            if config.only_S_MAE:
-                print('Smeasure: {:.4f}, MAE: {:.4f}'.format(
-                    performance_dict['sm'], performance_dict['mae']
-                ))
-            else:
-                print('Fmax: {:.4f}, Fwfm: {:.4f}, Smeasure: {:.4f}, Emean: {:.4f}, MAE: {:.4f}'.format(
-                    performance_dict['f_max'], performance_dict['f_wfm'], performance_dict['sm'], performance_dict['e_mean'], performance_dict['mae']
-                ))
-            if '-TE' in testset:
-                for metric in ['sm', 'mae'] if config.only_S_MAE else ['f_max', 'f_mean', 'f_wfm', 'sm', 'e_max', 'e_mean', 'mae']:
-                    weighted_scores[metric] += performance_dict[metric] * len(data_loader_test)
-                len_all_data_loaders += len(data_loader_test)
-        print('Weighted Scores:')
-        for metric, score in weighted_scores.items():
-            if score:
-                print('\t{}: {:.4f}.'.format(metric, score / len_all_data_loaders))
-
 
 def main():
 
@@ -363,13 +326,6 @@ def main():
                 trainer.model.module.state_dict() if to_be_distributed else trainer.model.state_dict(),
                 os.path.join(args.ckpt_dir, 'epoch_{}.pth'.format(epoch))
             )
-        if config.val_step and epoch >= args.epochs - config.save_last and (args.epochs - epoch) % config.val_step == 0:
-            if to_be_distributed:
-                if get_rank() == 0:
-                    print('Validating at rank-{}...'.format(get_rank()))
-                    trainer.validate_model(epoch)
-            else:
-                trainer.validate_model(epoch)
     if to_be_distributed:
         destroy_process_group()
 

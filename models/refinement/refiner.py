@@ -12,7 +12,6 @@ from dataset import class_labels_TR_sorted
 from models.backbones.build_backbone import build_backbone
 from models.modules.decoder_blocks import BasicDecBlk
 from models.modules.lateral_blocks import BasicLatBlk
-from models.modules.ing import *
 from models.refinement.stem_layer import StemLayer
 
 

@@ -40,18 +40,18 @@ class Config():
         self.mul_scl_ipt = ['', 'add', 'cat'][2]
         self.dec_att = ['', 'ASPP', 'ASPPDeformable'][2]
         self.squeeze_block = ['', 'BasicDecBlk_x1', 'ResBlk_x4', 'ASPP_x3', 'ASPPDeformable_x3'][1]
-        self.dec_blk = ['BasicDecBlk', 'ResBlk', 'HierarAttDecBlk'][0]
+        self.dec_blk = ['BasicDecBlk', 'ResBlk'][0]
 
         # TRAINING settings
         self.batch_size = 4
-        self.IoU_finetune_last_epochs = [
-            0,
+        self.finetune_last_epochs = [
+            ('IoU', 0),
             {
-                'DIS5K': -50,
-                'COD': -20,
-                'HRSOD': -20,
-                'General': -20,
-                'Matting': -0,
+                'DIS5K': ('IoU', -30),
+                'COD': ('IoU', -20),
+                'HRSOD': ('IoU', -20),
+                'General': ('MAE', -10),
+                'Matting': ('MAE', -10),
             }[self.task]
         ][1]    # choose 0 to skip
         self.lr = (1e-4 if 'DIS5K' in self.task else 1e-5) * math.sqrt(self.batch_size / 4)     # DIS needs high lr to converge faster. Adapt the lr linearly
@@ -90,8 +90,6 @@ class Config():
         self.model = [
             'BiRefNet',
         ][0]
-        if self.dec_blk == 'HierarAttDecBlk':
-            self.batch_size = 2 ** [0, 1, 2, 3, 4][2]
 
         # TRAINING settings - inactive
         self.preproc_methods = ['flip', 'enhance', 'rotate', 'pepper', 'crop'][:4]
@@ -165,8 +163,6 @@ class Config():
             with open(run_sh_file[0], 'r') as f:
                 lines = f.readlines()
                 self.save_last = int([l.strip() for l in lines if '"{}")'.format(self.task) in l and 'val_last=' in l][0].split('val_last=')[-1].split()[0])
-                self.save_step = int([l.strip() for l in lines if '"{}")'.format(self.task) in l and 'step=' in l][0].split('step=')[-1].split()[0])
-            self.val_step = [0, self.save_step][0]
 
     def print_task(self) -> None:
         # Return task for choosing settings in shell scripts.
