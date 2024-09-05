@@ -136,7 +136,7 @@ class Config():
 
         # PATH settings - inactive
         self.data_root_dir = os.path.join(self.sys_home_dir, 'datasets/dis')
-        self.weights_root_dir = os.path.join(self.sys_home_dir, 'weights')
+        self.weights_root_dir = os.path.join(self.sys_home_dir, 'weights/cv')
         self.weights = {
             'pvt_v2_b2': os.path.join(self.weights_root_dir, 'pvt_v2_b2.pth'),
             'pvt_v2_b5': os.path.join(self.weights_root_dir, ['pvt_v2_b5.pth', 'pvt_v2_b5_22k.pth'][0]),
@@ -163,6 +163,7 @@ class Config():
             with open(run_sh_file[0], 'r') as f:
                 lines = f.readlines()
                 self.save_last = int([l.strip() for l in lines if '"{}")'.format(self.task) in l and 'val_last=' in l][0].split('val_last=')[-1].split()[0])
+                self.save_step = int([l.strip() for l in lines if '"{}")'.format(self.task) in l and 'step=' in l][0].split('step=')[-1].split()[0])
 
     def print_task(self) -> None:
         # Return task for choosing settings in shell scripts.

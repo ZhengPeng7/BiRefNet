@@ -48,7 +48,7 @@ def preproc(image, label, preproc_methods=['flip']):
     if 'enhance' in preproc_methods:
         image = color_enhance(image)
     if 'pepper' in preproc_methods:
-        label = random_pepper(label)
+        image = random_pepper(image)
     return image, label
 
 
@@ -112,8 +112,5 @@ def random_pepper(img, N=0.0015):
     for i in range(noiseNum):
         randX = random.randint(0, img.shape[0] - 1)
         randY = random.randint(0, img.shape[1] - 1)
-        if random.randint(0, 1) == 0:
-            img[randX, randY] = 0
-        else:
-            img[randX, randY] = 255
+        img[randX, randY] = random.randint(0, 1) * 255
     return Image.fromarray(img)

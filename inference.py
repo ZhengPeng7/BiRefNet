@@ -90,7 +90,7 @@ if __name__ == '__main__':
                             'COD': 'TE-COD10K+NC4K+TE-CAMO+CHAMELEON',
                             'HRSOD': 'DAVIS-S+TE-HRSOD+TE-UHRSD+TE-DUTS+DUT-OMRON',
                             'General': 'DIS-VD',
-                            'Matting': 'TE-P3M-500-P',
+                            'Matting': 'TE-AM2k',
                             'DIS5K-': 'DIS-VD',
                             'COD-': 'TE-COD10K',
                             'SOD-': 'DAVIS-S+TE-HRSOD+TE-UHRSD',

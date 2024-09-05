@@ -3,7 +3,7 @@ import argparse
 from glob import glob
 import prettytable as pt
 
-from evaluation.evaluate import evaluator
+from evaluation.metrics import evaluator
 from config import Config
 
 
@@ -40,7 +40,7 @@ def do_eval(args):
             print('\t', 'Evaluating model: {}...'.format(_model_name))
             pred_paths = [p.replace(args.gt_root, os.path.join(args.pred_root, _model_name)).replace('/gt/', '/') for p in gt_paths]
             # print(pred_paths[:1], gt_paths[:1])
-            em, sm, fm, mae, wfm, hce, mba, biou = evaluator(
+            em, sm, fm, mae, mse, wfm, hce, mba, biou = evaluator(
                 gt_paths=gt_paths,
                 pred_paths=pred_paths,
                 metrics=args.metrics.split('+'),
@@ -72,7 +72,7 @@ def do_eval(args):
                 ]
             elif config.task == 'Matting':
                 scores = [
-                    sm.round(3), fm['curve'].max().round(3), em['curve'].mean().round(3), mse.round(3),
+                    sm.round(3), fm['curve'].max().round(3), em['curve'].mean().round(3), mse.round(5),
                     em['curve'].max().round(3), fm['curve'].mean().round(3), wfm.round(3), em['adp'].round(3), fm['adp'].round(3), int(hce.round()),
                     mba.round(3), biou['curve'].max().round(3), biou['curve'].mean().round(3),
                 ]
@@ -110,7 +110,7 @@ if __name__ == '__main__':
             'COD': '+'.join(['TE-COD10K', 'NC4K', 'TE-CAMO', 'CHAMELEON'][:]),
             'HRSOD': '+'.join(['DAVIS-S', 'TE-HRSOD', 'TE-UHRSD', 'TE-DUTS', 'DUT-OMRON'][:]),
             'General': '+'.join(['DIS-VD'][:]),
-            'Matting': '+'.join(['TE-P3M-500-P'][:]),
+            'Matting': '+'.join(['TE-AM2k'][:]),
         }[config.task])
     parser.add_argument(
         '--save_dir', type=str, help='candidate competitors',
@@ -120,9 +120,9 @@ if __name__ == '__main__':
         default=False)
     parser.add_argument(
         '--metrics', type=str, help='candidate competitors',
-        default='+'.join(['S', 'MAE', 'E', 'F', 'WF', 'MBA', 'BIoU', 'HCE'][:100 if 'DIS5K' in config.task else -1]))
+        default='+'.join(['S', 'MAE', 'E', 'F', 'WF', 'MBA', 'BIoU', 'MSE', 'HCE'][:100 if 'DIS5K' in config.task else -1]))
     args = parser.parse_args()
-    args.metrics = '+'.join(['S', 'MAE', 'E', 'F', 'WF', 'MBA', 'BIoU', 'HCE'][:100 if sum(['DIS-' in _data for _data in args.data_lst.split('+')]) else -1])
+    args.metrics = '+'.join(['S', 'MAE', 'E', 'F', 'WF', 'MBA', 'BIoU', 'MSE', 'HCE'][:100 if sum(['DIS-' in _data for _data in args.data_lst.split('+')]) else -1])
 
     os.makedirs(args.save_dir, exist_ok=True)
     try:

@@ -1,6 +1,7 @@
 import os
 from tqdm import tqdm
 import cv2
+from PIL import Image
 import numpy as np
 from scipy.ndimage import convolve, distance_transform_edt as bwdist
 from skimage.morphology import skeletonize
@@ -12,7 +13,7 @@ _EPS = np.spacing(1)
 _TYPE = np.float64
 
 
-def evaluator(gt_paths, pred_paths, metrics=['S', 'MAE', 'E', 'F', 'WF', 'MBA', 'BIoU', 'HCE'], verbose=False):
+def evaluator(gt_paths, pred_paths, metrics=['S', 'MAE', 'E', 'F', 'WF', 'MBA', 'BIoU', 'MSE', 'HCE'], verbose=False):
     # define measures
     if 'E' in metrics:
         EM = EMeasure()
@@ -22,6 +23,8 @@ def evaluator(gt_paths, pred_paths, metrics=['S', 'MAE', 'E', 'F', 'WF', 'MBA', 
         FM = FMeasure()
     if 'MAE' in metrics:
         MAE = MAEMeasure()
+    if 'MSE' in metrics:
+        MSE = MSEMeasure()
     if 'WF' in metrics:
         WFM = WeightedFMeasure()
     if 'HCE' in metrics:
@@ -63,6 +66,8 @@ def evaluator(gt_paths, pred_paths, metrics=['S', 'MAE', 'E', 'F', 'WF', 'MBA', 
             FM.step(pred=pred_ary, gt=gt_ary)
         if 'MAE' in metrics:
             MAE.step(pred=pred_ary, gt=gt_ary)
+        if 'MSE' in metrics:
+            MSE.step(pred=pred_ary, gt=gt_ary)
         if 'WF' in metrics:
             WFM.step(pred=pred_ary, gt=gt_ary)
         if 'HCE' in metrics:
@@ -99,6 +104,10 @@ def evaluator(gt_paths, pred_paths, metrics=['S', 'MAE', 'E', 'F', 'WF', 'MBA', 
         mae = MAE.get_results()['mae']
     else:
         mae = np.float64(-1)
+    if 'MSE' in metrics:
+        mse = MSE.get_results()['mse']
+    else:
+        mse = np.float64(-1)
     if 'WF' in metrics:
         wfm = WFM.get_results()['wfm']
     else:
@@ -116,7 +125,7 @@ def evaluator(gt_paths, pred_paths, metrics=['S', 'MAE', 'E', 'F', 'WF', 'MBA', 
     else:
         biou = {'curve': np.array([np.float64(-1)])}
 
-    return em, sm, fm, mae, wfm, hce, mba, biou
+    return em, sm, fm, mae, mse, wfm, hce, mba, biou
 
 
 def _prepare_data(pred: np.ndarray, gt: np.ndarray) -> tuple:
@@ -206,6 +215,25 @@ class MAEMeasure(object):
     def get_results(self) -> dict:
         mae = np.mean(np.array(self.maes, _TYPE))
         return dict(mae=mae)
+
+
+class MSEMeasure(object):
+    def __init__(self):
+        self.mses = []
+
+    def step(self, pred: np.ndarray, gt: np.ndarray):
+        pred, gt = _prepare_data(pred, gt)
+
+        mse = self.cal_mse(pred, gt)
+        self.mses.append(mse)
+
+    def cal_mse(self, pred: np.ndarray, gt: np.ndarray) -> float:
+        mse = np.mean((pred - gt) ** 2)
+        return mse
+
+    def get_results(self) -> dict:
+        mse = np.mean(np.array(self.mses, _TYPE))
+        return dict(mse=mse)
 
 
 class SMeasure(object):
