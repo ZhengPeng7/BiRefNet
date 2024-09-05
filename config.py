@@ -45,13 +45,13 @@ class Config():
         # TRAINING settings
         self.batch_size = 4
         self.finetune_last_epochs = [
-            ('IoU', 0),
+            0,
             {
-                'DIS5K': ('IoU', -30),
-                'COD': ('IoU', -20),
-                'HRSOD': ('IoU', -20),
-                'General': ('MAE', -10),
-                'Matting': ('MAE', -10),
+                'DIS5K': -40,
+                'COD': -20,
+                'HRSOD': -20,
+                'General': -20,
+                'Matting': -20,
             }[self.task]
         ][1]    # choose 0 to skip
         self.lr = (1e-4 if 'DIS5K' in self.task else 1e-5) * math.sqrt(self.batch_size / 4)     # DIS needs high lr to converge faster. Adapt the lr linearly

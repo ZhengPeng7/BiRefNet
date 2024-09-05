@@ -286,11 +286,13 @@ class Trainer:
         self.model.train()
         self.loss_dict = {}
         if epoch > args.epochs + config.finetune_last_epochs[1]:
-            for k in self.pix_loss.lambdas_pix_last.keys():
-                if k.lower() == config.finetune_last_epochs[0].lower():
-                    self.pix_loss.lambdas_pix_last[k] = config.lambdas_pix_last[k] * 0.5
-                else:
-                    self.pix_loss.lambdas_pix_last[k] = 0
+            if config.task == 'Matting':
+                self.pix_loss.lambdas_pix_last['mae'] *= 1
+                self.pix_loss.lambdas_pix_last['ssim'] *= 0.9
+            else:
+                self.pix_loss.lambdas_pix_last['bce'] *= 0
+                self.pix_loss.lambdas_pix_last['ssim'] *= 1
+                self.pix_loss.lambdas_pix_last['iou'] *= 0.5
 
         for batch_idx, batch in enumerate(self.train_loader):
             self._train_batch(batch)
