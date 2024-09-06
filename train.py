@@ -285,7 +285,7 @@ class Trainer:
         global logger_loss_idx
         self.model.train()
         self.loss_dict = {}
-        if epoch > args.epochs + config.finetune_last_epochs[1]:
+        if epoch > args.epochs + config.finetune_last_epochs:
             if config.task == 'Matting':
                 self.pix_loss.lambdas_pix_last['mae'] *= 1
                 self.pix_loss.lambdas_pix_last['ssim'] *= 0.9
