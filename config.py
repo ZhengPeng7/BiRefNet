@@ -9,16 +9,17 @@ class Config():
         if os.name == 'nt': 
             self.sys_home_dir = os.environ['USERPROFILE'] # For windows system
         else:
-            self.sys_home_dir = [os.environ['HOME'], '/mnt/data'][0] # For Linux system
+            self.sys_home_dir = [os.environ['HOME'], '/mnt/data'][1] # For Linux system
+        self.data_root_dir = os.path.join(self.sys_home_dir, 'datasets/dis')
 
         # TASK settings
-        self.task = ['DIS5K', 'COD', 'HRSOD', 'General', 'General-2K', 'Matting'][0]
+        self.task = ['DIS5K', 'COD', 'HRSOD', 'General', 'General-2K', 'Matting'][4]
         self.training_set = {
             'DIS5K': ['DIS-TR', 'DIS-TR+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4'][0],
             'COD': 'TR-COD10K+TR-CAMO',
             'HRSOD': ['TR-DUTS', 'TR-HRSOD', 'TR-UHRSD', 'TR-DUTS+TR-HRSOD', 'TR-DUTS+TR-UHRSD', 'TR-HRSOD+TR-UHRSD', 'TR-DUTS+TR-HRSOD+TR-UHRSD'][5],
-            'General': '+'.join([ds for ds in os.listdir(os.path.join(self.sys_home_dir, self.task)) if ds not in ['DIS-VD']]),    # leave DIS-VD for evaluation.
-            'General-2K': '+'.join([ds for ds in os.listdir(os.path.join(self.sys_home_dir, self.task)) if ds not in ['DIS-VD', 'DIS-VD-ori']]),
+            'General': '+'.join([ds for ds in os.listdir(os.path.join(self.data_root_dir, self.task)) if ds not in ['DIS-VD']]),    # leave DIS-VD for evaluation.
+            'General-2K': '+'.join([ds for ds in os.listdir(os.path.join(self.data_root_dir, self.task)) if ds not in ['DIS-VD', 'DIS-VD-ori']]),
             'Matting': 'TR-P3M-10k+TE-P3M-500-NP+TR-humans+TR-Distrinctions-646',
         }[self.task]
         self.prompt4loc = ['dense', 'sparse'][0]
@@ -137,7 +138,6 @@ class Config():
         self.lambda_adv_d = 3. * (self.lambda_adv_g > 0)
 
         # PATH settings - inactive
-        self.data_root_dir = os.path.join(self.sys_home_dir, 'datasets/dis')
         self.weights_root_dir = os.path.join(self.sys_home_dir, 'weights/cv')
         self.weights = {
             'pvt_v2_b2': os.path.join(self.weights_root_dir, 'pvt_v2_b2.pth'),
