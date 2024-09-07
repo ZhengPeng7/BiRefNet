@@ -32,6 +32,8 @@ def do_eval(args):
             tb.field_names = ["Dataset", "Method", "Smeasure", "maxFm", "meanEm", 'MAE', "maxEm", "meanFm", "wFmeasure", "adpEm", "adpFm", "HCE", 'mBA', 'maxBIoU', 'meanBIoU']
         elif config.task == 'General':
             tb.field_names = ["Dataset", "Method", "maxFm", "wFmeasure", 'MAE', "Smeasure", "meanEm", "HCE", "maxEm", "meanFm", "adpEm", "adpFm", 'mBA', 'maxBIoU', 'meanBIoU']
+        elif config.task == 'General-2K':
+            tb.field_names = ["Dataset", "Method", "maxFm", "wFmeasure", 'MAE', "Smeasure", "meanEm", "HCE", "maxEm", "meanFm", "adpEm", "adpFm", 'mBA', 'maxBIoU', 'meanBIoU']
         elif config.task == 'Matting':
             tb.field_names = ["Dataset", "Method", "Smeasure", "maxFm", "meanEm", 'MSE', "maxEm", "meanFm", "wFmeasure", "adpEm", "adpFm", "HCE", 'mBA', 'maxBIoU', 'meanBIoU']
         else:
@@ -65,6 +67,12 @@ def do_eval(args):
                     mba.round(3), biou['curve'].max().round(3), biou['curve'].mean().round(3),
                 ]
             elif config.task == 'General':
+                scores = [
+                    fm['curve'].max().round(3), wfm.round(3), mae.round(3), sm.round(3), em['curve'].mean().round(3), int(hce.round()), 
+                    em['curve'].max().round(3), fm['curve'].mean().round(3), em['adp'].round(3), fm['adp'].round(3),
+                    mba.round(3), biou['curve'].max().round(3), biou['curve'].mean().round(3),
+                ]
+            elif config.task == 'General-2K':
                 scores = [
                     fm['curve'].max().round(3), wfm.round(3), mae.round(3), sm.round(3), em['curve'].mean().round(3), int(hce.round()), 
                     em['curve'].max().round(3), fm['curve'].mean().round(3), em['adp'].round(3), fm['adp'].round(3),
@@ -110,6 +118,7 @@ if __name__ == '__main__':
             'COD': '+'.join(['TE-COD10K', 'NC4K', 'TE-CAMO', 'CHAMELEON'][:]),
             'HRSOD': '+'.join(['DAVIS-S', 'TE-HRSOD', 'TE-UHRSD', 'TE-DUTS', 'DUT-OMRON'][:]),
             'General': '+'.join(['DIS-VD'][:]),
+            'General-2K': '+'.join(['DIS-VD-ori'][:]),
             'Matting': '+'.join(['TE-AM2k'][:]),
         }[config.task])
     parser.add_argument(

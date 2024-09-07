@@ -9,15 +9,16 @@ class Config():
         if os.name == 'nt': 
             self.sys_home_dir = os.environ['USERPROFILE'] # For windows system
         else:
-            self.sys_home_dir = os.environ['HOME'] # For Linux system
+            self.sys_home_dir = [os.environ['HOME'], '/mnt/data'][0] # For Linux system
 
         # TASK settings
-        self.task = ['DIS5K', 'COD', 'HRSOD', 'General', 'Matting'][0]
+        self.task = ['DIS5K', 'COD', 'HRSOD', 'General', 'General-2K', 'Matting'][0]
         self.training_set = {
             'DIS5K': ['DIS-TR', 'DIS-TR+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4'][0],
             'COD': 'TR-COD10K+TR-CAMO',
             'HRSOD': ['TR-DUTS', 'TR-HRSOD', 'TR-UHRSD', 'TR-DUTS+TR-HRSOD', 'TR-DUTS+TR-UHRSD', 'TR-HRSOD+TR-UHRSD', 'TR-DUTS+TR-HRSOD+TR-UHRSD'][5],
-            'General': 'DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4+DIS-TR+TR-HRSOD+TE-HRSOD+TR-HRS10K+TE-HRS10K+TR-UHRSD+TE-UHRSD+TR-P3M-10k+TE-P3M-500-NP+TE-P3M-500-P+TR-humans',    # leave DIS-VD for evaluation.
+            'General': '+'.join([ds for ds in os.listdir(os.path.join(self.sys_home_dir, self.task)) if ds not in ['DIS-VD']]),    # leave DIS-VD for evaluation.
+            'General-2K': '+'.join([ds for ds in os.listdir(os.path.join(self.sys_home_dir, self.task)) if ds not in ['DIS-VD', 'DIS-VD-ori']]),
             'Matting': 'TR-P3M-10k+TE-P3M-500-NP+TR-humans+TR-Distrinctions-646',
         }[self.task]
         self.prompt4loc = ['dense', 'sparse'][0]
@@ -51,6 +52,7 @@ class Config():
                 'COD': -20,
                 'HRSOD': -20,
                 'General': -20,
+                'General-2K': -20,
                 'Matting': -20,
             }[self.task]
         ][1]    # choose 0 to skip

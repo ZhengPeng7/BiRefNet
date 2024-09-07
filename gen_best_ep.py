@@ -31,10 +31,10 @@ for metric in metrics:
             if int(ckpt.split('--epoch_')[-1].strip()) < 0:
                 continue
             targe_idx = {
-                'sm': [5, 2, 2, 5, 2],
-                'wfm': [3, 3, 8, 3, 8],
-                'hce': [7, -1, -1, 7, -1]
-            }[metric][['DIS5K', 'COD', 'HRSOD', 'General', 'Matting'].index(config.task)]
+                'sm': [5, 2, 2, 5, 5, 2],
+                'wfm': [3, 3, 8, 3, 3, 8],
+                'hce': [7, -1, -1, 7, 7, -1]
+            }[metric][['DIS5K', 'COD', 'HRSOD', 'General', 'General-2K', 'Matting'].index(config.task)]
             if metric != 'hce':
                 score_sm = float(properties[targe_idx].strip())
             else:
