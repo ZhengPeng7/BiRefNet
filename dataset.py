@@ -36,7 +36,7 @@ class MyData(data.Dataset):
         self.size_train = image_size
         self.size_test = image_size
         self.keep_size = not config.size
-        self.data_size = (config.size, config.size)
+        self.data_size = config.size
         self.is_train = is_train
         self.load_all = config.load_all
         self.device = config.device
@@ -45,12 +45,12 @@ class MyData(data.Dataset):
         if self.is_train and config.auxiliary_classification:
             self.cls_name2id = {_name: _id for _id, _name in enumerate(class_labels_TR_sorted)}
         self.transform_image = transforms.Compose([
-            transforms.Resize(self.data_size),
+            transforms.Resize(self.data_size[::-1]),
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
         ][self.load_all or self.keep_size:])
         self.transform_label = transforms.Compose([
-            transforms.Resize(self.data_size),
+            transforms.Resize(self.data_size[::-1]),
             transforms.ToTensor(),
         ][self.load_all or self.keep_size:])
         dataset_root = os.path.join(config.data_root_dir, config.task)
@@ -80,8 +80,8 @@ class MyData(data.Dataset):
             self.class_labels_loaded = []
             # for image_path, label_path in zip(self.image_paths, self.label_paths):
             for image_path, label_path in tqdm(zip(self.image_paths, self.label_paths), total=len(self.image_paths)):
-                _image = path_to_image(image_path, size=(config.size, config.size), color_type='rgb')
-                _label = path_to_image(label_path, size=(config.size, config.size), color_type='gray')
+                _image = path_to_image(image_path, size=config.size, color_type='rgb')
+                _label = path_to_image(label_path, size=config.size, color_type='gray')
                 self.images_loaded.append(_image)
                 self.labels_loaded.append(_label)
                 self.class_labels_loaded.append(
@@ -95,8 +95,8 @@ class MyData(data.Dataset):
             label = self.labels_loaded[index]
             class_label = self.class_labels_loaded[index] if self.is_train and config.auxiliary_classification else -1
         else:
-            image = path_to_image(self.image_paths[index], size=(config.size, config.size), color_type='rgb')
-            label = path_to_image(self.label_paths[index], size=(config.size, config.size), color_type='gray')
+            image = path_to_image(self.image_paths[index], size=config.size, color_type='rgb')
+            label = path_to_image(self.label_paths[index], size=config.size, color_type='gray')
             class_label = self.cls_name2id[self.label_paths[index].split('/')[-1].split('#')[3]] if self.is_train and config.auxiliary_classification else -1
 
         # loading image and label

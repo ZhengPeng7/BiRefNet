@@ -7,7 +7,7 @@ from config import Config
 
 
 class Discriminator(nn.Module):
-    def __init__(self, channels=1, img_size=256):
+    def __init__(self, channels=1, img_size=(256, 256)):
         super(Discriminator, self).__init__()
 
         def discriminator_block(in_filters, out_filters, bn=Config().batch_size > 1):
@@ -24,8 +24,9 @@ class Discriminator(nn.Module):
         )
 
         # The height and width of downsampled image
-        ds_size = img_size // 2 ** 4
-        self.adv_layer = nn.Sequential(nn.Linear(128 * ds_size ** 2, 1), nn.Sigmoid())
+        ds_size_wid = img_size[0] // 2 ** 4
+        ds_size_hei = img_size[1] // 2 ** 4
+        self.adv_layer = nn.Sequential(nn.Linear(128 * (ds_size_wid * ds_size_hei), 1), nn.Sigmoid())
 
     def forward(self, img):
         out = self.model(img)
