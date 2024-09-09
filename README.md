@@ -189,6 +189,9 @@ Our BiRefNet has achieved SOTA on many similar HR tasks:
 We found there've been some 3rd party applications based on our BiRefNet. Many thanks for their contribution to the community!  
 Choose the one you like to try with clicks instead of codes:  
 1. **Applications**:
+   + Thanks [**MoonHugo/ComfyUI-BiRefNet-Hugo**](https://github.com/MoonHugo/ComfyUI-BiRefNet-Hugo): this project further upgrade the **ComfyUI node** for BiRefNet with our **latest weights**.
+     <p align="center"><img src="https://github.com/MoonHugo/ComfyUI-BiRefNet-Hugo/blob/main/assets/d0a22b2a-ceb3-4205-9b4e-f6a68e4337c7.png" /></p>
+ 
    + Thanks [**lbq779660843/BiRefNet-Tensorrt**](https://github.com/lbq779660843/BiRefNet-Tensorrt) and [**yuanyang1991/birefnet_tensorrt**](https://github.com/yuanyang1991/birefnet_tensorrt): they both provided the project to convert BiRefNet to **TensorRT**, which is faster and better for deployment. Their repos offer solid local establishment (Win and Linux) and [colab demo](https://colab.research.google.com/drive/1r8GkFPyMMO0OkMX6ih5FjZnUCQrl2SHV?usp=sharing), respectively. And @yuanyang1991 kindly offered the comparison among the inference efficiency of naive PyTorch, ONNX, and TensorRT on an RTX 4080S:
 
 | Methods | [Pytorch](https://drive.google.com/file/d/1_IfUnu8Fpfn-nerB89FzdNXQ7zk6FKxc/view) | [ONNX](https://drive.google.com/drive/u/0/folders/1kZM55bwsRdS__bdnsXpkmH6QPyza-9-N) | TensorRT |
@@ -309,8 +312,13 @@ I really hope you enjoy this project and use it in more works to achieve new SOT
 ```
 
 
-
 ## Contact
 
 Any questions, discussions, or even complaints, feel free to leave issues here or send me e-mails (zhengpeng0108@gmail.com). You can also join the Discord Group (https://discord.gg/d9NN5sgFrq) or QQ Group (https://qm.qq.com/q/y6WPy7WOIK) if you want to talk a lot publicly.
+
+### Support
+
+I'm always willing to answer all questions ASAP (when I have time). If you want to give me financial support, you can send some to my accounts below:
++ PayPal: [paypal.me/zhengpeng7](https://www.paypal.com/paypalme/zhengpeng7).
++ Alipay: <img src="https://drive.google.com/thumbnail?id=189y8fwa_fp-O3OkvjXXUt0hUgdr4AH6_&sz" width="15px"/> (click).
 
