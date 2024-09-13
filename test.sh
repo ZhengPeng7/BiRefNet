@@ -15,7 +15,7 @@ case "${task}" in
     "DIS5K") testsets='DIS-VD,DIS-TE1,DIS-TE2,DIS-TE3,DIS-TE4' ;;
     "COD") testsets='CHAMELEON,NC4K,TE-CAMO,TE-COD10K' ;;
     "HRSOD") testsets='DAVIS-S,TE-HRSOD,TE-UHRSD,DUT-OMRON,TE-DUTS' ;;
-    'General') testsets='DIS-VD,TE-P3M-500-NP' ;;
+    "General") testsets='DIS-VD,TE-P3M-500-NP' ;;
     "General-2K") testsets='DIS-VD,TE-P3M-500-NP' ;;
     "Matting") testsets='TE-AM2k' ;;
 esac
