@@ -4,7 +4,7 @@ e_*
 ckpt
 preds
 evaluation/eval-*
-nohup.out*
+nohup.*
 tmp*
 *.pth
 core-*-python-*

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Example: `setsid nohup ./train_test.sh &>nohup.log &`
 
 method=${1:-"BSL"}
 devices=${2:-"0,1,2,3,4,5,6,7"}

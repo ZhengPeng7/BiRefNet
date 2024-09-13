@@ -288,6 +288,7 @@ class Trainer:
         if epoch > args.epochs + config.finetune_last_epochs:
             if config.task == 'Matting':
                 self.pix_loss.lambdas_pix_last['mae'] *= 1
+                self.pix_loss.lambdas_pix_last['mse'] *= 0.9
                 self.pix_loss.lambdas_pix_last['ssim'] *= 0.9
             else:
                 self.pix_loss.lambdas_pix_last['bce'] *= 0

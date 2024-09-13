@@ -6,10 +6,7 @@ class Config():
     def __init__(self) -> None:
               # PATH settings
         # Make up your file system as: SYS_HOME_DIR/codes/dis/BiRefNet, SYS_HOME_DIR/datasets/dis/xx, SYS_HOME_DIR/weights/xx
-        if os.name == 'nt': 
-            self.sys_home_dir = os.environ['USERPROFILE'] # For windows system
-        else:
-            self.sys_home_dir = [os.environ['HOME'], '/mnt/data'][1] # For Linux system
+        self.sys_home_dir = [os.path.expanduser('~'), '/mnt/data'][1]   # Default, custom
         self.data_root_dir = os.path.join(self.sys_home_dir, 'datasets/dis')
 
         # TASK settings
@@ -18,8 +15,8 @@ class Config():
             'DIS5K': ['DIS-TR', 'DIS-TR+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4'][0],
             'COD': 'TR-COD10K+TR-CAMO',
             'HRSOD': ['TR-DUTS', 'TR-HRSOD', 'TR-UHRSD', 'TR-DUTS+TR-HRSOD', 'TR-DUTS+TR-UHRSD', 'TR-HRSOD+TR-UHRSD', 'TR-DUTS+TR-HRSOD+TR-UHRSD'][5],
-            'General': '+'.join([ds for ds in os.listdir(os.path.join(self.data_root_dir, self.task)) if ds not in ['DIS-VD']]),    # leave DIS-VD for evaluation.
-            'General-2K': '+'.join([ds for ds in os.listdir(os.path.join(self.data_root_dir, self.task)) if ds not in ['DIS-VD', 'DIS-VD-ori']]),
+            'General': '+'.join([ds for ds in os.listdir(os.path.join(self.data_root_dir, self.task)) if ds not in ['DIS-VD', 'TE-P3M-500-NP']]),    # leave DIS-VD,TE-P3M-500-NP for evaluation.
+            'General-2K': '+'.join([ds for ds in os.listdir(os.path.join(self.data_root_dir, self.task)) if ds not in ['DIS-VD', 'TE-P3M-500-NP']]),
             'Matting': 'TR-P3M-10k+TE-P3M-500-NP+TR-humans+TR-Distrinctions-646',
         }[self.task]
         self.prompt4loc = ['dense', 'sparse'][0]
@@ -52,7 +49,7 @@ class Config():
                 'DIS5K': -40,
                 'COD': -20,
                 'HRSOD': -20,
-                'General': -20,
+                'General': -40,
                 'General-2K': -20,
                 'Matting': -20,
             }[self.task]
@@ -100,7 +97,33 @@ class Config():
         self.lr_decay_epochs = [1e5]    # Set to negative N to decay the lr in the last N-th epoch.
         self.lr_decay_rate = 0.5
         # Loss
-        if self.task not in ['Matting']:
+        if self.task in ['Matting']:
+            self.lambdas_pix_last = {
+                'bce': 30 * 1,
+                'iou': 0.5 * 0,
+                'iou_patch': 0.5 * 0,
+                'mae': 100 * 1,
+                'mse': 30 * 0,
+                'triplet': 3 * 0,
+                'reg': 100 * 0,
+                'ssim': 10 * 1,
+                'cnt': 5 * 0,
+                'structure': 5 * 0,
+            }
+        elif self.task in ['General', 'General-2K']:
+            self.lambdas_pix_last = {
+                'bce': 30 * 1,
+                'iou': 0.5 * 1,
+                'iou_patch': 0.5 * 0,
+                'mae': 100 * 1,
+                'mse': 30 * 0,
+                'triplet': 3 * 0,
+                'reg': 100 * 0,
+                'ssim': 10 * 1,
+                'cnt': 5 * 0,
+                'structure': 5 * 0,
+            }
+        else:
             self.lambdas_pix_last = {
                 # not 0 means opening this loss
                 # original rate -- 1 : 30 : 1.5 : 0.2, bce x 30
@@ -108,21 +131,6 @@ class Config():
                 'iou': 0.5 * 1,         # 0 / 255
                 'iou_patch': 0.5 * 0,   # 0 / 255, win_size = (64, 64)
                 'mae': 30 * 0,
-                'mse': 30 * 0,         # can smooth the saliency map
-                'triplet': 3 * 0,
-                'reg': 100 * 0,
-                'ssim': 10 * 1,          # help contours,
-                'cnt': 5 * 0,          # help contours
-                'structure': 5 * 0,    # structure loss from codes of MVANet. A little improvement on DIS-TE[1,2,3], a bit more decrease on DIS-TE4.
-            }
-        else:
-            self.lambdas_pix_last = {
-                # not 0 means opening this loss
-                # original rate -- 1 : 30 : 1.5 : 0.2, bce x 30
-                'bce': 30 * 0,          # high performance
-                'iou': 0.5 * 0,         # 0 / 255
-                'iou_patch': 0.5 * 0,   # 0 / 255, win_size = (64, 64)
-                'mae': 100 * 1,
                 'mse': 30 * 0,         # can smooth the saliency map
                 'triplet': 3 * 0,
                 'reg': 100 * 0,

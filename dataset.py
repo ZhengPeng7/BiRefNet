@@ -75,7 +75,7 @@ class MyData(data.Dataset):
         if len(self.label_paths) != len(self.image_paths):
             set_image_paths = set([os.path.splitext(p.split(os.sep)[-1])[0] for p in self.image_paths])
             set_label_paths = set([os.path.splitext(p.split(os.sep)[-1])[0] for p in self.label_paths])
-            print('diff:', set_image_paths - set_label_paths)
+            print('Path diff:', set_image_paths - set_label_paths)
             raise ValueError(f"There are different numbers of images ({len(self.label_paths)}) and labels ({len(self.image_paths)})")
 
         if self.load_all:

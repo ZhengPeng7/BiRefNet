@@ -117,8 +117,8 @@ if __name__ == '__main__':
             'DIS5K': '+'.join(['DIS-VD', 'DIS-TE1', 'DIS-TE2', 'DIS-TE3', 'DIS-TE4'][:]),
             'COD': '+'.join(['TE-COD10K', 'NC4K', 'TE-CAMO', 'CHAMELEON'][:]),
             'HRSOD': '+'.join(['DAVIS-S', 'TE-HRSOD', 'TE-UHRSD', 'TE-DUTS', 'DUT-OMRON'][:]),
-            'General': '+'.join(['DIS-VD'][:]),
-            'General-2K': '+'.join(['DIS-VD-ori'][:]),
+            'General': '+'.join(['DIS-VD', 'TE-P3M-500-NP'][:]),
+            'General-2K': '+'.join(['DIS-VD', 'TE-P3M-500-NP'][:]),
             'Matting': '+'.join(['TE-AM2k'][:]),
         }[config.task])
     parser.add_argument(
