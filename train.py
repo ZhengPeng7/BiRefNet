@@ -294,6 +294,7 @@ class Trainer:
                 self.pix_loss.lambdas_pix_last['bce'] *= 0
                 self.pix_loss.lambdas_pix_last['ssim'] *= 1
                 self.pix_loss.lambdas_pix_last['iou'] *= 0.5
+                self.pix_loss.lambdas_pix_last['mae'] *= 0.9
 
         for batch_idx, batch in enumerate(self.train_loader):
             self._train_batch(batch)
