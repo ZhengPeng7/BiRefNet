@@ -1,4 +1,8 @@
 # Custom
+images_todo/
+predictions/
+*.mp4
+*.avi
 e_*
 .vscode
 ckpt
