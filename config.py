@@ -11,13 +11,22 @@ class Config():
 
         # TASK settings
         self.task = ['DIS5K', 'COD', 'HRSOD', 'General', 'General-2K', 'Matting'][0]
+        self.validation_set = {
+            'DIS5K': [],
+            'COD': [],
+            'HRSOD': [],
+            'General': ['DIS-VD', 'TE-P3M-500-NP'],
+            'General-2K': ['DIS-VD', 'TE-P3M-500-NP'],
+            'Matting': ['TE-P3M-500-NP'],
+        }[self.task]
+        datasets_all = '+'.join([ds for ds in (os.listdir(os.path.join(self.data_root_dir, self.task)) if os.path.isdir(os.path.join(self.data_root_dir, self.task)) else []) if ds not in self.validation_set])
         self.training_set = {
             'DIS5K': ['DIS-TR', 'DIS-TR+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4'][0],
             'COD': 'TR-COD10K+TR-CAMO',
             'HRSOD': ['TR-DUTS', 'TR-HRSOD', 'TR-UHRSD', 'TR-DUTS+TR-HRSOD', 'TR-DUTS+TR-UHRSD', 'TR-HRSOD+TR-UHRSD', 'TR-DUTS+TR-HRSOD+TR-UHRSD'][5],
-            'General': '+'.join([ds for ds in (os.listdir(os.path.join(self.data_root_dir, self.task)) if os.path.isdir(os.path.join(self.data_root_dir, self.task)) else []) if ds not in ['DIS-VD', 'TE-P3M-500-NP']]),    # leave DIS-VD,TE-P3M-500-NP for evaluation.
-            'General-2K': '+'.join([ds for ds in (os.listdir(os.path.join(self.data_root_dir, self.task)) if os.path.isdir(os.path.join(self.data_root_dir, self.task)) else []) if ds not in ['DIS-VD', 'TE-P3M-500-NP']]),
-            'Matting': 'TR-P3M-10k+TE-P3M-500-NP+TR-humans+TR-Distrinctions-646',
+            'General': datasets_all,
+            'General-2K': datasets_all,
+            'Matting': datasets_all,
         }[self.task]
         self.prompt4loc = ['dense', 'sparse'][0]
 
