@@ -213,7 +213,7 @@ class SSIMLoss(torch.nn.Module):
             window = window.type_as(img1)
             self.window = window
             self.channel = channel
-        return 1 - _ssim(img1, img2, window, self.window_size, channel, self.size_average)
+        return 1 - (1 + _ssim(img1, img2, window, self.window_size, channel, self.size_average)) / 2
 
 
 def gaussian(window_size, sigma):

@@ -119,7 +119,7 @@ if __name__ == '__main__':
             'HRSOD': '+'.join(['DAVIS-S', 'TE-HRSOD', 'TE-UHRSD', 'TE-DUTS', 'DUT-OMRON'][:]),
             'General': '+'.join(['DIS-VD', 'TE-P3M-500-NP'][:]),
             'General-2K': '+'.join(['DIS-VD', 'TE-P3M-500-NP'][:]),
-            'Matting': '+'.join(['TE-AM2k'][:]),
+            'Matting': '+'.join(['TE-AM-2k'][:]),
         }[config.task])
     parser.add_argument(
         '--save_dir', type=str, help='candidate competitors',

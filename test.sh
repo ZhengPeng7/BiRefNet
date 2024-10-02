@@ -17,7 +17,7 @@ case "${task}" in
     "HRSOD") testsets='DAVIS-S,TE-HRSOD,TE-UHRSD,DUT-OMRON,TE-DUTS' ;;
     "General") testsets='DIS-VD,TE-P3M-500-NP' ;;
     "General-2K") testsets='DIS-VD,TE-P3M-500-NP' ;;
-    "Matting") testsets='TE-AM2k' ;;
+    "Matting") testsets='TE-AM-2k' ;;
 esac
 testsets=(`echo ${testsets} | tr ',' ' '`) && testsets=${testsets[@]}
 
