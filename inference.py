@@ -85,19 +85,9 @@ if __name__ == '__main__':
     parser.add_argument('--ckpt_folder', default=sorted(glob(os.path.join('ckpt', '*')))[-1], type=str, help='model folder')
     parser.add_argument('--pred_root', default='e_preds', type=str, help='Output folder')
     parser.add_argument('--testsets',
-                        default={
-                            'DIS5K': 'DIS-VD+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4',
-                            'COD': 'TE-COD10K+NC4K+TE-CAMO+CHAMELEON',
-                            'HRSOD': 'DAVIS-S+TE-HRSOD+TE-UHRSD+TE-DUTS+DUT-OMRON',
-                            'General': 'DIS-VD+TE-P3M-500-NP',
-                            'General-2K': 'DIS-VD+TE-P3M-500-NP',
-                            'Matting': 'TE-AM-2k',
-                            'DIS5K-': 'DIS-VD',
-                            'COD-': 'TE-COD10K',
-                            'SOD-': 'DAVIS-S+TE-HRSOD+TE-UHRSD',
-                        }[config.task + ''],
+                        default=config.testsets.replace(',', '+'),
                         type=str,
-                        help="Test all sets: , 'DIS-VD+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4'")
+                        help="Test all sets: DIS5K -> 'DIS-VD+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4'")
 
     args = parser.parse_args()
 

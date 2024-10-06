@@ -182,7 +182,7 @@ class Trainer:
         gts = batch[1].to(device)
         class_labels = batch[2].to(device)
         if config.use_fp16:
-            with amp.autocast(enabled=config.use_fp16):
+            with amp.autocast(enabled=config.use_fp16, dtype=(torch.float16, torch.bfloat16)[0]):
                 scaled_preds, class_preds_lst = self.model(inputs)
                 if config.out_ref:
                     (outs_gdt_pred, outs_gdt_label), scaled_preds = scaled_preds

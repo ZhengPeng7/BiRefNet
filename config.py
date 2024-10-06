@@ -11,15 +11,17 @@ class Config():
 
         # TASK settings
         self.task = ['DIS5K', 'COD', 'HRSOD', 'General', 'General-2K', 'Matting'][0]
-        self.validation_set = {
-            'DIS5K': [],
-            'COD': [],
-            'HRSOD': [],
-            'General': ['DIS-VD', 'TE-P3M-500-NP'],
-            'General-2K': ['DIS-VD', 'TE-P3M-500-NP'],
-            'Matting': ['TE-P3M-500-NP'],
+        self.testsets = {
+            # Benchmarks
+            'DIS5K': ','.join(['DIS-VD', 'DIS-TE1', 'DIS-TE2', 'DIS-TE3', 'DIS-TE4']),
+            'COD': ','.join(['CHAMELEON', 'NC4K', 'TE-CAMO', 'TE-COD10K']),
+            'HRSOD': ','.join(['DAVIS-S', 'TE-HRSOD', 'TE-UHRSD', 'DUT-OMRON', 'TE-DUTS']),
+            # Practical use
+            'General': ','.join(['DIS-VD', 'TE-P3M-500-NP']),
+            'General-2K': ','.join(['DIS-VD', 'TE-P3M-500-NP']),
+            'Matting': ','.join(['TE-P3M-500-NP', 'TE-AM-2k']),
         }[self.task]
-        datasets_all = '+'.join([ds for ds in (os.listdir(os.path.join(self.data_root_dir, self.task)) if os.path.isdir(os.path.join(self.data_root_dir, self.task)) else []) if ds not in self.validation_set])
+        datasets_all = '+'.join([ds for ds in (os.listdir(os.path.join(self.data_root_dir, self.task)) if os.path.isdir(os.path.join(self.data_root_dir, self.task)) else []) if ds not in self.testsets.split(',')])
         self.training_set = {
             'DIS5K': ['DIS-TR', 'DIS-TR+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4'][0],
             'COD': 'TR-COD10K+TR-CAMO',
@@ -184,11 +186,19 @@ class Config():
                 self.save_last = int([l.strip() for l in lines if '"{}")'.format(self.task) in l and 'val_last=' in l][0].split('val_last=')[-1].split()[0])
                 self.save_step = int([l.strip() for l in lines if '"{}")'.format(self.task) in l and 'step=' in l][0].split('step=')[-1].split()[0])
 
-    def print_task(self) -> None:
-        # Return task for choosing settings in shell scripts.
-        print(self.task)
 
+# Return task for choosing settings in shell scripts.
 if __name__ == '__main__':
+    import argparse
+
+
+    parser = argparse.ArgumentParser(description='Only choose one argument to activate.')
+    parser.add_argument('--print_task', action='store_true', help='print task name')
+    parser.add_argument('--print_testsets', action='store_true', help='print validation set')
+    args = parser.parse_args()
+
     config = Config()
-    config.print_task()
-    
+    for arg_name, arg_value in args._get_kwargs():
+        if arg_value:
+            print(config.__getattribute__(arg_name[len('print_'):]))
+

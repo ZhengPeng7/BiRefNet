@@ -2,7 +2,7 @@
 # Run script
 # Settings of training & test for different tasks.
 method="$1"
-task=$(python3 config.py)
+task=$(python3 config.py --print_task)
 case "${task}" in
     "DIS5K") epochs=600 && val_last=50 && step=5 ;;
     "COD") epochs=150 && val_last=50 && step=5 ;;

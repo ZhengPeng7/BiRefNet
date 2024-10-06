@@ -10,15 +10,9 @@ echo Inference finished at $(date)
 # Evaluation
 log_dir=e_logs && mkdir ${log_dir}
 
-task=$(python3 config.py)
-case "${task}" in
-    "DIS5K") testsets='DIS-VD,DIS-TE1,DIS-TE2,DIS-TE3,DIS-TE4' ;;
-    "COD") testsets='CHAMELEON,NC4K,TE-CAMO,TE-COD10K' ;;
-    "HRSOD") testsets='DAVIS-S,TE-HRSOD,TE-UHRSD,DUT-OMRON,TE-DUTS' ;;
-    "General") testsets='DIS-VD,TE-P3M-500-NP' ;;
-    "General-2K") testsets='DIS-VD,TE-P3M-500-NP' ;;
-    "Matting") testsets='TE-AM-2k' ;;
-esac
+task=$(python3 config.py --print_task)
+testsets=$(python3 config.py --print_testsets)
+
 testsets=(`echo ${testsets} | tr ',' ' '`) && testsets=${testsets[@]}
 
 for testset in ${testsets}; do
