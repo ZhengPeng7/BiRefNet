@@ -45,7 +45,7 @@ This repo is the official implementation of "[**Bilateral Reference for High-Res
 
 ## News :newspaper:
 * **`Oct 6, 2024`:**  We uploaded the [BiRefNet-matting](https://huggingface.co/ZhengPeng7/BiRefNet-matting) model for general trimap-free matting use.
-* **`Sep 24, 2024`:**  We uploaded the BiRefNet_lite-2K model [here](https://huggingface.co/ZhengPeng7/BiRefNet_lite-2K), which takes inputs in a much higher resolution (2560x1440). We also added the [notebook](https://github.com/ZhengPeng7/BiRefNet/blob/main/tutorials/BiRefNet_inference_video.ipynb) for inference on videos.
+* **`Sep 24, 2024`:**  We uploaded the [BiRefNet_lite-2K](https://huggingface.co/ZhengPeng7/BiRefNet_lite-2K) model, which takes inputs in a much higher resolution (2560x1440). We also added the [notebook](https://github.com/ZhengPeng7/BiRefNet/blob/main/tutorials/BiRefNet_inference_video.ipynb) for inference on videos.
 * **`Sep 7, 2024`:**  Thanks to [Freepik](https://www.freepik.com) for supporting me with GPUs for more extensive experiments, especially on BiRefNet for 2K inference!
 * **`Aug 30, 2024`:** We uploaded notebooks in `tutorials` to run the inference and ONNX conversion locally.
 * **`Aug 23, 2024`:** Our BiRefNet is now officially released [online](https://www.sciopen.com/article/10.26599/AIR.2024.9150038) on CAAI AIR journal. And thanks to the [press release](https://www.eurekalert.org/news-releases/1055380).
