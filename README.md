@@ -44,6 +44,7 @@ This repo is the official implementation of "[**Bilateral Reference for High-Res
 > **We need more GPU resources** to push forward the performance of BiRefNet, especially on *matting* tasks, higher-resolution inference (*2K*), and more *efficient* model design. If you are happy to cooperate, please contact me at zhengpeng0108@gmail.com.
 
 ## News :newspaper:
+* **`Oct 26, 2024`:**  We added the guideline of conducting fine-tuning on custom data with existing weights.
 * **`Oct 6, 2024`:**  We uploaded the [BiRefNet-matting](https://huggingface.co/ZhengPeng7/BiRefNet-matting) model for general trimap-free matting use.
 * **`Sep 24, 2024`:**  We uploaded the [BiRefNet_lite-2K](https://huggingface.co/ZhengPeng7/BiRefNet_lite-2K) model, which takes inputs in a much higher resolution (2560x1440). We also added the [notebook](https://github.com/ZhengPeng7/BiRefNet/blob/main/tutorials/BiRefNet_inference_video.ipynb) for inference on videos.
 * **`Sep 7, 2024`:**  Thanks to [Freepik](https://www.freepik.com) for supporting me with GPUs for more extensive experiments, especially on BiRefNet for 2K inference!
@@ -130,8 +131,6 @@ Our BiRefNet has achieved SOTA on many similar HR tasks:
 |  DIS  |          DIS5K-TR           | swin_v1_large | [google-drive](https://drive.google.com/file/d/1J90LucvDQaS3R_-9E7QUh1mgJ8eQvccb/view) |
 |  COD  |     COD10K-TR, CAMO-TR      | swin_v1_large | [google-drive](https://drive.google.com/file/d/1tM5M72k7a8aKF-dYy-QXaqvfEhbFaWkC/view) |
 | HRSOD |           DUTS-TR           | swin_v1_large | [google-drive](https://drive.google.com/file/d/1f7L0Pb1Y3RkOMbqLCW_zO31dik9AiUFa/view) |
-| HRSOD |          HRSOD-TR           | swin_v1_large |                         google-drive                         |
-| HRSOD |          UHRSD-TR           | swin_v1_large |                         google-drive                         |
 | HRSOD |      DUTS-TR, HRSOD-TR      | swin_v1_large | [google-drive](https://drive.google.com/file/d/1WJooyTkhoDLllaqwbpur_9Hle0XTHEs_/view) |
 | HRSOD |      DUTS-TR, UHRSD-TR      | swin_v1_large | [google-drive](https://drive.google.com/file/d/1Pu1mv3ORobJatIuUoEuZaWDl2ylP3Gw7/view) |
 | HRSOD |     HRSOD-TR, UHRSD-TR      | swin_v1_large | [google-drive](https://drive.google.com/file/d/1xEh7fsgWGaS5c3IffMswasv0_u-aVM9E/view) |
@@ -148,7 +147,8 @@ Our BiRefNet has achieved SOTA on many similar HR tasks:
 |      **general use**      | DIS5K-TR,DIS-TEs, DUTS-TR_TE,HRSOD-TR_TE,UHRSD-TR_TE, HRS10K-TR_TE, TR-P3M-10k, TE-P3M-500-NP, TE-P3M-500-P, TR-humans | swin_v1_large |  DIS-VD   |  0.911, 0.875, 1069   | [google-drive](https://drive.google.com/file/d/1_IfUnu8Fpfn-nerB89FzdNXQ7zk6FKxc/view) |
 |      **general use**      | DIS5K-TR,DIS-TEs, DUTS-TR_TE,HRSOD-TR_TE,UHRSD-TR_TE, HRS10K-TR_TE, TR-P3M-10k, TE-P3M-500-NP, TE-P3M-500-P, TR-humans | swin_v1_tiny |  DIS-VD   |  0.882, 0.830, 1175   | [google-drive](https://drive.google.com/file/d/1fzInDWiE2n65tmjaHDSZpqhL0VME6-Yl/view) |
 |      **general use**      |                      DIS5K-TR, DIS-TEs                       | swin_v1_large |  DIS-VD   |  0.907, 0.865, 1059   | [google-drive](https://drive.google.com/file/d/1P6NJzG3Jf1sl7js2q1CPC3yqvBn_O8UJ/view) |
-| **matting segmentation** |                           [P3M-10k](https://github.com/JizhiziLi/P3M), [humans](https://huggingface.co/datasets/schirrmacher/humans)                            | swin_v1_large | P3M-500-P |     0.983, 0.989      | [google-drive](https://drive.google.com/file/d/1uUeXjEUoD2XF_6YjD_fsct-TJp7TFiqh) |
+| **general matting** | P3M-10k (except TE-P3M-500-NP), TR-humans, AM-2k, AIM-500, Human-2k (synthesized with BG-20k), Distinctions-646 (synthesized with BG-20k), HIM2K, PPM-100 | swin_v1_large | TE-P3M-500-NP | 0.979, 0.988 | [google-drive](https://drive.google.com/file/d/1Nlcg58d5bvE-Tbbm8su_eMQba10hdcwQ/view) |
+| **portrait matting** |                           [P3M-10k](https://github.com/JizhiziLi/P3M), [humans](https://huggingface.co/datasets/schirrmacher/humans)                            | swin_v1_large | P3M-500-P |     0.983, 0.989      | [google-drive](https://drive.google.com/file/d/1uUeXjEUoD2XF_6YjD_fsct-TJp7TFiqh) |
 
 </details>
 
@@ -182,8 +182,30 @@ Our BiRefNet has achieved SOTA on many similar HR tasks:
 + The results of the original pth files and the converted onnx files are slightly different, which is acceptable.
 + Pay attention to the compatibility among `onnxruntime-gpu, CUDA, and CUDNN` (we use `torch==2.0.1, cuda=11.8` here).
 
+</details>
+
+
+
+### :pen: Fine-tuning on Custom Data
+
+<details><summary><b>Guideline</b>:</summary>
+
+
+> Suppose you have some custom data, fine-tuning on it tends to bring improvement.
+
+1. **Pre-requisites**: you have put your datasets in the path `${data_root_dir}/TASK_NAME/DATASET_NAME`. For example, `${data_root_dir}/DIS5K/DIS-TR` and `${data_root_dir}/General/TR-HRSOD`, where `im` and `gt` are both in each dataset folder.
+2. **Change an existing task to your custom one**: replace all `'General'` (with single quotes) in the whole project with `your custom task name` as the screenshot of vscode given below shows:<img src="https://drive.google.com/thumbnail?id=1J6gzTmrVnQsmtt3hi6ch3ZrH7Op9PKSB&sz=w400" />
+3. **Adapt settings**:
+   + `sys_home_dir`: path to the root folder, which contains codes / datasets / weights / ... -- project folder / data folder / backbone weights folder are `${sys_home_dir}/codes/dis/BiRefNet / ${sys_home_dir}/datasets/dis/General / ${sys_home_dir}/weights/cv/swin_xxx`, respectively.
+   + `testsets`: your validation set.
+   + `training_set`: your training set.
+   + `lambdas_pix_last`: adapt the weights of different losses if you want, especially for the difference between segmentation (classification task) and matting (regression task).
+4. **Use existing weights**: if you want to use some existing weights to fine-tune that model, please refer to the `resume` argument in `train.py`. Attention: the epoch of training continues from the epochs the weights file name indicates (e.g., `244` in `BiRefNet-general-epoch_244.pth`), instead of `1`. So, if you want to fine-tune `50` more epochs, please specify the epochs as `294`. `\#Epochs, \#last epochs for validation, and validation step` are set in `train.sh`.
+5. Good luck to your training :) If you still have questions, feel free to leave issues (recommended way) or contact me.
 
 </details>
+
+
 
 ## Third-Party Creations
 
@@ -192,9 +214,15 @@ Our BiRefNet has achieved SOTA on many similar HR tasks:
 We found there've been some 3rd party applications based on our BiRefNet. Many thanks for their contribution to the community!  
 Choose the one you like to try with clicks instead of codes:  
 1. **Applications**:
+   
+   + Thanks [**lldacing/ComfyUI_BiRefNet_ll**](https://github.com/lldacing/ComfyUI_BiRefNet_ll): this project further upgrade the **ComfyUI node** for BiRefNet with both our **latest weights** and **the legacy ones**.
+     
+     <p align="center"><img src="https://github.com/lldacing/ComfyUI_BiRefNet_ll/raw/main/doc/video.gif" height="300"/></p>
+     
    + Thanks [**MoonHugo/ComfyUI-BiRefNet-Hugo**](https://github.com/MoonHugo/ComfyUI-BiRefNet-Hugo): this project further upgrade the **ComfyUI node** for BiRefNet with our **latest weights**.
-     <p align="center"><img src="https://github.com/MoonHugo/ComfyUI-BiRefNet-Hugo/blob/main/assets/d0a22b2a-ceb3-4205-9b4e-f6a68e4337c7.png" /></p>
-
+     
+     <p align="center"><img src="https://github.com/MoonHugo/ComfyUI-BiRefNet-Hugo/raw/main/assets/demo4.gif" height="300"/></p>
+     
    + Thanks [**lbq779660843/BiRefNet-Tensorrt**](https://github.com/lbq779660843/BiRefNet-Tensorrt) and [**yuanyang1991/birefnet_tensorrt**](https://github.com/yuanyang1991/birefnet_tensorrt): they both provided the project to convert BiRefNet to **TensorRT**, which is faster and better for deployment. Their repos offer solid local establishment (Win and Linux) and [colab demo](https://colab.research.google.com/drive/1r8GkFPyMMO0OkMX6ih5FjZnUCQrl2SHV?usp=sharing), respectively. And @yuanyang1991 kindly offered the comparison among the inference efficiency of naive PyTorch, ONNX, and TensorRT on an RTX 4080S:
 
 | Methods | [Pytorch](https://drive.google.com/file/d/1_IfUnu8Fpfn-nerB89FzdNXQ7zk6FKxc/view) | [ONNX](https://drive.google.com/drive/u/0/folders/1kZM55bwsRdS__bdnsXpkmH6QPyza-9-N) | TensorRT |
@@ -318,5 +346,5 @@ I really hope you enjoy this project and use it in more works to achieve new SOT
 
 ## Contact
 
-Any questions, discussions, or even complaints, feel free to leave issues here or send me e-mails (zhengpeng0108@gmail.com). You can also join the Discord Group (https://discord.gg/d9NN5sgFrq) or QQ Group (https://qm.qq.com/q/y6WPy7WOIK) if you want to talk a lot publicly.
+Any questions, discussions, or even complaints, feel free to leave issues here (recommended) or send me e-mails (zhengpeng0108@gmail.com) or book a meeting with me: [calendly.com/zhengpeng0108/30min](https://calendly.com/zhengpeng0108/30min). You can also join the Discord Group (https://discord.gg/d9NN5sgFrq) or QQ Group (https://qm.qq.com/q/y6WPy7WOIK) if you want to talk a lot publicly.
 
