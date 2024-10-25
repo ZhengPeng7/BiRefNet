@@ -97,7 +97,7 @@ def init_data_loaders(to_be_distributed):
 
 
 def init_models_optimizers(epochs, to_be_distributed):
-    model = BiRefNet(bb_pretrained=True)
+    model = BiRefNet(bb_pretrained=True and not os.path.isfile(str(args.resume)))
     if args.resume:
         if os.path.isfile(args.resume):
             logger.info("=> loading checkpoint '{}'".format(args.resume))
