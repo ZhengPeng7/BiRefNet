@@ -1,4 +1,6 @@
 # Custom
+*.onnx
+deform_conv2d_onnx_exporter*
 frames-video_*/
 images_todo/
 predictions/
