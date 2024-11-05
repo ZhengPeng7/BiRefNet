@@ -4,7 +4,7 @@
 method="$1"
 task=$(python3 config.py --print_task)
 case "${task}" in
-    'DIS5K') epochs=500 && val_last=50 && step=5 ;;
+    'DIS5K') epochs=200 && val_last=50 && step=10 ;;
     'COD') epochs=150 && val_last=50 && step=5 ;;
     'HRSOD') epochs=150 && val_last=50 && step=5 ;;
     'General') epochs=250 && val_last=50 && step=2 ;;
