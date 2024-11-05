@@ -8,6 +8,7 @@ timm
 scipy
 scikit-image
 kornia
+einops
 
 tqdm
 prettytable

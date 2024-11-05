@@ -13,7 +13,7 @@ class Config():
         self.task = ['DIS5K', 'COD', 'HRSOD', 'General', 'General-2K', 'Matting'][0]
         self.testsets = {
             # Benchmarks
-            'DIS5K': ','.join(['DIS-VD', 'DIS-TE1', 'DIS-TE2', 'DIS-TE3', 'DIS-TE4']),
+            'DIS5K': ','.join(['DIS-VD', 'DIS-TE1', 'DIS-TE2', 'DIS-TE3', 'DIS-TE4'][:1]),
             'COD': ','.join(['CHAMELEON', 'NC4K', 'TE-CAMO', 'TE-COD10K']),
             'HRSOD': ','.join(['DAVIS-S', 'TE-HRSOD', 'TE-UHRSD', 'DUT-OMRON', 'TE-DUTS']),
             # Practical use
@@ -33,9 +33,9 @@ class Config():
         self.prompt4loc = ['dense', 'sparse'][0]
 
         # Faster-Training settings
-        self.load_all = False    # Turn it on/off by your case. It may consume a lot of CPU memory. And for multi-GPU (N), it would cost N times the CPU memory to load the data.
+        self.load_all = False   # Turn it on/off by your case. It may consume a lot of CPU memory. And for multi-GPU (N), it would cost N times the CPU memory to load the data.
         self.use_fp16 = False   # It may cause nan in training.
-        self.compile = True and (not self.use_fp16)     # 1. Trigger CPU memory leak in some extend, which is an inherent problem of PyTorch.
+        self.compile = False and (not self.use_fp16)     # 1. Trigger CPU memory leak in some extend, which is an inherent problem of PyTorch.
                                                         #   Machines with > 70GB CPU memory can run the whole training on DIS5K with default setting.
                                                         # 2. Higher PyTorch version may fix it: https://github.com/pytorch/pytorch/issues/119607.
                                                         # 3. But compile in Pytorch > 2.0.1 seems to bring no acceleration for training.
@@ -53,7 +53,7 @@ class Config():
         self.dec_blk = ['BasicDecBlk', 'ResBlk'][0]
 
         # TRAINING settings
-        self.batch_size = 4
+        self.batch_size = 3
         self.finetune_last_epochs = [
             0,
             {
@@ -101,7 +101,7 @@ class Config():
         self.model = [
             'BiRefNet',
             'BiRefNetC2F',
-        ][0]
+        ][1]
 
         # TRAINING settings - inactive
         self.preproc_methods = ['flip', 'enhance', 'rotate', 'pepper', 'crop'][:4]
