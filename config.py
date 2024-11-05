@@ -100,6 +100,7 @@ class Config():
         self.freeze_bb = False
         self.model = [
             'BiRefNet',
+            'BiRefNetC2F',
         ][0]
 
         # TRAINING settings - inactive

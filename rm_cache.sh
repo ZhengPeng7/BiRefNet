@@ -8,6 +8,7 @@ rm -r tmp*
 rm slurm*
 rm -r ckpt
 rm nohup.out*
+rm nohup.log*
 
 # Eval
 rm -r evaluation/eval-*

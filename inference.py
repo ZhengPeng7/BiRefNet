@@ -6,7 +6,7 @@ import cv2
 import torch
 
 from dataset import MyData
-from models.birefnet import BiRefNet
+from models.birefnet import BiRefNet, BiRefNetC2F
 from utils import save_tensor_img, check_state_dict
 from config import Config
 
@@ -51,6 +51,8 @@ def main(args):
 
     if config.model == 'BiRefNet':
         model = BiRefNet(bb_pretrained=False)
+    elif config.model == 'BiRefNetC2F':
+        model = BiRefNetC2F(bb_pretrained=False)
     weights_lst = sorted(
         glob(os.path.join(args.ckpt_folder, '*.pth')) if args.ckpt_folder else [args.ckpt],
         key=lambda x: int(x.split('epoch_')[-1].split('.pth')[0]),

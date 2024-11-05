@@ -9,7 +9,7 @@ from torch.autograd import Variable
 from config import Config
 from loss import PixLoss, ClsLoss
 from dataset import MyData
-from models.birefnet import BiRefNet
+from models.birefnet import BiRefNet, BiRefNetC2F
 from utils import Logger, AverageMeter, set_seed, check_state_dict
 
 from torch.utils.data.distributed import DistributedSampler
@@ -97,7 +97,10 @@ def init_data_loaders(to_be_distributed):
 
 
 def init_models_optimizers(epochs, to_be_distributed):
-    model = BiRefNet(bb_pretrained=True and not os.path.isfile(str(args.resume)))
+    if config.model == 'BiRefNet':
+        model = BiRefNet(bb_pretrained=True and not os.path.isfile(str(args.resume)))
+    elif config.model == 'BiRefNetC2F':
+        model = BiRefNetC2F(bb_pretrained=True and not os.path.isfile(str(args.resume)))
     if args.resume:
         if os.path.isfile(args.resume):
             logger.info("=> loading checkpoint '{}'".format(args.resume))

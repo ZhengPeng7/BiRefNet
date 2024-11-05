@@ -166,7 +166,7 @@ class Decoder(nn.Module):
                 self.gdt_convs_attn_3 = nn.Sequential(nn.Conv2d(_N, 1, 1, 1, 0))
                 self.gdt_convs_attn_2 = nn.Sequential(nn.Conv2d(_N, 1, 1, 1, 0))
 
-    def get_patches_batch(self, x, p):
+    def get_patches_batch(self, x, p, dim=1):
         _size_h, _size_w = p.shape[2:]
         patches_batch = []
         for idx in range(x.shape[0]):
@@ -174,7 +174,7 @@ class Decoder(nn.Module):
             patches_x = []
             for column_x in columns_x:
                 patches_x += [p.unsqueeze(0) for p in torch.split(column_x, split_size_or_sections=_size_h, dim=-2)]
-            patch_sample = torch.cat(patches_x, dim=1)
+            patch_sample = torch.cat(patches_x, dim=dim)    # 0 -> batch, 1 -> channel.
             patches_batch.append(patch_sample)
         return torch.cat(patches_batch, dim=0)
 
@@ -284,3 +284,92 @@ class SimpleConvs(nn.Module):
 
     def forward(self, x):
         return self.conv_out(self.conv1(x))
+
+
+###########
+
+
+class BiRefNetC2F(
+    nn.Module,
+    PyTorchModelHubMixin,
+    library_name="birefnet_c2f",
+    repo_url="https://github.com/ZhengPeng7/BiRefNet_C2F",
+    tags=['Image Segmentation', 'Background Removal', 'Mask Generation', 'Dichotomous Image Segmentation', 'Camouflaged Object Detection', 'Salient Object Detection']
+):
+    def __init__(self, bb_pretrained=True):
+        super(BiRefNetC2F, self).__init__()
+        self.config = Config()
+        self.epoch = 1
+        self.grid = 4
+        self.patch_num = self.grid ** 2
+        self.model_coarse = BiRefNet(bb_pretrained=True)
+        self.model_fine = BiRefNet(bb_pretrained=True)
+        self.input_mixer = nn.Conv2d(4, 3, 1, 1, 0)
+        self.output_mixer_merge_post = nn.Sequential(nn.Conv2d(1, 16, 3, 1, 1), nn.Conv2d(16, 1, 3, 1, 1))
+
+    def get_patches_batch(self, x, p, dim=1):
+        _size_h, _size_w = p.shape[2:]
+        patches_batch = []
+        for idx in range(x.shape[0]):
+            # Split a row
+            columns_x = torch.split(x[idx], split_size_or_sections=_size_w, dim=-1)
+            patches_x = []
+            for column_x in columns_x:
+                # Split a column
+                patches_x += [p.unsqueeze(0) for p in torch.split(column_x, split_size_or_sections=_size_h, dim=-2)]
+            patch_sample = torch.cat(patches_x, dim=dim)    # 0 -> batch, 1 -> channel.
+            patches_batch.append(patch_sample)
+        return torch.cat(patches_batch, dim=0)
+
+    def merge_patches_batch(self, x, batch_size, grid_x):
+        patch_num = x.shape[0] // batch_size
+        grid_y = patch_num // grid_x
+        merged_tensors = []
+        for idx_batch in range(batch_size):
+            patches_this_tensor = x[idx_batch * patch_num : (idx_batch + 1) * patch_num, ...]
+            patches_this_tensor_rearranged = []
+            for idx_patch, _ in enumerate(patches_this_tensor):
+                if idx_patch % grid_y == 0:
+                    this_column = torch.cat([patches_this_tensor[_idx].unsqueeze(0) for _idx in range(idx_patch, idx_patch + grid_y)], dim=-2)   # concat by H
+                    patches_this_tensor_rearranged.append(this_column)
+            merged_tensor = torch.cat(patches_this_tensor_rearranged, dim=-1)   # concat by W
+            merged_tensors.append(merged_tensor)
+        merged_batch = torch.cat(merged_tensors, dim=0)     # concat by Batch
+        merged_batch = self.output_mixer_merge_post(merged_batch)
+        return merged_batch
+
+    def forward(self, x):
+        x_ori = x.clone()
+        ########## Coarse ##########
+        x = F.interpolate(x, size=[s//self.grid for s in self.config.size[::-1]], mode='bilinear', align_corners=True)
+
+        if self.training:
+            scaled_preds, class_preds_lst = self.model_coarse(x)
+        else:
+            scaled_preds = self.model_coarse(x)
+        ##########  Fine  ##########
+        x_HR_patches = self.get_patches_batch(x_ori, x, dim=0)
+        pred = F.interpolate(scaled_preds[-1] if not (self.config.out_ref and self.training) else scaled_preds[1][-1], size=x_ori.shape[2:], mode='bilinear', align_corners=True)
+        pred_patches = self.get_patches_batch(pred, x, dim=0)
+        t = torch.cat([x_HR_patches, pred_patches], dim=1)
+        x_HR = self.input_mixer(t)
+
+        pred_patches = self.get_patches_batch(pred, x_HR)
+        if self.training:
+            scaled_preds_HR, class_preds_lst_HR = self.model_fine(x_HR)
+        else:
+            scaled_preds_HR = self.model_fine(x_HR)
+        if self.training:
+            if self.config.out_ref:
+                [outs_gdt_pred, outs_gdt_label], outs = scaled_preds
+                [outs_gdt_pred_HR, outs_gdt_label_HR], outs_HR = scaled_preds_HR
+                for idx_out, out_HR in enumerate(outs_HR):
+                    outs_HR[idx_out] = self.merge_patches_batch(out_HR, self.config.batch_size, self.grid)
+                return [([outs_gdt_pred + outs_gdt_pred_HR, outs_gdt_label + outs_gdt_label_HR], outs + outs_HR), class_preds_lst]    # handle gt here
+            else:
+                return [
+                    scaled_preds + [self.merge_patches_batch(scaled_pred_HR, self.config.batch_size, self.grid) for scaled_pred_HR in scaled_preds_HR],
+                    class_preds_lst
+                ]
+        else:
+            return scaled_preds + [self.merge_patches_batch(scaled_pred_HR, 1, self.grid) for scaled_pred_HR in scaled_preds_HR]
