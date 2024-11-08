@@ -333,12 +333,12 @@ class BiRefNetC2F(
                 [outs_gdt_pred, outs_gdt_label], outs = scaled_preds
                 [outs_gdt_pred_HR, outs_gdt_label_HR], outs_HR = scaled_preds_HR
                 for idx_out, out_HR in enumerate(outs_HR):
-                    outs_HR[idx_out] = patches2image(out_HR, grid_h=self.grid, grid_w=self.grid, transformation='(b hg wg) c h w -> b c (hg h) (wg w)')
+                    outs_HR[idx_out] = self.output_mixer_merge_post(patches2image(out_HR, grid_h=self.grid, grid_w=self.grid, transformation='(b hg wg) c h w -> b c (hg h) (wg w)'))
                 return [([outs_gdt_pred + outs_gdt_pred_HR, outs_gdt_label + outs_gdt_label_HR], outs + outs_HR), class_preds_lst]    # handle gt here
             else:
                 return [
-                    scaled_preds + [patches2image(scaled_pred_HR, grid_h=self.grid, grid_w=self.grid, transformation='(b hg wg) c h w -> b c (hg h) (wg w)') for scaled_pred_HR in scaled_preds_HR],
+                    scaled_preds + [self.output_mixer_merge_post(patches2image(scaled_pred_HR, grid_h=self.grid, grid_w=self.grid, transformation='(b hg wg) c h w -> b c (hg h) (wg w)')) for scaled_pred_HR in scaled_preds_HR],
                     class_preds_lst
                 ]
         else:
-            return scaled_preds + [patches2image(scaled_pred_HR, grid_h=self.grid, grid_w=self.grid, transformation='(b hg wg) c h w -> b c (hg h) (wg w)') for scaled_pred_HR in scaled_preds_HR]
+            return scaled_preds + [self.output_mixer_merge_post(patches2image(scaled_pred_HR, grid_h=self.grid, grid_w=self.grid, transformation='(b hg wg) c h w -> b c (hg h) (wg w)')) for scaled_pred_HR in scaled_preds_HR]

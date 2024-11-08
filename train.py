@@ -104,7 +104,7 @@ def init_models_optimizers(epochs, to_be_distributed):
     if args.resume:
         if os.path.isfile(args.resume):
             logger.info("=> loading checkpoint '{}'".format(args.resume))
-            state_dict = torch.load(args.resume, map_location='cpu')
+            state_dict = torch.load(args.resume, map_location='cpu', weights_only=True)
             state_dict = check_state_dict(state_dict)
             model.load_state_dict(state_dict)
             global epoch_st

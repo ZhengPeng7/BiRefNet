@@ -68,8 +68,7 @@ def main(args):
             if int(weights.strip('.pth').split('epoch_')[-1]) % 1 != 0:
                 continue
             print('\tInferencing {}...'.format(weights))
-            # model.load_state_dict(torch.load(weights, map_location='cpu'))
-            state_dict = torch.load(weights, map_location='cpu')
+            state_dict = torch.load(weights, map_location='cpu', weights_only=True)
             state_dict = check_state_dict(state_dict)
             model.load_state_dict(state_dict)
             model = model.to(device)
