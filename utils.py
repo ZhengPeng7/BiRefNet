@@ -26,10 +26,12 @@ def path_to_image(path, size=(1024, 1024), color_type=['rgb', 'gray'][0]):
 
 
 
-def check_state_dict(state_dict, unwanted_prefix='_orig_mod.'):
+def check_state_dict(state_dict, unwanted_prefixes=['_orig_mod.', 'module.']):
     for k, v in list(state_dict.items()):
-        if k.startswith(unwanted_prefix):
-            state_dict[k[len(unwanted_prefix):]] = state_dict.pop(k)
+        for unwanted_prefix in unwanted_prefixes:
+            if k.startswith(unwanted_prefix):
+                state_dict[k[len(unwanted_prefix):]] = state_dict.pop(k)
+                break
     return state_dict
 
 

@@ -163,7 +163,7 @@ class PixLoss(nn.Module):
 
         self.criterions_last = {}
         if 'bce' in self.lambdas_pix_last and self.lambdas_pix_last['bce']:
-            self.criterions_last['bce'] = nn.BCELoss() if not self.config.use_fp16 else nn.BCEWithLogitsLoss()
+            self.criterions_last['bce'] = nn.BCELoss()
         if 'iou' in self.lambdas_pix_last and self.lambdas_pix_last['iou']:
             self.criterions_last['iou'] = IoULoss()
         if 'iou_patch' in self.lambdas_pix_last and self.lambdas_pix_last['iou_patch']:
@@ -183,12 +183,11 @@ class PixLoss(nn.Module):
 
     def forward(self, scaled_preds, gt):
         loss = 0.
-        criterions_embedded_with_sigmoid = ['structure', ] + ['bce'] if self.config.use_fp16 else []
         for _, pred_lvl in enumerate(scaled_preds):
             if pred_lvl.shape != gt.shape:
                 pred_lvl = nn.functional.interpolate(pred_lvl, size=gt.shape[2:], mode='bilinear', align_corners=True)
             for criterion_name, criterion in self.criterions_last.items():
-                _loss = criterion(pred_lvl.sigmoid() if criterion_name not in criterions_embedded_with_sigmoid else pred_lvl, gt) * self.lambdas_pix_last[criterion_name]
+                _loss = criterion(pred_lvl.sigmoid(), gt) * self.lambdas_pix_last[criterion_name]
                 loss += _loss
                 # print(criterion_name, _loss.item())
         return loss

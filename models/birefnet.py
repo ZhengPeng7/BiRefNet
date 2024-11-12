@@ -23,7 +23,7 @@ def image2patches(image, grid_h=2, grid_w=2, patch_ref=None, transformation='b c
 
 def patches2image(patches, grid_h=2, grid_w=2, patch_ref=None, transformation='(b hg wg) c h w -> b c (hg h) (wg w)'):
     if patch_ref is not None:
-        grid_h, grid_w = patch_ref.shape[-2] // image.shape[-2], patch_ref.shape[-1] // image.shape[-1]
+        grid_h, grid_w = patch_ref.shape[-2] // patches[0].shape[-2], patch_ref.shape[-1] // patches[0].shape[-1]
     image = rearrange(patches, transformation, hg=grid_h, wg=grid_w)
     return image
 
