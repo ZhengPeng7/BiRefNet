@@ -186,27 +186,6 @@ Our BiRefNet has achieved SOTA on many similar HR tasks:
 
 
 
-### :pen: Fine-tuning on Custom Data
-
-<details><summary><b>Guideline</b>:</summary>
-
-
-> Suppose you have some custom data, fine-tuning on it tends to bring improvement.
-
-1. **Pre-requisites**: you have put your datasets in the path `${data_root_dir}/TASK_NAME/DATASET_NAME`. For example, `${data_root_dir}/DIS5K/DIS-TR` and `${data_root_dir}/General/TR-HRSOD`, where `im` and `gt` are both in each dataset folder.
-2. **Change an existing task to your custom one**: replace all `'General'` (with single quotes) in the whole project with `your custom task name` as the screenshot of vscode given below shows:<img src="https://drive.google.com/thumbnail?id=1J6gzTmrVnQsmtt3hi6ch3ZrH7Op9PKSB&sz=w400" />
-3. **Adapt settings**:
-   + `sys_home_dir`: path to the root folder, which contains codes / datasets / weights / ... -- project folder / data folder / backbone weights folder are `${sys_home_dir}/codes/dis/BiRefNet / ${sys_home_dir}/datasets/dis/General / ${sys_home_dir}/weights/cv/swin_xxx`, respectively.
-   + `testsets`: your validation set.
-   + `training_set`: your training set.
-   + `lambdas_pix_last`: adapt the weights of different losses if you want, especially for the difference between segmentation (classification task) and matting (regression task).
-4. **Use existing weights**: if you want to use some existing weights to fine-tune that model, please refer to the `resume` argument in `train.py`. Attention: the epoch of training continues from the epochs the weights file name indicates (e.g., `244` in `BiRefNet-general-epoch_244.pth`), instead of `1`. So, if you want to fine-tune `50` more epochs, please specify the epochs as `294`. `\#Epochs, \#last epochs for validation, and validation step` are set in `train.sh`.
-5. Good luck to your training :) If you still have questions, feel free to leave issues (recommended way) or contact me.
-
-</details>
-
-
-
 ## Third-Party Creations
 
 > Concerning edge devices with less computing power, we provide a lightweight version with `swin_v1_tiny` as the backbone, which is x4+ faster and x5+ smaller. The details can be found in [this issue](https://github.com/ZhengPeng7/BiRefNet/issues/11#issuecomment-2041033576) and links there.
@@ -214,19 +193,23 @@ Our BiRefNet has achieved SOTA on many similar HR tasks:
 We found there've been some 3rd party applications based on our BiRefNet. Many thanks for their contribution to the community!  
 Choose the one you like to try with clicks instead of codes:  
 1. **Applications**:
-   
-   + Thanks [**briaai/RMBG-2.0**](https://huggingface.co/briaai/RMBG-2.0): this project trained BiRefNet with their **high-quality private data**, which brings improvement on the DIS task. Note that their model is for only **non-commercial use** and is **not aware of transparency** due to training in the DIS task setting, which has only binary mask GTs.
-     
+
+   + Thanks [**camenduru/text-behind-tost**](https://github.com/camenduru/text-behind-tost): this project employed BiRefNet to extract foreground subjects and **add texts between the subjects and background**, which looks amazing especially for videos. Check their [tweets](https://x.com/camenduru/status/1856290408294220010) for more examples.
+
+     <p align="center"><img src="https://github.com/user-attachments/assets/9969dd10-38a8-4cf2-a6c7-5b11f074b9b4" height="300"/></p>
+
+   + Thanks [**briaai/RMBG-2.0**](https://huggingface.co/briaai/RMBG-2.0): this project trained BiRefNet with their **high-quality private data**, which brings improvement on the DIS task. Note that their weights are for only **non-commercial use** and are **not aware of transparency** due to training in the DIS task setting, which focuses only on predicting binary masks.
+
      <p align="center"><img src="https://huggingface.co/briaai/RMBG-2.0/resolve/main/t4.png" height="300"/></p>
-   
+
    + Thanks [**lldacing/ComfyUI_BiRefNet_ll**](https://github.com/lldacing/ComfyUI_BiRefNet_ll): this project further upgrade the **ComfyUI node** for BiRefNet with both our **latest weights** and **the legacy ones**.
-     
+
      <p align="center"><img src="https://github.com/lldacing/ComfyUI_BiRefNet_ll/raw/main/doc/video.gif" height="300"/></p>
-     
+
    + Thanks [**MoonHugo/ComfyUI-BiRefNet-Hugo**](https://github.com/MoonHugo/ComfyUI-BiRefNet-Hugo): this project further upgrade the **ComfyUI node** for BiRefNet with our **latest weights**.
-     
+
      <p align="center"><img src="https://github.com/MoonHugo/ComfyUI-BiRefNet-Hugo/raw/main/assets/demo4.gif" height="300"/></p>
-     
+
    + Thanks [**lbq779660843/BiRefNet-Tensorrt**](https://github.com/lbq779660843/BiRefNet-Tensorrt) and [**yuanyang1991/birefnet_tensorrt**](https://github.com/yuanyang1991/birefnet_tensorrt): they both provided the project to convert BiRefNet to **TensorRT**, which is faster and better for deployment. Their repos offer solid local establishment (Win and Linux) and [colab demo](https://colab.research.google.com/drive/1r8GkFPyMMO0OkMX6ih5FjZnUCQrl2SHV?usp=sharing), respectively. And @yuanyang1991 kindly offered the comparison among the inference efficiency of naive PyTorch, ONNX, and TensorRT on an RTX 4080S:
 
 | Methods | [Pytorch](https://drive.google.com/file/d/1_IfUnu8Fpfn-nerB89FzdNXQ7zk6FKxc/view) | [ONNX](https://drive.google.com/drive/u/0/folders/1kZM55bwsRdS__bdnsXpkmH6QPyza-9-N) | TensorRT |
@@ -294,23 +277,43 @@ Download backbone weights from [my google-drive folder](https://drive.google.com
 # After the evaluation, run `gen_best_ep.py` to select the best ckpt from a specific metric (you choose it from Sm, wFm, HCE (DIS only)).
 ```
 
-#### Well-trained weights:
+### :pen: Fine-tuning on Custom Data
 
-Download the `BiRefNet-{TASK}-{EPOCH}.pth` from [[**stuff**](https://drive.google.com/drive/folders/1s2Xe0cjq-2ctnJBR24563yMSCOu4CcxM)]. Info of the corresponding (predicted\_maps/performance/training\_log) weights can be also found in folders like `exp-BiRefNet-{TASK_SETTINGS}` in the same directory.
+<details><summary><b>Guideline</b>:</summary>
+
+
+> Suppose you have some custom data, fine-tuning on it tends to bring improvement.
+
+1. **Pre-requisites**: you have put your datasets in the path `${data_root_dir}/TASK_NAME/DATASET_NAME`. For example, `${data_root_dir}/DIS5K/DIS-TR` and `${data_root_dir}/General/TR-HRSOD`, where `im` and `gt` are both in each dataset folder.
+2. **Change an existing task to your custom one**: replace all `'General'` (with single quotes) in the whole project with `your custom task name` as the screenshot of vscode given below shows:<img src="https://drive.google.com/thumbnail?id=1J6gzTmrVnQsmtt3hi6ch3ZrH7Op9PKSB&sz=w400" />
+3. **Adapt settings**:
+   + `sys_home_dir`: path to the root folder, which contains codes / datasets / weights / ... -- project folder / data folder / backbone weights folder are `${sys_home_dir}/codes/dis/BiRefNet / ${sys_home_dir}/datasets/dis/General / ${sys_home_dir}/weights/cv/swin_xxx`, respectively.
+   + `testsets`: your validation set.
+   + `training_set`: your training set.
+   + `lambdas_pix_last`: adapt the weights of different losses if you want, especially for the difference between segmentation (classification task) and matting (regression task).
+4. **Use existing weights**: if you want to use some existing weights to fine-tune that model, please refer to the `resume` argument in `train.py`. Attention: the epoch of training continues from the epochs the weights file name indicates (e.g., `244` in `BiRefNet-general-epoch_244.pth`), instead of `1`. So, if you want to fine-tune `50` more epochs, please specify the epochs as `294`. `\#Epochs, \#last epochs for validation, and validation step` are set in `train.sh`.
+5. Good luck to your training :) If you still have questions, feel free to leave issues (recommended way) or contact me.
+
+</details>
+
+
+
+## Well-trained weights:
+
+Download the `BiRefNet-{TASK}-{EPOCH}.pth` from [[**stuff**](https://drive.google.com/drive/folders/1s2Xe0cjq-2ctnJBR24563yMSCOu4CcxM)] and [the release page](https://github.com/ZhengPeng7/BiRefNet/releases) of this repo. Info of the corresponding (predicted\_maps/performance/training\_log) weights can be also found in folders like `exp-BiRefNet-{TASK_SETTINGS}` in the same directory.
 
 You can also download the weights from the release of this repo.
 
-The results might be a bit different from those in the original paper, you can see them in the `eval_results-BiRefNet-{TASK_SETTINGS}` folder in each `exp-xx`, we will update them in the following days. Due to the very high cost I used (A100-80G x 8) which many people cannot afford to (including myself....),  I re-trained BiRefNet on a single A100-40G only and achieve the performance on the same level (even better). It means you can directly train the model on a single GPU with 36.5G+ memory. BTW, 5.5G GPU memory is needed for inference in 1024x1024. (I personally paid a lot for renting an A100-40G to re-train BiRefNet on the three tasks... T_T. Hope it can help you.)
+The results might be a bit different from those in the original paper, you can see them in the `eval_results-BiRefNet-{TASK_SETTINGS}` folder in each `exp-xx`, we will update them in the following days. Due to the very high cost I used (A100-80G x 8), which many people cannot afford (including myself....), I re-trained BiRefNet on a single A100-40G only and achieved the performance on the same level (even better). It means you can directly train the model on a single GPU with 36.5G+ memory. BTW, 5.5G GPU memory is needed for inference in 1024x1024. (I personally paid a lot for renting an A100-40G to re-train BiRefNet on the three tasks... T_T. Hope it can help you.)
 
-But if you have more and more powerful GPUs, you can set GPU IDs and increase the batch size in `config.py` to accelerate the training. We have made all this kind of things adaptive in scripts to seamlessly switch between single-card training and multi-card training. Enjoy it :)
+But if you have more and more powerful GPUs, you can set GPU IDs and increase the batch size in `config.py` to accelerate the training. We have made all these kinds of things adaptive in scripts to seamlessly switch between single-card training and multi-card training. Enjoy it :)
 
-#### Some of my messages:
+## Some of my messages:
 
 This project was originally built for DIS only. But after the updates one by one, I made it larger and larger with many functions embedded together. Finally, you can **use it for any binary image segmentation tasks**, such as DIS/COD/SOD, medical image segmentation, anomaly segmentation, etc. You can eaily open/close below things (usually in `config.py`):
 + Multi-GPU training: open/close with one variable.
 + Backbone choices: Swin_v1, PVT_v2, ConvNets, ...
 + Weighted losses: BCE, IoU, SSIM, MAE, Reg, ...
-+ Adversarial loss for binary segmentation (proposed in my previous work [MCCL](https://arxiv.org/pdf/2302.14485)).
 + Training tricks: multi-scale supervision, freezing backbone, multi-scale input...
 + Data collator: loading all in memory, smooth combination of different datasets for combined training and test.
 + ...
@@ -331,6 +334,13 @@ I really hope you enjoy this project and use it in more works to achieve new SOT
 
 <p align="center"><img src="https://drive.google.com/thumbnail?id=1ZGHC32CAdT9cwRloPzOCKWCrVQZvUAlJ&sz=w1620" /></p>
 
+
+## Acknowledgement:
+
+Many of my thanks to the companies / institutes below.
++ [FAL](https://fal.ai).
++ [Freepik](https://www.freepik.com).
++ [Redmond.ai](https://redmond.ai).
 
 
 ### Citation
