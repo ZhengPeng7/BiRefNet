@@ -26,7 +26,7 @@ then
     # Adapt the nproc_per_node by the number of GPUs. Give 8989 as the default value of master_port.
     echo "Multi-GPU mode received..."
     CUDA_VISIBLE_DEVICES=${devices} \
-    torchrun --nproc_per_node $((nproc_per_node+1)) --master_port=${3:-8999} \
+    torchrun --nnodes=1 --nproc_per_node $((nproc_per_node+1)) \
     train.py --ckpt_dir ckpt/${method} --epochs ${epochs} \
         --testsets ${testsets} \
         --dist ${to_be_distributed} \
@@ -39,6 +39,7 @@ else
         --testsets ${testsets} \
         --dist ${to_be_distributed} \
         --resume xx/xx-epoch_244.pth
+        # --use_accelerate
 fi
 
 echo Training finished at $(date)

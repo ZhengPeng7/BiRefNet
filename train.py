@@ -20,7 +20,6 @@ from torch.distributed import init_process_group, destroy_process_group
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('--resume', default=None, type=str, help='path to latest checkpoint')
 parser.add_argument('--epochs', default=120, type=int)
-parser.add_argument('--trainset', default='DIS5K', type=str, help="Options: 'DIS5K'")
 parser.add_argument('--ckpt_dir', default='ckpt/tmp', help='Temporary folder')
 parser.add_argument('--testsets', default='DIS-VD+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4', type=str)
 parser.add_argument('--dist', default=False, type=lambda x: x == 'True')
