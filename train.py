@@ -62,14 +62,14 @@ logger.info("datasets: load_all={}, compile={}.".format(config.load_all, config.
 logger.info("Other hyperparameters:"); logger.info(args)
 print('batch size:', config.batch_size)
 
-
 if os.path.exists(os.path.join(config.data_root_dir, config.task, args.testsets.strip('+').split('+')[0])):
     args.testsets = args.testsets.strip('+').split('+')
 else:
     args.testsets = []
 
-# Init model
+
 def prepare_dataloader(dataset: torch.utils.data.Dataset, batch_size: int, to_be_distributed=False, is_train=True):
+    # Prepare dataloaders
     if to_be_distributed:
         return torch.utils.data.DataLoader(
             dataset=dataset, batch_size=batch_size, num_workers=min(config.num_workers, batch_size), pin_memory=True,
@@ -83,7 +83,7 @@ def prepare_dataloader(dataset: torch.utils.data.Dataset, batch_size: int, to_be
 
 
 def init_data_loaders(to_be_distributed):
-    # Prepare dataset
+    # Prepare datasets
     train_loader = prepare_dataloader(
         MyData(datasets=config.training_set, image_size=config.size, is_train=True),
         config.batch_size, to_be_distributed=to_be_distributed, is_train=True
@@ -101,6 +101,7 @@ def init_data_loaders(to_be_distributed):
 
 
 def init_models_optimizers(epochs, to_be_distributed):
+    # Init models
     if config.model == 'BiRefNet':
         model = BiRefNet(bb_pretrained=True and not os.path.isfile(str(args.resume)))
     elif config.model == 'BiRefNetC2F':
@@ -125,7 +126,6 @@ def init_models_optimizers(epochs, to_be_distributed):
         model = torch.compile(model, mode=['default', 'reduce-overhead', 'max-autotune'][0])
     if config.precisionHigh:
         torch.set_float32_matmul_precision('high')
-
 
     # Setting optimizer
     if config.optimizer == 'AdamW':
@@ -162,32 +162,6 @@ class Trainer:
         
         # Others
         self.loss_log = AverageMeter()
-        if config.lambda_adv_g:
-            self.optimizer_d, self.lr_scheduler_d, self.disc, self.adv_criterion = self._load_adv_components()
-            self.disc_update_for_odd = 0
-
-    def _load_adv_components(self):
-        # AIL
-        from loss import Discriminator
-        disc = Discriminator(channels=3, img_size=config.size)
-        if to_be_distributed:
-            disc = disc.to(device)
-            disc = DDP(disc, device_ids=[device], broadcast_buffers=False)
-        else:
-            disc = disc.to(device)
-        if config.compile:
-            disc = torch.compile(disc, mode=['default', 'reduce-overhead', 'max-autotune'][0])
-        adv_criterion = nn.BCELoss()
-        if config.optimizer == 'AdamW':
-            optimizer_d = optim.AdamW(params=disc.parameters(), lr=config.lr, weight_decay=1e-2)
-        elif config.optimizer == 'Adam':
-            optimizer_d = optim.Adam(params=disc.parameters(), lr=config.lr, weight_decay=0)
-        lr_scheduler_d = torch.optim.lr_scheduler.MultiStepLR(
-            optimizer_d,
-            milestones=[lde if lde > 0 else args.epochs + lde + 1 for lde in config.lr_decay_epochs],
-            gamma=config.lr_decay_rate
-        )
-        return optimizer_d, lr_scheduler_d, disc, adv_criterion
 
     def _train_batch(self, batch):
         if args.use_accelerate:
@@ -220,13 +194,6 @@ class Trainer:
         if config.out_ref:
             loss = loss + loss_gdt * 1.0
 
-        if config.lambda_adv_g:
-            # gen
-            valid = Variable(torch.cuda.FloatTensor(scaled_preds[-1].shape[0], 1).fill_(1.0), requires_grad=False).to(device)
-            adv_loss_g = self.adv_criterion(self.disc(scaled_preds[-1] * inputs), valid) * config.lambda_adv_g
-            loss += adv_loss_g
-            self.loss_dict['loss_adv'] = adv_loss_g.item()
-            self.disc_update_for_odd += 1
         self.loss_log.update(loss.item(), inputs.size(0))
         self.optimizer.zero_grad()
         if args.use_accelerate:
@@ -234,17 +201,6 @@ class Trainer:
         else:
             loss.backward()
         self.optimizer.step()
-
-        if config.lambda_adv_g and self.disc_update_for_odd % 2 == 0:
-            # disc
-            fake = Variable(torch.cuda.FloatTensor(scaled_preds[-1].shape[0], 1).fill_(0.0), requires_grad=False).to(device)
-            adv_loss_real = self.adv_criterion(self.disc(gts * inputs), valid)
-            adv_loss_fake = self.adv_criterion(self.disc(scaled_preds[-1].detach() * inputs.detach()), fake)
-            adv_loss_d = (adv_loss_real + adv_loss_fake) / 2 * config.lambda_adv_d
-            self.loss_dict['loss_adv_d'] = adv_loss_d.item()
-            self.optimizer_d.zero_grad()
-            adv_loss_d.backward()
-            self.optimizer_d.step()
 
     def train_epoch(self, epoch):
         global logger_loss_idx
@@ -274,8 +230,6 @@ class Trainer:
         logger.info(info_loss)
 
         self.lr_scheduler.step()
-        if config.lambda_adv_g:
-            self.lr_scheduler_d.step()
         return self.loss_log.avg
 
 
@@ -297,6 +251,7 @@ def main():
             )
     if to_be_distributed:
         destroy_process_group()
+
 
 if __name__ == '__main__':
     main()

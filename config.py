@@ -13,7 +13,7 @@ class Config():
         self.task = ['DIS5K', 'COD', 'HRSOD', 'General', 'General-2K', 'Matting'][0]
         self.testsets = {
             # Benchmarks
-            'DIS5K': ','.join(['DIS-VD', 'DIS-TE1', 'DIS-TE2', 'DIS-TE3', 'DIS-TE4']),
+            'DIS5K': ','.join(['DIS-VD', 'DIS-TE1', 'DIS-TE2', 'DIS-TE3', 'DIS-TE4'][:1]),
             'COD': ','.join(['CHAMELEON', 'NC4K', 'TE-CAMO', 'TE-COD10K']),
             'HRSOD': ','.join(['DAVIS-S', 'TE-HRSOD', 'TE-UHRSD', 'DUT-OMRON', 'TE-DUTS']),
             # Practical use
@@ -75,7 +75,7 @@ class Config():
             'swin_v1_b', 'swin_v1_l',               # 5-bs9, 6-bs4
             'pvt_v2_b0', 'pvt_v2_b1',               # 7, 8
             'pvt_v2_b2', 'pvt_v2_b5',               # 9-bs10, 10-bs5
-        ][6]
+        ][3]
         self.lateral_channels_in_collection = {
             'vgg16': [512, 256, 128, 64], 'vgg16bn': [512, 256, 128, 64], 'resnet50': [1024, 512, 256, 64],
             'pvt_v2_b2': [512, 320, 128, 64], 'pvt_v2_b5': [512, 320, 128, 64],
@@ -100,7 +100,7 @@ class Config():
         self.model = [
             'BiRefNet',
             'BiRefNetC2F',
-        ][0]
+        ][1]
 
         # TRAINING settings - inactive
         self.preproc_methods = ['flip', 'enhance', 'rotate', 'pepper', 'crop'][:4]
@@ -152,9 +152,6 @@ class Config():
         self.lambdas_cls = {
             'ce': 5.0
         }
-        # Adv
-        self.lambda_adv_g = 10. * 0        # turn to 0 to avoid adv training
-        self.lambda_adv_d = 3. * (self.lambda_adv_g > 0)
 
         # PATH settings - inactive
         self.weights_root_dir = os.path.join(self.sys_home_dir, 'weights/cv')
