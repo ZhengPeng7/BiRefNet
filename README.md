@@ -341,6 +341,7 @@ Many of my thanks to the companies / institutes below.
 + [FAL](https://fal.ai).
 + [Freepik](https://www.freepik.com).
 + [Redmond.ai](https://redmond.ai).
++ [Alibaba-ICBU](https://www.alibaba.com).
 
 
 ### Citation
