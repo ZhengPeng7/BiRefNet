@@ -44,6 +44,7 @@ This repo is the official implementation of "[**Bilateral Reference for High-Res
 > **We need more GPU resources** to push forward the performance of BiRefNet, especially on *matting* tasks, higher-resolution inference (*2K*), and more *efficient* model design. If you are happy to cooperate, please contact me at zhengpeng0108@gmail.com.
 
 ## News :newspaper:
+* **`Nov 28, 2024`:**  Congrats to students @Nankai University employed BiRefNet to build their project and won the [provincial gold medal](https://drive.google.com/file/d/1WDgcHzzmbPtj3O4tlZyT3HLfNKLBPkje/view?usp=drive_link) and national bronze medal on the [China International College Students’ Innovation Competition 2024](https://cy.ncss.cn/en).
 * **`Oct 26, 2024`:**  We added the [guideline of conducting fine-tuning on custom data](https://github.com/ZhengPeng7/BiRefNet?tab=readme-ov-file#pen-fine-tuning-on-custom-data) with existing weights.
 * **`Oct 6, 2024`:**  We uploaded the [BiRefNet-matting](https://huggingface.co/ZhengPeng7/BiRefNet-matting) model for general trimap-free matting use.
 * **`Sep 24, 2024`:**  We uploaded the [BiRefNet_lite-2K](https://huggingface.co/ZhengPeng7/BiRefNet_lite-2K) model, which takes inputs in a much higher resolution (2560x1440). We also added the [notebook](https://github.com/ZhengPeng7/BiRefNet/blob/main/tutorials/BiRefNet_inference_video.ipynb) for inference on videos.
@@ -144,10 +145,10 @@ Our BiRefNet has achieved SOTA on many similar HR tasks:
 
 |           Task            |                        Training Sets                         |   Backbone    | Test Set  | Metric (S, wF[, HCE]) |                           Download                           |
 | :-----------------------: | :----------------------------------------------------------: | :-----------: | :-------: | :-------------------: | :----------------------------------------------------------: |
-|      **general use**      | DIS5K-TR,DIS-TEs, DUTS-TR_TE,HRSOD-TR_TE,UHRSD-TR_TE, HRS10K-TR_TE, TR-P3M-10k, TE-P3M-500-NP, TE-P3M-500-P, TR-humans | swin_v1_large |  DIS-VD   |  0.911, 0.875, 1069   | [google-drive](https://drive.google.com/file/d/1_IfUnu8Fpfn-nerB89FzdNXQ7zk6FKxc/view) |
-|      **general use**      | DIS5K-TR,DIS-TEs, DUTS-TR_TE,HRSOD-TR_TE,UHRSD-TR_TE, HRS10K-TR_TE, TR-P3M-10k, TE-P3M-500-NP, TE-P3M-500-P, TR-humans | swin_v1_tiny |  DIS-VD   |  0.882, 0.830, 1175   | [google-drive](https://drive.google.com/file/d/1fzInDWiE2n65tmjaHDSZpqhL0VME6-Yl/view) |
+|      **general use**      | DIS5K-TR,DIS-TEs, DUTS-TR_TE,HRSOD-TR_TE,UHRSD-TR_TE, HRS10K-TR_TE, TR-P3M-10k, TE-P3M-500-NP, TE-P3M-500-P, [TR-humans](https://huggingface.co/datasets/schirrmacher/humans) | swin_v1_large |  DIS-VD   |  0.911, 0.875, 1069   | [google-drive](https://drive.google.com/file/d/1_IfUnu8Fpfn-nerB89FzdNXQ7zk6FKxc/view) |
+|      **general use**      | DIS5K-TR,DIS-TEs, DUTS-TR_TE,HRSOD-TR_TE,UHRSD-TR_TE, HRS10K-TR_TE, TR-P3M-10k, TE-P3M-500-NP, TE-P3M-500-P, [TR-humans](https://huggingface.co/datasets/schirrmacher/humans) | swin_v1_tiny |  DIS-VD   |  0.882, 0.830, 1175   | [google-drive](https://drive.google.com/file/d/1fzInDWiE2n65tmjaHDSZpqhL0VME6-Yl/view) |
 |      **general use**      |                      DIS5K-TR, DIS-TEs                       | swin_v1_large |  DIS-VD   |  0.907, 0.865, 1059   | [google-drive](https://drive.google.com/file/d/1P6NJzG3Jf1sl7js2q1CPC3yqvBn_O8UJ/view) |
-| **general matting** | P3M-10k (except TE-P3M-500-NP), TR-humans, AM-2k, AIM-500, Human-2k (synthesized with BG-20k), Distinctions-646 (synthesized with BG-20k), HIM2K, PPM-100 | swin_v1_large | TE-P3M-500-NP | 0.979, 0.988 | [google-drive](https://drive.google.com/file/d/1Nlcg58d5bvE-Tbbm8su_eMQba10hdcwQ/view) |
+| **general matting** | P3M-10k (except TE-P3M-500-NP), [TR-humans](https://huggingface.co/datasets/schirrmacher/humans), AM-2k, AIM-500, Human-2k (synthesized with BG-20k), Distinctions-646 (synthesized with BG-20k), HIM2K, PPM-100 | swin_v1_large | TE-P3M-500-NP | 0.979, 0.988 | [google-drive](https://drive.google.com/file/d/1Nlcg58d5bvE-Tbbm8su_eMQba10hdcwQ/view) |
 | **portrait matting** |                           [P3M-10k](https://github.com/JizhiziLi/P3M), [humans](https://huggingface.co/datasets/schirrmacher/humans)                            | swin_v1_large | P3M-500-P |     0.983, 0.989      | [google-drive](https://drive.google.com/file/d/1uUeXjEUoD2XF_6YjD_fsct-TJp7TFiqh) |
 
 </details>
@@ -187,12 +188,14 @@ Our BiRefNet has achieved SOTA on many similar HR tasks:
 
 
 ## Third-Party Creations
-
-> Concerning edge devices with less computing power, we provide a lightweight version with `swin_v1_tiny` as the backbone, which is x4+ faster and x5+ smaller. The details can be found in [this issue](https://github.com/ZhengPeng7/BiRefNet/issues/11#issuecomment-2041033576) and links there.
-
-We found there've been some 3rd party applications based on our BiRefNet. Many thanks for their contribution to the community!  
+>We found there've been some 3rd party applications based on our BiRefNet. Many thanks for their contribution to the community!  
 Choose the one you like to try with clicks instead of codes:  
+
 1. **Applications**:
+
+   + Thanks [**tin2tin/2D_Asset_Generator**](https://github.com/tin2tin/2D_Asset_Generator): this project combined BiRefNet and FLUX as a **Blender add-on** for "AI generating 2D cutout assets for ex. previz".
+
+     https://github.com/user-attachments/assets/6cce7ca7-7817-4406-b6c4-6d4e8c414ed4
 
    + Thanks [**camenduru/text-behind-tost**](https://github.com/camenduru/text-behind-tost): this project employed BiRefNet to extract foreground subjects and **add texts between the subjects and background**, which looks amazing especially for videos. Check their [tweets](https://x.com/camenduru/status/1856290408294220010) for more examples.
 
