@@ -56,8 +56,8 @@ logger_loss_idx = 1
 
 # log model and optimizer params
 # logger.info("Model details:"); logger.info(model)
-if args.use_accelerate and accelerator.mixed_precision != 'no':
-    config.compile = False
+# if args.use_accelerate and accelerator.mixed_precision != 'no':
+#     config.compile = False
 logger.info("datasets: load_all={}, compile={}.".format(config.load_all, config.compile))
 logger.info("Other hyperparameters:"); logger.info(args)
 print('batch size:', config.batch_size)
