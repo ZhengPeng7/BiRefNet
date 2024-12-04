@@ -13,4 +13,5 @@ einops
 tqdm
 prettytable
 
-huggingface_hub
+huggingface-hub>0.25
+accelerate

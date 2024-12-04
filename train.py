@@ -1,10 +1,10 @@
 import os
 import datetime
+from contextlib import nullcontext
 import argparse
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.autograd import Variable
 
 from config import Config
 from loss import PixLoss, ClsLoss
@@ -77,8 +77,8 @@ def prepare_dataloader(dataset: torch.utils.data.Dataset, batch_size: int, to_be
         )
     else:
         return torch.utils.data.DataLoader(
-            dataset=dataset, batch_size=batch_size, num_workers=min(config.num_workers, batch_size, 0), pin_memory=True,
-            shuffle=is_train, drop_last=True
+            dataset=dataset, batch_size=batch_size, num_workers=min(config.num_workers, batch_size), pin_memory=True,
+            shuffle=is_train, sampler=None, drop_last=True
         )
 
 
@@ -172,6 +172,7 @@ class Trainer:
             inputs = batch[0].to(device)
             gts = batch[1].to(device)
             class_labels = batch[2].to(device)
+        self.optimizer.zero_grad()
         scaled_preds, class_preds_lst = self.model(inputs)
         if config.out_ref:
             (outs_gdt_pred, outs_gdt_label), scaled_preds = scaled_preds
@@ -195,7 +196,6 @@ class Trainer:
             loss = loss + loss_gdt * 1.0
 
         self.loss_log.update(loss.item(), inputs.size(0))
-        self.optimizer.zero_grad()
         if args.use_accelerate:
             accelerator.backward(loss)
         else:
@@ -218,6 +218,7 @@ class Trainer:
                 self.pix_loss.lambdas_pix_last['mae'] *= 0.9
 
         for batch_idx, batch in enumerate(self.train_loader):
+            # with nullcontext if not args.use_accelerate or accelerator.gradient_accumulation_steps <= 1 else accelerator.accumulate(self.model):
             self._train_batch(batch)
             # Logger
             if batch_idx % 20 == 0:
