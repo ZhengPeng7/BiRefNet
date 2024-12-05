@@ -137,8 +137,7 @@ def init_models_optimizers(epochs, to_be_distributed):
         milestones=[lde if lde > 0 else epochs + lde + 1 for lde in config.lr_decay_epochs],
         gamma=config.lr_decay_rate
     )
-    logger.info("Optimizer details:"); logger.info(optimizer)
-    logger.info("Scheduler details:"); logger.info(lr_scheduler)
+    # logger.info("Optimizer details:"); logger.info(optimizer)
 
     return model, optimizer, lr_scheduler
 
@@ -197,6 +196,7 @@ class Trainer:
 
         self.loss_log.update(loss.item(), inputs.size(0))
         if args.use_accelerate:
+            loss = loss / accelerator.gradient_accumulation_steps
             accelerator.backward(loss)
         else:
             loss.backward()

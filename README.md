@@ -41,9 +41,10 @@
 This repo is the official implementation of "[**Bilateral Reference for High-Resolution Dichotomous Image Segmentation**](https://arxiv.org/pdf/2401.03407)" (___CAAI AIR 2024___).
 
 > [!note]
-> **We need more GPU resources** to push forward the performance of BiRefNet, especially on *matting* tasks, higher-resolution inference (*2K*), and more *efficient* model design. If you are happy to cooperate, please contact me at zhengpeng0108@gmail.com.
+> **We need more GPU resources** to push forward the performance of BiRefNet, especially on *video* tasks and more *efficient* model designs on higher-resolution images. If you are happy to cooperate, please contact me at zhengpeng0108@gmail.com.
 
 ## News :newspaper:
+* **`Dec 5, 2024`:**  Fix the bug of using `torch.compile` in latest PyTorch versions (2.5.1) and the slow iteration in FP16 training with accelerate (set as default).
 * **`Nov 28, 2024`:**  Congrats to students @Nankai University employed BiRefNet to build their project and won the [provincial gold medal](https://drive.google.com/file/d/1WDgcHzzmbPtj3O4tlZyT3HLfNKLBPkje/view?usp=drive_link) and national bronze medal on the [China International College Students’ Innovation Competition 2024](https://cy.ncss.cn/en).
 * **`Oct 26, 2024`:**  We added the [guideline of conducting fine-tuning on custom data](https://github.com/ZhengPeng7/BiRefNet?tab=readme-ov-file#pen-fine-tuning-on-custom-data) with existing weights.
 * **`Oct 6, 2024`:**  We uploaded the [BiRefNet-matting](https://huggingface.co/ZhengPeng7/BiRefNet-matting) model for general trimap-free matting use.
@@ -256,8 +257,8 @@ Choose the one you like to try with clicks instead of codes:
 #### Environment Setup
 
 ```shell
-# PyTorch==2.0.1 is used for faster training with compilation.
-conda create -n birefnet python=3.9 -y && conda activate birefnet
+# PyTorch==2.5.1+CUDA12.4 or 2.0.1+CUDA11.8 is used for faster training (~40%) with compilation.
+conda create -n birefnet python=3.11 -y && conda activate birefnet
 pip install -r requirements.txt
 ```
 
