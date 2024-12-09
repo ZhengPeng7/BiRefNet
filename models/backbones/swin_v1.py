@@ -378,8 +378,8 @@ class BasicLayer(nn.Module):
 
         # calculate attention mask for SW-MSA
         # Turn int to torch.tensor for the compatiability with torch.compile in PyTorch 2.5.
-        Hp = torch.ceil(torch.tensor(H) / self.window_size).int() * self.window_size
-        Wp = torch.ceil(torch.tensor(W) / self.window_size).int() * self.window_size
+        Hp = torch.ceil(torch.tensor(H) / self.window_size).to(torch.int64) * self.window_size
+        Wp = torch.ceil(torch.tensor(W) / self.window_size).to(torch.int64) * self.window_size
         img_mask = torch.zeros((1, Hp, Wp, 1), device=x.device)  # 1 Hp Wp 1
         h_slices = (slice(0, -self.window_size),
                     slice(-self.window_size, -self.shift_size),
