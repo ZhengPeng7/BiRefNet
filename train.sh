@@ -11,8 +11,6 @@ case "${task}" in
     'General-2K') epochs=250 && val_last=30 && step=2 ;;
     'Matting') epochs=100 && val_last=30 && step=2 ;;
 esac
-testsets=NO     # Non-existing folder to skip.
-# testsets=TE-COD10K   # for COD
 
 # Train
 devices=$2
@@ -28,7 +26,6 @@ then
     CUDA_VISIBLE_DEVICES=${devices} \
     torchrun --standalone --nproc_per_node $((nproc_per_node+1)) \
     train.py --ckpt_dir ckpt/${method} --epochs ${epochs} \
-        --testsets ${testsets} \
         --dist ${to_be_distributed} \
         --resume xx/xx-epoch_244.pth \
         --use_accelerate
@@ -36,7 +33,6 @@ else
     echo "Single-GPU mode received..."
     CUDA_VISIBLE_DEVICES=${devices} \
     python train.py --ckpt_dir ckpt/${method} --epochs ${epochs} \
-        --testsets ${testsets} \
         --dist ${to_be_distributed} \
         --resume xx/xx-epoch_244.pth \
         --use_accelerate
