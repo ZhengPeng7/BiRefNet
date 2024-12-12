@@ -27,10 +27,12 @@ parser.add_argument('--use_accelerate', action='store_true', help='`accelerate l
 args = parser.parse_args()
 
 if args.use_accelerate:
-    from accelerate import Accelerator
+    from accelerate import Accelerator, utils
+    kwargs = utils.InitProcessGroupKwargs(timeout=datetime.timedelta(seconds=3600*10))
     accelerator = Accelerator(
         mixed_precision=['no', 'fp16', 'bf16', 'fp8'][1],
         gradient_accumulation_steps=1,
+        kwargs_handlers=[kwargs],
     )
     args.dist = False
 
@@ -44,7 +46,10 @@ if to_be_distributed:
     init_process_group(backend="nccl", timeout=datetime.timedelta(seconds=3600*10))
     device = int(os.environ["LOCAL_RANK"])
 else:
-    device = config.device
+    if args.use_accelerate:
+        device = accelerator.device
+    else:
+        device = config.device
 
 epoch_st = 1
 # make dir for ckpt
@@ -61,11 +66,6 @@ logger_loss_idx = 1
 logger.info("datasets: load_all={}, compile={}.".format(config.load_all, config.compile))
 logger.info("Other hyperparameters:"); logger.info(args)
 print('batch size:', config.batch_size)
-
-if os.path.exists(os.path.join(config.data_root_dir, config.task, args.testsets.strip('+').split('+')[0])):
-    args.testsets = args.testsets.strip('+').split('+')
-else:
-    args.testsets = []
 
 
 def prepare_dataloader(dataset: torch.utils.data.Dataset, batch_size: int, to_be_distributed=False, is_train=True):
@@ -89,15 +89,7 @@ def init_data_loaders(to_be_distributed):
         config.batch_size, to_be_distributed=to_be_distributed, is_train=True
     )
     print(len(train_loader), "batches of train dataloader {} have been created.".format(config.training_set))
-    test_loaders = {}
-    for testset in args.testsets:
-        _data_loader_test = prepare_dataloader(
-            MyData(datasets=testset, image_size=config.size, is_train=False),
-            config.batch_size_valid, is_train=False
-        )
-        print(len(_data_loader_test), "batches of valid dataloader {} have been created.".format(testset))
-        test_loaders[testset] = _data_loader_test
-    return train_loader, test_loaders
+    return train_loader
 
 
 def init_models_optimizers(epochs, to_be_distributed):
@@ -147,11 +139,9 @@ class Trainer:
         self, data_loaders, model_opt_lrsch,
     ):
         self.model, self.optimizer, self.lr_scheduler = model_opt_lrsch
-        self.train_loader, self.test_loaders = data_loaders
+        self.train_loader = data_loaders
         if args.use_accelerate:
             self.train_loader, self.model, self.optimizer = accelerator.prepare(self.train_loader, self.model, self.optimizer)
-            for testset in self.test_loaders.keys():
-                self.test_loaders[testset] = accelerator.prepare(self.test_loaders[testset])
         if config.out_ref:
             self.criterion_gdt = nn.BCELoss()
 
