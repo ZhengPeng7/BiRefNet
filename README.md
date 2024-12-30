@@ -365,5 +365,5 @@ Many of my thanks to the companies / institutes below.
 
 ## Contact
 
-Any questions, discussions, or even complaints, feel free to leave issues here (recommended) or send me e-mails (zhengpeng0108@gmail.com) or book a meeting with me: [calendly.com/zhengpeng0108/30min](https://calendly.com/zhengpeng0108/30min). You can also join the Discord Group (https://discord.gg/d9NN5sgFrq) or QQ Group (https://qm.qq.com/q/y6WPy7WOIK) if you want to talk a lot publicly.
+Any questions, discussions, or even complaints, feel free to leave issues here (recommended) or send me e-mails (zhengpeng0108@gmail.com) or book a meeting with me: [calendly.com/zhengpeng0108/30min](https://calendly.com/zhengpeng0108/30min). You can also join the Discord Group (https://discord.gg/d9NN5sgFrq) if you want to talk a lot publicly.
 
