@@ -45,7 +45,7 @@ This repo is the official implementation of "[**Bilateral Reference for High-Res
 
 ## News :newspaper:
 * **`Dec 5, 2024`:**  Fix the bug of using `torch.compile` in latest PyTorch versions (2.5.1) and the slow iteration in FP16 training with accelerate (set as default).
-* **`Nov 28, 2024`:**  Congrats to students @Nankai University employed BiRefNet to build their project and won the [provincial gold medal](https://drive.google.com/file/d/1WDgcHzzmbPtj3O4tlZyT3HLfNKLBPkje/view?usp=drive_link) and national bronze medal on the [China International College Students’ Innovation Competition 2024](https://cy.ncss.cn/en).
+* **`Nov 28, 2024`:**  Congrats to students @Nankai University employed BiRefNet to build their project and won the [provincial gold medal](https://drive.google.com/file/d/1WDgcHzzmbPtj3O4tlZyT3HLfNKLBPkje/view?usp=drive_link) and [national bronze medal](https://cy.ncss.cn/information/2c93f4c691983c5b0194264b1880207b) on the [China International College Students’ Innovation Competition 2024](https://cy.ncss.cn/en).
 * **`Oct 26, 2024`:**  We added the [guideline of conducting fine-tuning on custom data](https://github.com/ZhengPeng7/BiRefNet?tab=readme-ov-file#pen-fine-tuning-on-custom-data) with existing weights.
 * **`Oct 6, 2024`:**  We uploaded the [BiRefNet-matting](https://huggingface.co/ZhengPeng7/BiRefNet-matting) model for general trimap-free matting use.
 * **`Sep 24, 2024`:**  We uploaded the [BiRefNet_lite-2K](https://huggingface.co/ZhengPeng7/BiRefNet_lite-2K) model, which takes inputs in a much higher resolution (2560x1440). We also added the [notebook](https://github.com/ZhengPeng7/BiRefNet/blob/main/tutorials/BiRefNet_inference_video.ipynb) for inference on videos.
