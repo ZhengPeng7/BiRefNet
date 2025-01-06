@@ -172,7 +172,8 @@ Our BiRefNet has achieved SOTA on many similar HR tasks:
 <img src="https://drive.google.com/thumbnail?id=1mTfSD_qt-rFO1t8DRQcyIa5cgWLf1w2-&sz=h300" />  <img src="https://drive.google.com/thumbnail?id=1F_OURIWILVe4u1rSz-aqt6ur__bAef25&sz=h300" />
 
 > The devices used in the below table differ from those in the original paper (the standard). So, it's only for reference.
-|        | *FP32* | *FP16* |
+
+| Runtime | *FP32* | *FP16* |
 | :----: | :----: | :----: |
 | GPUMem | 4.76GB | 3.45GB |
 | A100   | 86.8ms | 69.4ms |
