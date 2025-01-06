@@ -44,6 +44,7 @@ This repo is the official implementation of "[**Bilateral Reference for High-Res
 > **We need more GPU resources** to push forward the performance of BiRefNet, especially on *video* tasks and more *efficient* model designs on higher-resolution images. If you are happy to cooperate, please contact me at zhengpeng0108@gmail.com.
 
 ## News :newspaper:
+* **`Jan 6, 2025`:**  Validate the success of FP16 inference with ~0 decrease of performance and better efficiency: the standard BiRefNet can run in `17 FPS` with `resolution==1024x1024` with 3.45GB GPU memory. Check more details in the model efficiency part below in [model zoo section](https://github.com/ZhengPeng7/BiRefNet?tab=readme-ov-file#model-zoo).
 * **`Dec 5, 2024`:**  Fix the bug of using `torch.compile` in latest PyTorch versions (2.5.1) and the slow iteration in FP16 training with accelerate (set as default).
 * **`Nov 28, 2024`:**  Congrats to students @Nankai University employed BiRefNet to build their project and won the [provincial gold medal](https://drive.google.com/file/d/1WDgcHzzmbPtj3O4tlZyT3HLfNKLBPkje/view?usp=drive_link) and [national bronze medal](https://cy.ncss.cn/information/2c93f4c691983c5b0194264b1880207b) on the [China International College Students’ Innovation Competition 2024](https://cy.ncss.cn/en).
 * **`Oct 26, 2024`:**  We added the [guideline of conducting fine-tuning on custom data](https://github.com/ZhengPeng7/BiRefNet?tab=readme-ov-file#pen-fine-tuning-on-custom-data) with existing weights.
@@ -166,9 +167,17 @@ Our BiRefNet has achieved SOTA on many similar HR tasks:
 
 <details><summary>Model <b>efficiency</b>:</summary>
 
-> Screenshot from the original paper. All tests are conducted on a single A100 GPU.
+> Screenshot from the original paper. All tests here are conducted on a single A100 GPU.
 
 <img src="https://drive.google.com/thumbnail?id=1mTfSD_qt-rFO1t8DRQcyIa5cgWLf1w2-&sz=h300" />  <img src="https://drive.google.com/thumbnail?id=1F_OURIWILVe4u1rSz-aqt6ur__bAef25&sz=h300" />
+
+> The devices used in the below table differ from those in the original paper (the standard). So, it's only for reference.
+|        | *FP32* | *FP16* |
+| :----: | :----: | :----: |
+| GPUMem | 4.76GB | 3.45GB |
+| A100   | 86.8ms | 69.4ms |
+| 4090   | 95.8ms | 57.7ms |
+| V100   | 384ms  | 152ms  |
 
 </details>
 
