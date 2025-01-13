@@ -175,11 +175,16 @@ Our BiRefNet has achieved SOTA on many similar HR tasks:
 > The devices used in the below table differ from those in the original paper (the standard). So, it's only for reference.
 
 | Runtime | *FP32* | *FP16* |
-| :----: | :----: | :----: |
-| GPUMem | 4.76GB | 3.45GB |
-| A100   | 86.8ms | 69.4ms |
-| 4090   | 95.8ms | 57.7ms |
-| V100   | 384ms  | 152ms  |
+| :-----: | :----: | :----: |
+|  A100   | 86.8ms | 69.4ms |
+|  4090   | 95.8ms | 57.7ms |
+|  V100   | 384ms  | 152ms  |
+
+| GPU Memory | *FP32* | *FP16* |
+| :--------: | :----: | :----: |
+| Inference  | 4.76GB | 3.45GB |
+| Training (\#GPU=1, batch\_size=2, compile=False+PyTorch=2.5.1) | 36.3GB | 30.4GB |
+| Training (\#GPU=1, batch\_size=2, compile=True+PyTorch=2.5.1) | 35.9GB | **24.9GB** |
 
 </details>
 
