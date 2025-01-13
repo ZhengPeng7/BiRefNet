@@ -268,8 +268,8 @@ Choose the one you like to try with clicks instead of codes:
 #### Environment Setup
 
 ```shell
-# PyTorch==2.0.1+CUDA11.8 (or 2.5.1+CUDA12.4) is used for faster training (~40%) with compilation.
-conda create -n birefnet python=3.11 -y && conda activate birefnet
+# PyTorch==2.5.1+CUDA12.4 (or 2.0.1+CUDA11.8) is used for faster training (~40%) with compilation.
+conda create -n birefnet python=3.10 -y && conda activate birefnet
 pip install -r requirements.txt
 ```
 
