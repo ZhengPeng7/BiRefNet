@@ -10,6 +10,7 @@ einops
 
 tqdm
 prettytable
+tabulate
 
 huggingface-hub>0.25
 accelerate
