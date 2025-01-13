@@ -71,8 +71,9 @@ from transformers import AutoModelForImageSegmentation
 birefnet = AutoModelForImageSegmentation.from_pretrained('zhengpeng7/BiRefNet', trust_remote_code=True)
 ```
 ## :flight_arrival: Inference Partner:
-We are really happy to collaborate with [FAL](https://fal.ai) to deploy the **inference API** of BiRefNet. You can access this service via the link below:
-+ https://fal.ai/models/fal-ai/birefnet
+You can access the **inference API** service of BiRefNet on [FAL](https://fal.ai) or click the `Deploy` button on our [HF model page](https://huggingface.co/ZhengPeng7/BiRefNet) to set up your own deployment.
++ https://fal.ai/models/fal-ai/birefnet/v2
++ https://ui.endpoints.huggingface.co/new?repository=ZhengPeng7/BiRefNet
 
 Our BiRefNet has achieved SOTA on many similar HR tasks:
 
