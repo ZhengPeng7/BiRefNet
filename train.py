@@ -27,8 +27,9 @@ args = parser.parse_args()
 
 if args.use_accelerate:
     from accelerate import Accelerator, utils
+    mixed_precision = ['no', 'fp16', 'bf16', 'fp8'][1]
     accelerator = Accelerator(
-        mixed_precision=['no', 'fp16', 'bf16', 'fp8'][1],
+        mixed_precision=mixed_precision,
         gradient_accumulation_steps=1,
         kwargs_handlers=[
             utils.InitProcessGroupKwargs(backend="nccl", timeout=datetime.timedelta(seconds=3600*10)),
@@ -237,10 +238,17 @@ def main():
         # Save checkpoint
         # DDP
         if epoch >= args.epochs - config.save_last and epoch % config.save_step == 0:
-            torch.save(
-                trainer.model.module.state_dict() if to_be_distributed or args.use_accelerate else trainer.model.state_dict(),
-                os.path.join(args.ckpt_dir, 'epoch_{}.pth'.format(epoch))
-            )
+            if args.use_accelerate:
+                if mixed_precision == 'fp16':
+                    torch.save(
+                        trainer.model.module.state_dict().half() if to_be_distributed else trainer.model.state_dict(),
+                        os.path.join(args.ckpt_dir, 'epoch_{}.pth'.format(epoch))
+                    )
+            else:
+                torch.save(
+                    trainer.model.module.state_dict() if to_be_distributed else trainer.model.state_dict(),
+                    os.path.join(args.ckpt_dir, 'epoch_{}.pth'.format(epoch))
+                )
     if to_be_distributed:
         destroy_process_group()
 
