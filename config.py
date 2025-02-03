@@ -59,7 +59,7 @@ class Config():
                 'DIS5K': -40,
                 'COD': -20,
                 'HRSOD': -20,
-                'General': -40,
+                'General': -20,
                 'General-2K': -20,
                 'Matting': -20,
             }[self.task]
