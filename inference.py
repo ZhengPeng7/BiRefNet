@@ -18,8 +18,9 @@ def inference(model, data_loader_test, pred_root, method, testset, device=0):
     model_training = model.training
     if model_training:
         model.eval()
+    model.half()
     for batch in tqdm(data_loader_test, total=len(data_loader_test)) if 1 or config.verbose_eval else data_loader_test:
-        inputs = batch[0].to(device)
+        inputs = batch[0].to(device).half()
         # gts = batch[1].to(device)
         label_paths = batch[-1]
         with torch.no_grad():
