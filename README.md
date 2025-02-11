@@ -44,6 +44,7 @@ This repo is the official implementation of "[**Bilateral Reference for High-Res
 > **We need more GPU resources** to push forward the performance of BiRefNet, especially on *video* tasks and more *efficient* model designs on higher-resolution images. If you are happy to cooperate, please contact me at zhengpeng0108@gmail.com.
 
 ## News :newspaper:
+* **`Feb 12, 2025`:**  We released the [BiRefNet_HR-matting](https://huggingface.co/ZhengPeng7/BiRefNet_HR-matting) for general matting use, which was trained on images in `2048x2048` and shows great matting performance on higher resolution images! Thanks again to [Freepik](https://www.freepik.com) their kind GPU support.
 * **`Feb 1, 2025`:**  We released the [BiRefNet_HR](https://huggingface.co/ZhengPeng7/BiRefNet_HR) for general use, which was trained on images in `2048x2048` and shows great performance on higher resolution images! Thanks to [Freepik](https://www.freepik.com) for offering H200x4 GPU for this huge training (~3 weeks).
 * **`Jan 6, 2025`:**  Validate the success of FP16 inference with ~0 decrease of performance and better efficiency: the standard BiRefNet can run in `17 FPS` with `resolution==1024x1024` with `3.45GB GPU memory` on a single `RTX 4090`. Check more details in the model efficiency part below in [model zoo section](https://github.com/ZhengPeng7/BiRefNet?tab=readme-ov-file#model-zoo).
 * **`Dec 5, 2024`:**  Fix the bug of using `torch.compile` in latest PyTorch versions (2.5.1) and the slow iteration in FP16 training with accelerate (set as default).
@@ -186,7 +187,7 @@ Our BiRefNet has achieved SOTA on many similar HR tasks:
 | :--------: | :----: | :----: |
 | Inference  | 4.76GB | 3.45GB |
 | Training (\#GPU=1, batch\_size=2, compile=False+PyTorch=2.5.1) | 36.3GB | 30.4GB |
-| Training (\#GPU=1, batch\_size=2, compile=True+PyTorch=2.5.1) | 35.9GB | **24.9GB** |
+| Training (\#GPU=1, batch\_size=2, compile=True+PyTorch=2.5.1) | 35.9GB | **22.5GB (4090), 23.5GB (A100)** |
 
 </details>
 
