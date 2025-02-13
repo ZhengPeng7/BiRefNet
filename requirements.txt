@@ -1,4 +1,4 @@
-torch
+torch>=2.5.1
 torchvision
 numpy<2
 opencv-python
