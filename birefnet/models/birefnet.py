@@ -5,14 +5,14 @@ from einops import rearrange
 from kornia.filters import laplacian
 from huggingface_hub import PyTorchModelHubMixin
 
-from config import Config
-from dataset import class_labels_TR_sorted
-from models.backbones.build_backbone import build_backbone
-from models.modules.decoder_blocks import BasicDecBlk, ResBlk
-from models.modules.lateral_blocks import BasicLatBlk
-from models.modules.aspp import ASPP, ASPPDeformable
-from models.refinement.refiner import Refiner, RefinerPVTInChannels4, RefUNet
-from models.refinement.stem_layer import StemLayer
+from birefnet.config import Config
+from birefnet.dataset import class_labels_TR_sorted
+from .backbones.build_backbone import build_backbone
+from .modules.decoder_blocks import BasicDecBlk, ResBlk
+from .modules.lateral_blocks import BasicLatBlk
+from .modules.aspp import ASPP, ASPPDeformable
+from .refinement.refiner import Refiner, RefinerPVTInChannels4, RefUNet
+from .refinement.stem_layer import StemLayer
 
 
 def image2patches(image, grid_h=2, grid_w=2, patch_ref=None, transformation='b c (hg h) (wg w) -> (b hg wg) c h w'):
@@ -174,7 +174,7 @@ class Decoder(nn.Module):
                 self.gdt_convs_pred_4 = nn.Sequential(nn.Conv2d(_N, 1, 1, 1, 0))
                 self.gdt_convs_pred_3 = nn.Sequential(nn.Conv2d(_N, 1, 1, 1, 0))
                 self.gdt_convs_pred_2 = nn.Sequential(nn.Conv2d(_N, 1, 1, 1, 0))
-                
+
                 self.gdt_convs_attn_4 = nn.Sequential(nn.Conv2d(_N, 1, 1, 1, 0))
                 self.gdt_convs_attn_3 = nn.Sequential(nn.Conv2d(_N, 1, 1, 1, 0))
                 self.gdt_convs_attn_2 = nn.Sequential(nn.Conv2d(_N, 1, 1, 1, 0))
@@ -302,8 +302,8 @@ class BiRefNetC2F(
         self.config = Config()
         self.epoch = 1
         self.grid = 4
-        self.model_coarse = BiRefNet(bb_pretrained=True)
-        self.model_fine = BiRefNet(bb_pretrained=True)
+        self.model_coarse = BiRefNet(bb_pretrained=bb_pretrained)
+        self.model_fine = BiRefNet(bb_pretrained=bb_pretrained)
         self.input_mixer = nn.Conv2d(4, 3, 1, 1, 0)
         self.output_mixer_merge_post = nn.Sequential(nn.Conv2d(1, 16, 3, 1, 1), nn.Conv2d(16, 1, 3, 1, 1))
 

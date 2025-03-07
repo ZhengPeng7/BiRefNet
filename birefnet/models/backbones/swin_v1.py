@@ -12,7 +12,7 @@ import torch.utils.checkpoint as checkpoint
 import numpy as np
 from timm.layers import DropPath, to_2tuple, trunc_normal_
 
-from config import Config
+from birefnet.config import Config
 
 
 config = Config()
@@ -590,7 +590,7 @@ class SwinTransformer(nn.Module):
             # interpolate the position embedding to the corresponding size
             absolute_pos_embed = F.interpolate(self.absolute_pos_embed, size=(Wh, Ww), mode='bicubic')
             x = (x + absolute_pos_embed) # B Wh*Ww C
-            
+
         outs = []#x.contiguous()]
         x = x.flatten(2).transpose(1, 2)
         x = self.pos_drop(x)

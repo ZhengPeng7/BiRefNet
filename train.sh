@@ -2,7 +2,7 @@
 # Run script
 # Settings of training & test for different tasks.
 method="$1"
-task=$(python3 config.py --print_task)
+task=$(python3 birefnet/config.py --print_task)
 case "${task}" in
     'DIS5K') epochs=500 && val_last=50 && step=5 ;;
     'COD') epochs=150 && val_last=50 && step=5 ;;
@@ -25,14 +25,14 @@ then
     echo "Multi-GPU mode received..."
     CUDA_VISIBLE_DEVICES=${devices} \
     torchrun --standalone --nproc_per_node $((nproc_per_node+1)) \
-    train.py --ckpt_dir ckpt/${method} --epochs ${epochs} \
+    birefnet/train.py --ckpt_dir ckpt/${method} --epochs ${epochs} \
         --dist ${to_be_distributed} \
         --resume xx/xx-epoch_244.pth \
         --use_accelerate
 else
     echo "Single-GPU mode received..."
     CUDA_VISIBLE_DEVICES=${devices} \
-    python train.py --ckpt_dir ckpt/${method} --epochs ${epochs} \
+    python birefnet/train.py --ckpt_dir ckpt/${method} --epochs ${epochs} \
         --dist ${to_be_distributed} \
         --resume xx/xx-epoch_244.pth \
         --use_accelerate

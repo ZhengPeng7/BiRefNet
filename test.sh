@@ -3,7 +3,7 @@ pred_root=${2:-e_preds}
 
 # Inference
 
-CUDA_VISIBLE_DEVICES=${devices} python inference.py --pred_root ${pred_root}
+CUDA_VISIBLE_DEVICES=${devices} python birefnet/inference.py --pred_root ${pred_root}
 
 echo Inference finished at $(date)
 
@@ -17,7 +17,7 @@ testsets=(`echo ${testsets} | tr ',' ' '`) && testsets=${testsets[@]}
 
 for testset in ${testsets}; do
     # python eval_existingOnes.py --pred_root ${pred_root} --data_lst ${testset} > ${log_dir}/eval_${testset}.out
-    nohup python eval_existingOnes.py --pred_root ${pred_root} --data_lst ${testset} > ${log_dir}/eval_${testset}.out 2>&1 &
+    nohup python birefnet/eval_existingOnes.py --pred_root ${pred_root} --data_lst ${testset} > ${log_dir}/eval_${testset}.out 2>&1 &
 done
 
 

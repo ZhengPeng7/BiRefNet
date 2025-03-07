@@ -10,9 +10,9 @@ mkdir ../${repo}/models/refinement
 
 cp ./*.sh ../${repo}
 cp ./*.py ../${repo}
-cp ./evaluation/*.py ../${repo}/evaluation
-cp ./models/*.py ../${repo}/models
-cp ./models/backbones/*.py ../${repo}/models/backbones
-cp ./models/modules/*.py ../${repo}/models/modules
-cp ./models/refinement/*.py ../${repo}/models/refinement
+cp ./birefnet/evaluation/*.py ../${repo}/evaluation
+cp ./birefnet/models/*.py ../${repo}/models
+cp ./birefnet/models/backbones/*.py ../${repo}/models/backbones
+cp ./birefnet/models/modules/*.py ../${repo}/models/modules
+cp ./birefnet/models/refinement/*.py ../${repo}/models/refinement
 cp -r ./.git* ../${repo}
