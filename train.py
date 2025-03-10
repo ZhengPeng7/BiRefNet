@@ -71,18 +71,19 @@ logger.info("datasets: load_all={}, compile={}.".format(config.load_all, config.
 logger.info("Other hyperparameters:"); logger.info(args)
 print('batch size:', config.batch_size)
 
+from dataset import custom_collate_fn
 
 def prepare_dataloader(dataset: torch.utils.data.Dataset, batch_size: int, to_be_distributed=False, is_train=True):
     # Prepare dataloaders
     if to_be_distributed:
         return torch.utils.data.DataLoader(
             dataset=dataset, batch_size=batch_size, num_workers=min(config.num_workers, batch_size), pin_memory=True,
-            shuffle=False, sampler=DistributedSampler(dataset), drop_last=True
+            shuffle=False, sampler=DistributedSampler(dataset), drop_last=True, collate_fn=custom_collate_fn if is_train else None
         )
     else:
         return torch.utils.data.DataLoader(
             dataset=dataset, batch_size=batch_size, num_workers=min(config.num_workers, batch_size), pin_memory=True,
-            shuffle=is_train, sampler=None, drop_last=True
+            shuffle=is_train, sampler=None, drop_last=True, collate_fn=custom_collate_fn if is_train else None
         )
 
 

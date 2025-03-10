@@ -1,4 +1,5 @@
 import os
+import random
 import cv2
 from tqdm import tqdm
 from PIL import Image
@@ -37,6 +38,7 @@ class MyData(data.Dataset):
         self.size_test = image_size
         self.keep_size = not config.size
         self.data_size = config.size
+        self.dynamic_size = tuple(sorted(config.dynamic_size))     # use dynamic size when `if self.dynamic_size != (0, 0):`.
         self.is_train = is_train
         self.load_all = config.load_all
         self.device = config.device
@@ -48,11 +50,11 @@ class MyData(data.Dataset):
             transforms.Resize(self.data_size[::-1]),
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-        ][self.load_all or self.keep_size:])
+        ][self.load_all or self.keep_size or (self.dynamic_size != (0, 0))::])
         self.transform_label = transforms.Compose([
             transforms.Resize(self.data_size[::-1]),
             transforms.ToTensor(),
-        ][self.load_all or self.keep_size:])
+        ][self.load_all or self.keep_size or (self.dynamic_size != (0, 0))::])
         dataset_root = os.path.join(config.data_root_dir, config.task)
         # datasets can be a list of different datasets for training on combined sets.
         self.image_paths = []
@@ -110,7 +112,8 @@ class MyData(data.Dataset):
         #         _image = cv2.resize(_image, (2048, 2048), interpolation=cv2.INTER_LINEAR)
         #         _label = cv2.resize(_label, (2048, 2048), interpolation=cv2.INTER_LINEAR)
 
-        image, label = self.transform_image(image), self.transform_label(label)
+        if config.dynamic_size == (0, 0):
+            image, label = self.transform_image(image), self.transform_label(label)
 
         if self.is_train:
             return image, label, class_label
@@ -119,3 +122,27 @@ class MyData(data.Dataset):
 
     def __len__(self):
         return len(self.image_paths)
+
+
+from torch.utils.data._utils.collate import default_collate
+
+def custom_collate_fn(batch):
+    if config.dynamic_size != (0, 0):
+        dynamic_size = tuple(sorted(config.dynamic_size))
+        dynamic_size_batch = (random.randint(dynamic_size[0], dynamic_size[1]) // 32 * 32, random.randint(dynamic_size[0], dynamic_size[1]) // 32 * 32) # select a value randomly in the range of [dynamic_size[0], dynamic_size[1]].
+        data_size = dynamic_size_batch
+    else:
+        data_size = config.size
+    new_batch = []
+    transform_image = transforms.Compose([
+        transforms.Resize(data_size[::-1]),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+    ])
+    transform_label = transforms.Compose([
+        transforms.Resize(data_size[::-1]),
+        transforms.ToTensor(),
+    ])
+    for image, label, class_label in batch:
+        new_batch.append((transform_image(image), transform_label(label), class_label))
+    return default_collate(new_batch)
