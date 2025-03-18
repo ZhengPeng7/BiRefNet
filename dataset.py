@@ -112,7 +112,7 @@ class MyData(data.Dataset):
         #         _image = cv2.resize(_image, (2048, 2048), interpolation=cv2.INTER_LINEAR)
         #         _label = cv2.resize(_label, (2048, 2048), interpolation=cv2.INTER_LINEAR)
 
-        if config.dynamic_size == (0, 0):
+        if config.dynamic_size == (0, 0) or not self.is_train:
             image, label = self.transform_image(image), self.transform_label(label)
 
         if self.is_train:
