@@ -78,12 +78,12 @@ def prepare_dataloader(dataset: torch.utils.data.Dataset, batch_size: int, to_be
     if to_be_distributed:
         return torch.utils.data.DataLoader(
             dataset=dataset, batch_size=batch_size, num_workers=min(config.num_workers, batch_size), pin_memory=True,
-            shuffle=False, sampler=DistributedSampler(dataset), drop_last=True, collate_fn=custom_collate_fn if is_train else None
+            shuffle=False, sampler=DistributedSampler(dataset), drop_last=True, collate_fn=custom_collate_fn if is_train and config.dynamic_size != (0, 0) else None
         )
     else:
         return torch.utils.data.DataLoader(
             dataset=dataset, batch_size=batch_size, num_workers=min(config.num_workers, batch_size), pin_memory=True,
-            shuffle=is_train, sampler=None, drop_last=True, collate_fn=custom_collate_fn if is_train else None
+            shuffle=is_train, sampler=None, drop_last=True, collate_fn=custom_collate_fn if is_train and config.dynamic_size != (0, 0) else None
         )
 
 
