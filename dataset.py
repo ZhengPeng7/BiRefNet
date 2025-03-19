@@ -108,6 +108,7 @@ class MyData(data.Dataset):
         # loading image and label
         if self.is_train:
             if config.background_color_synthesis:
+                image.putalpha(label)
                 array_image = np.array(image)
                 array_foreground = array_image[:, :, :3].astype(np.float32)
                 array_mask = (array_image[:, :, 3:] / 255).astype(np.float32)
@@ -129,7 +130,7 @@ class MyData(data.Dataset):
                     for idx_channel in range(3):
                         array_background[:, :, idx_channel] = random.randint(0, 255)
                 array_foreground_background = array_foreground * array_mask + array_background * (1 - array_mask)
-                image = array_foreground_background.astype(np.uint8)
+                image = Image.fromarray(array_foreground_background.astype(np.uint8))
             image, label = preproc(image, label, preproc_methods=config.preproc_methods)
         # else:
         #     if _label.shape[0] > 2048 or _label.shape[1] > 2048:
