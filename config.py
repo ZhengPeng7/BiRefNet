@@ -66,7 +66,7 @@ class Config():
         ][1]    # choose 0 to skip
         self.lr = (1e-4 if 'DIS5K' in self.task else 1e-5) * math.sqrt(self.batch_size / 4)     # DIS needs high lr to converge faster. Adapt the lr linearly
         self.size = (1024, 1024) if self.task not in ['General-2K'] else (2560, 1440)   # wid, hei
-        self.dynamic_size = [(0, 0), (512-256, 2048+256)][0]    # might cause errors in using compile.
+        self.dynamic_size = [(0, 0), ((512-256, 2048+256), (512-256, 2048+256))][0]    # wid, hei. It might cause errors in using compile.
         self.background_color_synthesis = False             # whether to use pure bg color to replace the original backgrounds.
         self.num_workers = max(4, self.batch_size)          # will be decrease to min(it, batch_size) at the initialization of the data_loader
 

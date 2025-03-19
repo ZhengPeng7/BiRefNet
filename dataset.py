@@ -153,7 +153,7 @@ from torch.utils.data._utils.collate import default_collate
 def custom_collate_fn(batch):
     if config.dynamic_size != (0, 0):
         dynamic_size = tuple(sorted(config.dynamic_size))
-        dynamic_size_batch = (random.randint(dynamic_size[0], dynamic_size[1]) // 32 * 32, random.randint(dynamic_size[0], dynamic_size[1]) // 32 * 32) # select a value randomly in the range of [dynamic_size[0], dynamic_size[1]].
+        dynamic_size_batch = (random.randint(dynamic_size[0][0], dynamic_size[0][1]) // 32 * 32, random.randint(dynamic_size[1][0], dynamic_size[1][1]) // 32 * 32) # select a value randomly in the range of [dynamic_size[0/1][0], dynamic_size[0/1][1]].
         data_size = dynamic_size_batch
     else:
         data_size = config.size
