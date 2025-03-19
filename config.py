@@ -67,6 +67,7 @@ class Config():
         self.lr = (1e-4 if 'DIS5K' in self.task else 1e-5) * math.sqrt(self.batch_size / 4)     # DIS needs high lr to converge faster. Adapt the lr linearly
         self.size = (1024, 1024) if self.task not in ['General-2K'] else (2560, 1440)   # wid, hei
         self.dynamic_size = [(0, 0), (512-256, 2048+256)][0]    # might cause errors in using compile.
+        self.background_color_synthesis = False             # whether to use pure bg color to replace the original backgrounds.
         self.num_workers = max(4, self.batch_size)          # will be decrease to min(it, batch_size) at the initialization of the data_loader
 
         # Backbone settings
@@ -104,7 +105,7 @@ class Config():
         ][0]
 
         # TRAINING settings - inactive
-        self.preproc_methods = ['flip', 'enhance', 'rotate', 'pepper', 'crop'][:4]
+        self.preproc_methods = ['flip', 'enhance', 'rotate', 'pepper', 'crop'][:4 if not self.background_color_synthesis else 1]
         self.optimizer = ['Adam', 'AdamW'][1]
         self.lr_decay_epochs = [1e5]    # Set to negative N to decay the lr in the last N-th epoch.
         self.lr_decay_rate = 0.5

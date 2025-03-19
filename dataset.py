@@ -1,5 +1,6 @@
 import os
 import random
+import numpy as np
 import cv2
 from tqdm import tqdm
 from PIL import Image
@@ -106,6 +107,29 @@ class MyData(data.Dataset):
 
         # loading image and label
         if self.is_train:
+            if config.background_color_synthesis:
+                array_image = np.array(image)
+                array_foreground = array_image[:, :, :3].astype(np.float32)
+                array_mask = (array_image[:, :, 3:] / 255).astype(np.float32)
+                array_background = np.zeros_like(array_foreground)
+                choice = random.random()
+                if choice < 0.4:
+                    # Black/Gray/White backgrounds
+                    array_background[:, :, :] = random.randint(0, 255)
+                elif choice < 0.8:
+                    # Background color that similar to the foreground object. Hard negative samples.
+                    foreground_pixel_number = np.sum(array_mask > 0)
+                    color_foreground_mean = np.mean(array_foreground * array_mask, axis=(0, 1)) * (np.prod(array_foreground.shape[:2]) / foreground_pixel_number)
+                    color_up_or_down = random.choice((-1, 1))
+                    # Up or down for 20% range from 255 or 0, respectively.
+                    color_foreground_mean += (255 - color_foreground_mean if color_up_or_down == 1 else color_foreground_mean) * (random.random() * 0.2) * color_up_or_down
+                    array_background[:, :, :] = color_foreground_mean
+                else:
+                    # Any color
+                    for idx_channel in range(3):
+                        array_background[:, :, idx_channel] = random.randint(0, 255)
+                array_foreground_background = array_foreground * array_mask + array_background * (1 - array_mask)
+                image = array_foreground_background.astype(np.uint8)
             image, label = preproc(image, label, preproc_methods=config.preproc_methods)
         # else:
         #     if _label.shape[0] > 2048 or _label.shape[1] > 2048:
