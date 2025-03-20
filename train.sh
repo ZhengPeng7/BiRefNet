@@ -12,7 +12,6 @@ case "${task}" in
     'Matting') epochs=150 && val_last=50 && step=5 ;;
 esac
 
-echo "Modified this file"
 
 # Train
 devices=$2
