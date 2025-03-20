@@ -12,6 +12,7 @@ case "${task}" in
     'Matting') epochs=150 && val_last=50 && step=5 ;;
 esac
 
+echo "ok"
 
 # Train
 devices=$2
