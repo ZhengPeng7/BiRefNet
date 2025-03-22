@@ -27,6 +27,8 @@ parser.add_argument('--dist', default=False, type=lambda x: x == 'True')
 parser.add_argument('--use_accelerate', action='store_true', help='`accelerate launch --multi_gpu train.py --use_accelerate`. Use accelerate for training, good for FP16/BF16/...')
 args = parser.parse_args()
 
+config = Config()
+
 if args.use_accelerate:
     from accelerate import Accelerator, utils
     mixed_precision = ['no', 'fp16', 'bf16', 'fp8'][1]
@@ -40,10 +42,6 @@ if args.use_accelerate:
     )
     args.dist = False
 
-config = Config()
-if config.rand_seed:
-    set_seed(config.rand_seed)
-
 # DDP
 to_be_distributed = args.dist
 if to_be_distributed:
@@ -54,6 +52,9 @@ else:
         device = accelerator.device
     else:
         device = config.device
+
+if config.rand_seed:
+    set_seed(config.rand_seed + device)
 
 epoch_st = 1
 # make dir for ckpt
