@@ -54,7 +54,7 @@ else:
         device = config.device
 
 if config.rand_seed:
-    set_seed(config.rand_seed + device)
+    set_seed(config.rand_seed + device.index if isinstance(device, torch.device) else device)
 
 epoch_st = 1
 # make dir for ckpt
@@ -79,19 +79,19 @@ def prepare_dataloader(dataset: torch.utils.data.Dataset, batch_size: int, to_be
     if to_be_distributed:
         return torch.utils.data.DataLoader(
             dataset=dataset, batch_size=batch_size, num_workers=min(config.num_workers, batch_size), pin_memory=True,
-            shuffle=False, sampler=DistributedSampler(dataset), drop_last=True, collate_fn=custom_collate_fn if is_train and config.dynamic_size != (0, 0) else None
+            shuffle=False, sampler=DistributedSampler(dataset), drop_last=True, collate_fn=custom_collate_fn if is_train and config.dynamic_size else None
         )
     else:
         return torch.utils.data.DataLoader(
             dataset=dataset, batch_size=batch_size, num_workers=min(config.num_workers, batch_size), pin_memory=True,
-            shuffle=is_train, sampler=None, drop_last=True, collate_fn=custom_collate_fn if is_train and config.dynamic_size != (0, 0) else None
+            shuffle=is_train, sampler=None, drop_last=True, collate_fn=custom_collate_fn if is_train and config.dynamic_size else None
         )
 
 
 def init_data_loaders(to_be_distributed):
     # Prepare datasets
     train_loader = prepare_dataloader(
-        MyData(datasets=config.training_set, image_size=config.size, is_train=True),
+        MyData(datasets=config.training_set, data_size=None if config.dynamic_size else config.size, is_train=True),
         config.batch_size, to_be_distributed=to_be_distributed, is_train=True
     )
     print(len(train_loader), "batches of train dataloader {} have been created.".format(config.training_set))

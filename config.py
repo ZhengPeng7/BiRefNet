@@ -30,14 +30,18 @@ class Config():
             'General-2K': datasets_all,
             'Matting': datasets_all,
         }[self.task]
-        self.prompt4loc = ['dense', 'sparse'][0]
+
+        # Data settings
+        self.size = (1024, 1024) if self.task not in ['General-2K'] else (2560, 1440)   # wid, hei. Can be overwritten by dynamic_size in training.
+        self.dynamic_size = [None, ((512-256, 2048+256), (512-256, 2048+256))][0]    # wid, hei. It might cause errors in using compile.
+        self.background_color_synthesis = False             # whether to use pure bg color to replace the original backgrounds.
 
         # Faster-Training settings
-        self.load_all = False   # Turn it on/off by your case. It may consume a lot of CPU memory. And for multi-GPU (N), it would cost N times the CPU memory to load the data.
+        self.load_all = False and self.dynamic_size is None   # Turn it on/off by your case. It may consume a lot of CPU memory. And for multi-GPU (N), it would cost N times the CPU memory to load the data.
         self.compile = True                             # 1. Trigger CPU memory leak in some extend, which is an inherent problem of PyTorch.
                                                         #   Machines with > 70GB CPU memory can run the whole training on DIS5K with default setting.
                                                         # 2. Higher PyTorch version may fix it: https://github.com/pytorch/pytorch/issues/119607.
-                                                        # 3. But compile in Pytorch > 2.0.1 seems to bring no acceleration for training.
+                                                        # 3. But compile in 2.0.1 < Pytorch < 2.5.0 seems to bring no acceleration for training.
         self.precisionHigh = True
 
         # MODEL settings
@@ -65,9 +69,6 @@ class Config():
             }[self.task]
         ][1]    # choose 0 to skip
         self.lr = (1e-4 if 'DIS5K' in self.task else 1e-5) * math.sqrt(self.batch_size / 4)     # DIS needs high lr to converge faster. Adapt the lr linearly
-        self.size = (1024, 1024) if self.task not in ['General-2K'] else (2560, 1440)   # wid, hei
-        self.dynamic_size = [(0, 0), ((512-256, 2048+256), (512-256, 2048+256))][0]    # wid, hei. It might cause errors in using compile.
-        self.background_color_synthesis = False             # whether to use pure bg color to replace the original backgrounds.
         self.num_workers = max(4, self.batch_size)          # will be decrease to min(it, batch_size) at the initialization of the data_loader
 
         # Backbone settings

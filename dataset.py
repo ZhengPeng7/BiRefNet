@@ -34,13 +34,10 @@ class_labels_TR_sorted = _class_labels_TR_sorted.split(', ')
 
 
 class MyData(data.Dataset):
-    def __init__(self, datasets, image_size, is_train=True):
-        self.size_train = image_size
-        self.size_test = image_size
-        self.keep_size = not config.size
-        self.data_size = config.size
-        self.dynamic_size = tuple(sorted(config.dynamic_size))     # use dynamic size when `if self.dynamic_size != (0, 0):`.
+    def __init__(self, datasets, data_size, is_train=True):
+        # data_size is None when using dynamic_size or data_size is manually set to None (for inference in the original size).
         self.is_train = is_train
+        self.data_size = data_size
         self.load_all = config.load_all
         self.device = config.device
         valid_extensions = ['.png', '.jpg', '.PNG', '.JPG', '.JPEG']
@@ -48,14 +45,14 @@ class MyData(data.Dataset):
         if self.is_train and config.auxiliary_classification:
             self.cls_name2id = {_name: _id for _id, _name in enumerate(class_labels_TR_sorted)}
         self.transform_image = transforms.Compose([
-            transforms.Resize(self.data_size[::-1]),
+            transforms.Resize(config.size[::-1]),
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-        ][self.load_all or self.keep_size or (self.dynamic_size != (0, 0))::])
+        ][self.load_all or self.data_size is None::])
         self.transform_label = transforms.Compose([
-            transforms.Resize(self.data_size[::-1]),
+            transforms.Resize(config.size[::-1]),
             transforms.ToTensor(),
-        ][self.load_all or self.keep_size or (self.dynamic_size != (0, 0))::])
+        ][self.load_all or self.data_size is None::])
         dataset_root = os.path.join(config.data_root_dir, config.task)
         # datasets can be a list of different datasets for training on combined sets.
         self.image_paths = []
@@ -86,8 +83,8 @@ class MyData(data.Dataset):
             self.class_labels_loaded = []
             # for image_path, label_path in zip(self.image_paths, self.label_paths):
             for image_path, label_path in tqdm(zip(self.image_paths, self.label_paths), total=len(self.image_paths)):
-                _image = path_to_image(image_path, size=config.size, color_type='rgb')
-                _label = path_to_image(label_path, size=config.size, color_type='gray')
+                _image = path_to_image(image_path, size=self.data_size, color_type='rgb')
+                _label = path_to_image(label_path, size=self.data_size, color_type='gray')
                 self.images_loaded.append(_image)
                 self.labels_loaded.append(_label)
                 self.class_labels_loaded.append(
@@ -95,14 +92,13 @@ class MyData(data.Dataset):
                 )
 
     def __getitem__(self, index):
-
         if self.load_all:
             image = self.images_loaded[index]
             label = self.labels_loaded[index]
             class_label = self.class_labels_loaded[index] if self.is_train and config.auxiliary_classification else -1
         else:
-            image = path_to_image(self.image_paths[index], size=config.size, color_type='rgb')
-            label = path_to_image(self.label_paths[index], size=config.size, color_type='gray')
+            image = path_to_image(self.image_paths[index], size=self.data_size, color_type='rgb')
+            label = path_to_image(self.label_paths[index], size=self.data_size, color_type='gray')
             class_label = self.cls_name2id[self.label_paths[index].split('/')[-1].split('#')[3]] if self.is_train and config.auxiliary_classification else -1
 
         # loading image and label
@@ -137,7 +133,15 @@ class MyData(data.Dataset):
         #         _image = cv2.resize(_image, (2048, 2048), interpolation=cv2.INTER_LINEAR)
         #         _label = cv2.resize(_label, (2048, 2048), interpolation=cv2.INTER_LINEAR)
 
-        if config.dynamic_size == (0, 0) or not self.is_train:
+        # At present, we use fixed sizes in inference, instead of consistent dynamic size with training.
+        if self.is_train:
+            if config.dynamic_size is None:
+                image, label = self.transform_image(image), self.transform_label(label)
+        else:
+            size_div_32 = (int(image.size[0] // 32 * 32), int(image.size[1] // 32 * 32))
+            if image.size != size_div_32:
+                image = image.resize(size_div_32)
+                label = label.resize(size_div_32)
             image, label = self.transform_image(image), self.transform_label(label)
 
         if self.is_train:
@@ -149,10 +153,8 @@ class MyData(data.Dataset):
         return len(self.image_paths)
 
 
-from torch.utils.data._utils.collate import default_collate
-
 def custom_collate_fn(batch):
-    if config.dynamic_size != (0, 0):
+    if config.dynamic_size:
         dynamic_size = tuple(sorted(config.dynamic_size))
         dynamic_size_batch = (random.randint(dynamic_size[0][0], dynamic_size[0][1]) // 32 * 32, random.randint(dynamic_size[1][0], dynamic_size[1][1]) // 32 * 32) # select a value randomly in the range of [dynamic_size[0/1][0], dynamic_size[0/1][1]].
         data_size = dynamic_size_batch
@@ -170,4 +172,4 @@ def custom_collate_fn(batch):
     ])
     for image, label, class_label in batch:
         new_batch.append((transform_image(image), transform_label(label), class_label))
-    return default_collate(new_batch)
+    return data._utils.collate.default_collate(new_batch)
