@@ -85,7 +85,7 @@ def main(args):
             model = model.to(device)
             inference(
                 model, data_loader_test=data_loader_test, pred_root=args.pred_root,
-                method='--'.join([w.rstrip('.pth') for w in weights.split(os.sep)[-2:]]) + '-reso_{}'.format('x'.join(data_size)),
+                method='--'.join([w.rstrip('.pth') for w in weights.split(os.sep)[-2:]]) + '-reso_{}'.format('x'.join([str(s) for s in data_size])),
                 testset=testset, device=config.device
             )
 
