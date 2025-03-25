@@ -59,10 +59,20 @@ def main(args):
         key=lambda x: int(x.split('epoch_')[-1].split('.pth')[0]),
         reverse=True
     )
+    try:
+        if args.resolution in [None, 'None', 0, '']:
+            # Use original resolution for inference.
+            data_size = None
+        else:
+            data_size = [int(l) for l in args.resolution.split('x')]
+    except:
+        # default as the config.size.
+        data_size = config.size
+
     for testset in args.testsets.split('+'):
         print('>>>> Testset: {}...'.format(testset))
         data_loader_test = torch.utils.data.DataLoader(
-            dataset=MyData(testset, data_size=config.size, is_train=False),
+            dataset=MyData(testset, data_size=data_size, is_train=False),
             batch_size=config.batch_size_valid, shuffle=False, num_workers=config.num_workers, pin_memory=True
         )
         for weights in weights_lst:
@@ -75,7 +85,7 @@ def main(args):
             model = model.to(device)
             inference(
                 model, data_loader_test=data_loader_test, pred_root=args.pred_root,
-                method='--'.join([w.rstrip('.pth') for w in weights.split(os.sep)[-2:]]),
+                method='--'.join([w.rstrip('.pth') for w in weights.split(os.sep)[-2:]]) + '-reso_{}'.format('x'.join(data_size)),
                 testset=testset, device=config.device
             )
 
@@ -86,6 +96,7 @@ if __name__ == '__main__':
     parser.add_argument('--ckpt', type=str, help='model folder')
     parser.add_argument('--ckpt_folder', default=sorted(glob(os.path.join('ckpt', '*')))[-1], type=str, help='model folder')
     parser.add_argument('--pred_root', default='e_preds', type=str, help='Output folder')
+    parser.add_argument('--resolution', default='default', type=str, help='WeixHei')
     parser.add_argument('--testsets',
                         default=config.testsets.replace(',', '+'),
                         type=str,

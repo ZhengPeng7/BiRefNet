@@ -1,9 +1,10 @@
 devices=${1:-0}
 pred_root=${2:-e_preds}
+resolution=${3:-"1024x1024"}
 
 # Inference
 
-CUDA_VISIBLE_DEVICES=${devices} python inference.py --pred_root ${pred_root}
+CUDA_VISIBLE_DEVICES=${devices} python inference.py --pred_root ${pred_root} --resolution ${resolution}
 
 echo Inference finished at $(date)
 
