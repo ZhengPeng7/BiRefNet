@@ -45,14 +45,12 @@ class MyData(data.Dataset):
         if self.is_train and config.auxiliary_classification:
             self.cls_name2id = {_name: _id for _id, _name in enumerate(class_labels_TR_sorted)}
         self.transform_image = transforms.Compose([
-            transforms.Resize(config.size[::-1]),
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-        ][self.load_all or self.data_size is None::])
+        ])
         self.transform_label = transforms.Compose([
-            transforms.Resize(config.size[::-1]),
             transforms.ToTensor(),
-        ][self.load_all or self.data_size is None::])
+        ])
         dataset_root = os.path.join(config.data_root_dir, config.task)
         # datasets can be a list of different datasets for training on combined sets.
         self.image_paths = []
