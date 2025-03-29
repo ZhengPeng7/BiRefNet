@@ -1,4 +1,5 @@
 # Custom
+preds-*/
 *.onnx
 deform_conv2d_onnx_exporter*
 frames-video_*/
