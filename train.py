@@ -49,12 +49,12 @@ if to_be_distributed:
     device = int(os.environ["LOCAL_RANK"])
 else:
     if args.use_accelerate:
-        device = accelerator.device
+        device = accelerator.local_process_index
     else:
         device = config.device
 
 if config.rand_seed:
-    set_seed(config.rand_seed + device.index if isinstance(device, torch.device) else device)
+    set_seed(config.rand_seed + device)
 
 epoch_st = 1
 # make dir for ckpt
