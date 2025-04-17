@@ -223,7 +223,7 @@ Choose the one you like to try with clicks instead of codes:
 
    + Thanks [**briaai/RMBG-2.0**](https://huggingface.co/briaai/RMBG-2.0): this project trained BiRefNet with their **high-quality private data**, which brings improvement on the DIS task. Note that their weights are for only **non-commercial use** and are **not aware of transparency** due to training in the DIS task setting, which focuses only on predicting binary masks.
 
-     <p align="center"><img src="https://huggingface.co/briaai/RMBG-2.0/resolve/main/t4.png" height="300"/></p>
+     <p align="center"><img src="https://huggingface.co/briaai/RMBG-2.0/media/main/t4.png" height="300"/></p>
 
    + Thanks [**lldacing/ComfyUI_BiRefNet_ll**](https://github.com/lldacing/ComfyUI_BiRefNet_ll): this project further upgrade the **ComfyUI node** for BiRefNet with both our **latest weights** and **the legacy ones**.
 
