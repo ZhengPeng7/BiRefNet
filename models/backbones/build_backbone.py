@@ -11,14 +11,14 @@ config = Config()
 
 def build_backbone(bb_name, pretrained=True, params_settings=''):
     if bb_name == 'vgg16':
-        bb_net = list(vgg16(pretrained=VGG16_Weights.DEFAULT if pretrained else None).children())[0]
-        bb = nn.Sequential(OrderedDict({'conv1': bb_net[:4], 'conv2': bb_net[4:9], 'conv3': bb_net[9:16], 'conv4': bb_net[16:23]}))
+        bb_net = list(vgg16(weights=VGG16_Weights.DEFAULT if pretrained else None).children())[0]
+        bb = nn.Sequential(OrderedDict({'conv1': bb_net[:10], 'conv2': bb_net[10:17], 'conv3': bb_net[17:24], 'conv4': bb_net[24:31]}))
     elif bb_name == 'vgg16bn':
-        bb_net = list(vgg16_bn(pretrained=VGG16_BN_Weights.DEFAULT if pretrained else None).children())[0]
-        bb = nn.Sequential(OrderedDict({'conv1': bb_net[:6], 'conv2': bb_net[6:13], 'conv3': bb_net[13:23], 'conv4': bb_net[23:33]}))
+        bb_net = list(vgg16_bn(weights=VGG16_BN_Weights.DEFAULT if pretrained else None).children())[0]
+        bb = nn.Sequential(OrderedDict({'conv1': bb_net[:14], 'conv2': bb_net[14:24], 'conv3': bb_net[24:34], 'conv4': bb_net[34:44]}))
     elif bb_name == 'resnet50':
-        bb_net = list(resnet50(pretrained=ResNet50_Weights.DEFAULT if pretrained else None).children())
-        bb = nn.Sequential(OrderedDict({'conv1': nn.Sequential(*bb_net[0:3]), 'conv2': bb_net[4], 'conv3': bb_net[5], 'conv4': bb_net[6]}))
+        bb_net = list(resnet50(weights=ResNet50_Weights.DEFAULT if pretrained else None).children())
+        bb = nn.Sequential(OrderedDict({'conv1': nn.Sequential(*bb_net[0:4], bb_net[4]), 'conv2': bb_net[5], 'conv3': bb_net[6], 'conv4': bb_net[7]}))
     else:
         bb = eval('{}({})'.format(bb_name, params_settings))
         if pretrained:

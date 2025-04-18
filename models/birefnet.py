@@ -82,16 +82,20 @@ class BiRefNet(
             x1 = self.bb.conv1(x); x2 = self.bb.conv2(x1); x3 = self.bb.conv3(x2); x4 = self.bb.conv4(x3)
         else:
             x1, x2, x3, x4 = self.bb(x)
+        if self.config.mul_scl_ipt:
+            B, C, H, W = x.shape
+            x_pyramid = F.interpolate(x, size=(H//2, W//2), mode='bilinear', align_corners=True)
             if self.config.mul_scl_ipt == 'cat':
-                B, C, H, W = x.shape
-                x1_, x2_, x3_, x4_ = self.bb(F.interpolate(x, size=(H//2, W//2), mode='bilinear', align_corners=True))
+                if self.config.bb in ['vgg16', 'vgg16bn', 'resnet50']:
+                    x1_ = self.bb.conv1(x_pyramid); x2_ = self.bb.conv2(x1_); x3_ = self.bb.conv3(x2_); x4_ = self.bb.conv4(x3_)
+                else:
+                    x1_, x2_, x3_, x4_ = self.bb(x_pyramid)
                 x1 = torch.cat([x1, F.interpolate(x1_, size=x1.shape[2:], mode='bilinear', align_corners=True)], dim=1)
                 x2 = torch.cat([x2, F.interpolate(x2_, size=x2.shape[2:], mode='bilinear', align_corners=True)], dim=1)
                 x3 = torch.cat([x3, F.interpolate(x3_, size=x3.shape[2:], mode='bilinear', align_corners=True)], dim=1)
                 x4 = torch.cat([x4, F.interpolate(x4_, size=x4.shape[2:], mode='bilinear', align_corners=True)], dim=1)
             elif self.config.mul_scl_ipt == 'add':
-                B, C, H, W = x.shape
-                x1_, x2_, x3_, x4_ = self.bb(F.interpolate(x, size=(H//2, W//2), mode='bilinear', align_corners=True))
+                x1_, x2_, x3_, x4_ = self.bb(x_pyramid)
                 x1 = x1 + F.interpolate(x1_, size=x1.shape[2:], mode='bilinear', align_corners=True)
                 x2 = x2 + F.interpolate(x2_, size=x2.shape[2:], mode='bilinear', align_corners=True)
                 x3 = x3 + F.interpolate(x3_, size=x3.shape[2:], mode='bilinear', align_corners=True)

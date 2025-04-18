@@ -217,7 +217,7 @@ class Trainer:
             # with nullcontext if not args.use_accelerate or accelerator.gradient_accumulation_steps <= 1 else accelerator.accumulate(self.model):
             self._train_batch(batch)
             # Logger
-            if batch_idx % 20 == 0:
+            if (epoch < 2 and batch_idx < 100 and batch_idx % 20 == 0) or batch_idx % max(100, len(self.train_loader) / 100 // 100 * 100) == 0:
                 info_progress = 'Epoch[{0}/{1}] Iter[{2}/{3}].'.format(epoch, args.epochs, batch_idx, len(self.train_loader))
                 info_loss = 'Training Losses'
                 for loss_name, loss_value in self.loss_dict.items():
