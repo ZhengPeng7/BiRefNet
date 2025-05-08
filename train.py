@@ -242,9 +242,11 @@ def main():
         # Save checkpoint
         # DDP
         if epoch >= args.epochs - config.save_last and epoch % config.save_step == 0:
-            if args.use_accelerate:
+            if args.use_accelerate and accelerator.is_main_process:
                 if mixed_precision == 'fp16':
-                    state_dict = {k: v.half() for k, v in trainer.model.state_dict().items()}
+                    state_dict = {k: v.half() for k, v in accelerator.unwrap_model(trainer.model).state_dict().items()}
+                else:
+                    state_dict = {k: v for k, v in accelerator.unwrap_model(trainer.model).state_dict().items()}
             else:
                 state_dict = trainer.model.module.state_dict() if to_be_distributed else trainer.model.state_dict()
             torch.save(state_dict, os.path.join(args.ckpt_dir, 'epoch_{}.pth'.format(epoch)))
