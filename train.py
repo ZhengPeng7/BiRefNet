@@ -183,7 +183,8 @@ class Trainer:
             self.loss_dict['loss_cls'] = loss_cls.item()
 
         # Loss
-        loss_pix = self.pix_loss(scaled_preds, torch.clamp(gts, 0, 1)) * 1.0
+        loss_pix, loss_dict_pix = self.pix_loss(scaled_preds, torch.clamp(gts, 0, 1)) * 1.0
+        self.loss_dict.update(loss_dict_pix)
         self.loss_dict['loss_pix'] = loss_pix.item()
         # since there may be several losses for sal, the lambdas for them (lambdas_pix) are inside the loss.py
         loss = loss_pix + loss_cls
@@ -218,12 +219,12 @@ class Trainer:
             self._train_batch(batch)
             # Logger
             if (epoch < 2 and batch_idx < 100 and batch_idx % 20 == 0) or batch_idx % max(100, len(self.train_loader) / 100 // 100 * 100) == 0:
-                info_progress = 'Epoch[{0}/{1}] Iter[{2}/{3}].'.format(epoch, args.epochs, batch_idx, len(self.train_loader))
+                info_progress = f'Epoch[{epoch}/{args.epochs}] Iter[{batch_idx}/{len(self.train_loader)}].'
                 info_loss = 'Training Losses'
                 for loss_name, loss_value in self.loss_dict.items():
-                    info_loss += ', {}: {:.3f}'.format(loss_name, loss_value)
+                    info_loss += f', {loss_name}: {loss_value:.5g} | '
                 logger.info(' '.join((info_progress, info_loss)))
-        info_loss = '@==Final== Epoch[{0}/{1}]  Training Loss: {loss.avg:.3f}  '.format(epoch, args.epochs, loss=self.loss_log)
+        info_loss = f'@==Final== Epoch[{epoch}/{epoch}]  Training Loss: {self.loss_log.avg:.5g}  '
         logger.info(info_loss)
 
         self.lr_scheduler.step()
@@ -241,11 +242,13 @@ def main():
         train_loss = trainer.train_epoch(epoch)
         # Save checkpoint
         if epoch >= args.epochs - config.save_last and epoch % config.save_step == 0:
-            if args.use_accelerate and accelerator.is_main_process:
-                if mixed_precision == 'fp16':
-                    state_dict = {k: v.half() for k, v in accelerator.unwrap_model(trainer.model).state_dict().items()}
-                else:
-                    state_dict = {k: v for k, v in accelerator.unwrap_model(trainer.model).state_dict().items()}
+            if args.use_accelerate:
+                accelerator.wait_for_everyone()
+                if accelerator.is_main_process:
+                    if mixed_precision == 'fp16':
+                        state_dict = {k: v.half() for k, v in accelerator.unwrap_model(trainer.model).state_dict().items()}
+                    else:
+                        state_dict = {k: v for k, v in accelerator.unwrap_model(trainer.model).state_dict().items()}
             else:
                 state_dict = trainer.model.module.state_dict() if to_be_distributed else trainer.model.state_dict()
             torch.save(state_dict, os.path.join(args.ckpt_dir, 'epoch_{}.pth'.format(epoch)))
