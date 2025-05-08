@@ -240,7 +240,6 @@ def main():
     for epoch in range(epoch_st, args.epochs+1):
         train_loss = trainer.train_epoch(epoch)
         # Save checkpoint
-        # DDP
         if epoch >= args.epochs - config.save_last and epoch % config.save_step == 0:
             if args.use_accelerate and accelerator.is_main_process:
                 if mixed_precision == 'fp16':
