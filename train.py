@@ -220,9 +220,9 @@ class Trainer:
             # Logger
             if (epoch < 2 and batch_idx < 100 and batch_idx % 20 == 0) or batch_idx % max(100, len(self.train_loader) / 100 // 100 * 100) == 0:
                 info_progress = f'Epoch[{epoch}/{args.epochs}] Iter[{batch_idx}/{len(self.train_loader)}].'
-                info_loss = 'Training Losses'
+                info_loss = 'Training Losses:'
                 for loss_name, loss_value in self.loss_dict.items():
-                    info_loss += f', {loss_name}: {loss_value:.5g} | '
+                    info_loss += f' {loss_name}: {loss_value:.5g} |'
                 logger.info(' '.join((info_progress, info_loss)))
         info_loss = f'@==Final== Epoch[{epoch}/{epoch}]  Training Loss: {self.loss_log.avg:.5g}  '
         logger.info(info_loss)
