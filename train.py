@@ -179,11 +179,11 @@ class Trainer:
         if None in class_preds_lst:
             loss_cls = 0.
         else:
-            loss_cls = self.cls_loss(class_preds_lst, class_labels) * 1.0
+            loss_cls = self.cls_loss(class_preds_lst, class_labels)
             self.loss_dict['loss_cls'] = loss_cls.item()
 
         # Loss
-        loss_pix, loss_dict_pix = self.pix_loss(scaled_preds, torch.clamp(gts, 0, 1)) * 1.0
+        loss_pix, loss_dict_pix = self.pix_loss(scaled_preds, torch.clamp(gts, 0, 1), pix_loss_lambda=1.0)
         self.loss_dict.update(loss_dict_pix)
         self.loss_dict['loss_pix'] = loss_pix.item()
         # since there may be several losses for sal, the lambdas for them (lambdas_pix) are inside the loss.py

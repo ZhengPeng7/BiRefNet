@@ -151,14 +151,14 @@ class PixLoss(nn.Module):
         if 'structure' in self.lambdas_pix_last and self.lambdas_pix_last['structure']:
             self.criterions_last['structure'] = StructureLoss()
 
-    def forward(self, scaled_preds, gt):
+    def forward(self, scaled_preds, gt, pix_loss_lambda=1.0):
         loss = 0.
         loss_dict = {}
         for _, pred_lvl in enumerate(scaled_preds):
             if pred_lvl.shape != gt.shape:
                 pred_lvl = nn.functional.interpolate(pred_lvl, size=gt.shape[2:], mode='bilinear', align_corners=True)
             for criterion_name, criterion in self.criterions_last.items():
-                _loss = criterion(pred_lvl.sigmoid(), gt) * self.lambdas_pix_last[criterion_name]
+                _loss = criterion(pred_lvl.sigmoid(), gt) * self.lambdas_pix_last[criterion_name] * pix_loss_lambda
                 loss += _loss
                 loss_dict[criterion_name] = loss_dict.get(criterion_name, 0.) + _loss.item() / len(scaled_preds)
                 # print(criterion_name, _loss.item())
