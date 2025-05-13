@@ -1,6 +1,6 @@
 devices=${1:-0}
 pred_root=${2:-e_preds}
-resolutions=${3:-"1024x1024"}
+resolutions=${3:-"config.size"}
 
 # Inference
 # resolutions="1024x1024 None"

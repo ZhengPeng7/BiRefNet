@@ -63,6 +63,8 @@ def main(args):
         if args.resolution in [None, 'None', 0, '']:
             # Use original resolution for inference.
             data_size = None
+        elif args.resolution in ['config.size']:
+            data_size = config.size
         else:
             data_size = [int(l) for l in args.resolution.split('x')]
     except:
