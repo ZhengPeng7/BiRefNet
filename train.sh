@@ -19,6 +19,7 @@ nproc_per_node=$(echo ${devices%%,} | grep -o "," | wc -l)
 to_be_distributed=`echo ${nproc_per_node} | awk '{if($e > 0) print "True"; else print "False";}'`
 
 echo Training started at $(date)
+resume_weights_path='path_to_a_pth'
 if [ ${to_be_distributed} == "True" ]
 then
     # Adapt the nproc_per_node by the number of GPUs. Give 8989 as the default value of master_port.
@@ -27,14 +28,14 @@ then
     torchrun --standalone --nproc_per_node $((nproc_per_node+1)) \
     train.py --ckpt_dir ckpt/${method} --epochs ${epochs} \
         --dist ${to_be_distributed} \
-        --resume ../ckpt-general/general/epoch_170.pth \
+        --resume ${resume_weights_path} \
         --use_accelerate
 else
     echo "Single-GPU mode received..."
     CUDA_VISIBLE_DEVICES=${devices} \
     python train.py --ckpt_dir ckpt/${method} --epochs ${epochs} \
         --dist ${to_be_distributed} \
-        --resume xx/xx-epoch_244.pth \
+        --resume ${resume_weights_path} \
         --use_accelerate
 fi
 
