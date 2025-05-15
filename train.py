@@ -37,7 +37,7 @@ if args.use_accelerate:
         gradient_accumulation_steps=1,
         kwargs_handlers=[
             utils.InitProcessGroupKwargs(backend="nccl", timeout=datetime.timedelta(seconds=3600*10)),
-            utils.DistributedDataParallelKwargs(find_unused_parameters=True),
+            utils.DistributedDataParallelKwargs(find_unused_parameters=False),
             utils.GradScalerKwargs(backoff_factor=0.5)],
     )
     args.dist = False
