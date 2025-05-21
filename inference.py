@@ -4,6 +4,7 @@ from glob import glob
 from tqdm import tqdm
 import cv2
 import torch
+from contextlib import nullcontext
 
 from dataset import MyData
 from models.birefnet import BiRefNet, BiRefNetC2F
@@ -13,18 +14,26 @@ from config import Config
 
 config = Config()
 
+mixed_precision = config.mixed_precision
+if mixed_precision == 'fp16':
+    mixed_dtype = torch.float16
+elif mixed_precision == 'bf16':
+    mixed_dtype = torch.bfloat16
+else:
+    mixed_dtype = None
+
+autocast_ctx = torch.amp.autocast(device_type='cuda', dtype=mixed_dtype) if mixed_dtype else nullcontext()
+
 
 def inference(model, data_loader_test, pred_root, method, testset, device=0):
     model_training = model.training
     if model_training:
         model.eval()
-    model.half()
     for batch in tqdm(data_loader_test, total=len(data_loader_test)) if 1 or config.verbose_eval else data_loader_test:
-        inputs = batch[0].to(device).half()
-        # gts = batch[1].to(device)
+        inputs = batch[0].to(device)
         label_paths = batch[-1]
-        with torch.no_grad():
-            scaled_preds = model(inputs)[-1].sigmoid()
+        with autocast_ctx, torch.no_grad():
+            scaled_preds = model(inputs)[-1].sigmoid().to(torch.float32)
 
         os.makedirs(os.path.join(pred_root, method, testset), exist_ok=True)
 
@@ -42,8 +51,6 @@ def inference(model, data_loader_test, pred_root, method, testset, device=0):
 
 
 def main(args):
-    # Init model
-
     device = config.device
     if args.ckpt_folder:
         print('Testing with models in {}'.format(args.ckpt_folder))

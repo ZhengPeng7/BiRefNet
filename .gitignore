@@ -1,4 +1,5 @@
 # Custom
+comparisons/
 preds-*/
 *.onnx
 deform_conv2d_onnx_exporter*

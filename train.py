@@ -31,7 +31,7 @@ config = Config()
 
 if args.use_accelerate:
     from accelerate import Accelerator, utils
-    mixed_precision = ['no', 'fp16', 'bf16', 'fp8'][1]
+    mixed_precision = config.mixed_precision
     accelerator = Accelerator(
         mixed_precision=mixed_precision,
         gradient_accumulation_steps=1,
@@ -243,12 +243,7 @@ def main():
         # Save checkpoint
         if epoch >= args.epochs - config.save_last and epoch % config.save_step == 0:
             if args.use_accelerate:
-                accelerator.wait_for_everyone()
-                if accelerator.is_main_process:
-                    if mixed_precision == 'fp16':
-                        state_dict = {k: v.half() for k, v in accelerator.unwrap_model(trainer.model).state_dict().items()}
-                    else:
-                        state_dict = {k: v for k, v in accelerator.unwrap_model(trainer.model).state_dict().items()}
+                state_dict = trainer.model.state_dict()
             else:
                 state_dict = trainer.model.module.state_dict() if to_be_distributed else trainer.model.state_dict()
             torch.save(state_dict, os.path.join(args.ckpt_dir, 'epoch_{}.pth'.format(epoch)))
