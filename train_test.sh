@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Example: `setsid nohup ./train_test.sh BiRefNet 0,1,2,3,4,5,6,7 0 &>nohup.log &`
 
 method=${1:-"BSL"}
