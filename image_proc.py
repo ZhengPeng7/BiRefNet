@@ -4,12 +4,12 @@ import numpy as np
 import cv2
 
 
-def refine_foreground(image, mask, r=90):
+def refine_foreground(image, mask):
     if mask.size != image.size:
         mask = mask.resize(image.size)
-    image = np.array(image) / 255.0
-    mask = np.array(mask) / 255.0
-    estimated_foreground = FB_blur_fusion_foreground_estimator_2(image, mask, r=r)
+    image = np.array(image, dtype=np.float32) / 255.0
+    mask = np.array(mask, dtype=np.float32) / 255.0
+    estimated_foreground = FB_blur_fusion_foreground_estimator_2(image, mask, r=int(sum(image.shape[:2]) / 2 * 0.1))
     image_masked = Image.fromarray((estimated_foreground * 255.0).astype(np.uint8))
     return image_masked
 
