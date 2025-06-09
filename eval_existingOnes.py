@@ -129,7 +129,8 @@ if __name__ == '__main__':
     os.makedirs(args.save_dir, exist_ok=True)
     try:
         args.model_lst = [m for m in sorted(os.listdir(args.pred_root), key=lambda x: int(x.split('epoch_')[-1].split('-')[0]), reverse=True) if int(m.split('epoch_')[-1].split('-')[0]) % 1 == 0]
-    except:
+    except Exception as e:
+        print(f"Exception: {type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}")
         args.model_lst = [m for m in sorted(os.listdir(args.pred_root))]
 
     # check the integrity of each candidates

@@ -74,7 +74,8 @@ def main(args):
             data_size = config.size
         else:
             data_size = [int(l) for l in args.resolution.split('x')]
-    except:
+    except Exception as e:
+        print(f"Exception: {type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}")
         # default as the config.size.
         data_size = config.size
 
