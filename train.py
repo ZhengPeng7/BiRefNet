@@ -224,7 +224,7 @@ class Trainer:
                 for loss_name, loss_value in self.loss_dict.items():
                     info_loss += f' {loss_name}: {loss_value:.5g} |'
                 logger.info(' '.join((info_progress, info_loss)))
-        info_loss = f'@==Final== Epoch[{epoch}/{epoch}]  Training Loss: {self.loss_log.avg:.5g}  '
+        info_loss = f'@==Final== Epoch[{epoch}/{args.epochs}]  Training Loss: {self.loss_log.avg:.5g}  '
         logger.info(info_loss)
 
         self.lr_scheduler.step()
