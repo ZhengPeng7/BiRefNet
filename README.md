@@ -45,6 +45,7 @@ This repo is the official implementation of "[**Bilateral Reference for High-Res
 video of 
 
 ## News :newspaper:
+* **`Jun 30, 2025`:**  We managed to accelerate refine_foreground by 8 times (~80ms now on 5090) with [the GPU implementation of fast-fg-est](https://github.com/ZhengPeng7/BiRefNet/issues/226#issuecomment-3016433728) (thanks to @lucasgblu) and upgrades on the pre-/post-processing of arrays there.
 * **`May 15, 2025`:**  We released a video of the tutorial (screen recording) on BiRefNet fine-tuning on both my [YouTube](https://youtu.be/FwGT_0V9E-k) and [Bilibili](https://www.bilibili.com/video/BV1dxEkzgE3J) channels.
 * **`Mar 31, 2025`:**  We released the [BiRefNet_dynamic](https://huggingface.co/ZhengPeng7/BiRefNet_dynamic) for general use, which was trained on images in a dynamic resolution range from `256x256` to `2304x2304` and shows great and **robust** performance on **any resolution** images! Thanks again to [Freepik](https://www.freepik.com) their kind GPU support.
 * **`Feb 12, 2025`:**  We released the [BiRefNet_HR-matting](https://huggingface.co/ZhengPeng7/BiRefNet_HR-matting) for general matting use, which was trained on images in `2048x2048` and shows great matting performance on higher resolution images! Thanks again to [Freepik](https://www.freepik.com) their kind GPU support.

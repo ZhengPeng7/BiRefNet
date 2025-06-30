@@ -2,40 +2,106 @@ import random
 from PIL import Image, ImageEnhance
 import numpy as np
 import cv2
+import torch
+from torchvision import transforms
 
 
-def refine_foreground(image, mask):
-    if mask.size != image.size:
-        mask = mask.resize(image.size)
-    image = np.array(image, dtype=np.float32) / 255.0
-    mask = np.array(mask, dtype=np.float32) / 255.0
-    estimated_foreground = FB_blur_fusion_foreground_estimator_2(image, mask, r=int(sum(image.shape[:2]) / 2 * 0.1))
-    image_masked = Image.fromarray((estimated_foreground * 255.0).astype(np.uint8))
-    return image_masked
-
-
-def FB_blur_fusion_foreground_estimator_2(image, alpha, r=90):
-    # Thanks to the source: https://github.com/Photoroom/fast-foreground-estimation
-    alpha = alpha[:, :, None]
-    F, blur_B = FB_blur_fusion_foreground_estimator(
-        image, image, image, alpha, r)
-    return FB_blur_fusion_foreground_estimator(image, F, blur_B, alpha, r=6)[0]
-
-
-def FB_blur_fusion_foreground_estimator(image, F, B, alpha, r=90):
+## CPU version refinement
+def FB_blur_fusion_foreground_estimator_cpu(image, FG, B, alpha, r=90):
     if isinstance(image, Image.Image):
         image = np.array(image) / 255.0
     blurred_alpha = cv2.blur(alpha, (r, r))[:, :, None]
 
-    blurred_FA = cv2.blur(F * alpha, (r, r))
-    blurred_F = blurred_FA / (blurred_alpha + 1e-5)
+    blurred_FGA = cv2.blur(FG * alpha, (r, r))
+    blurred_FG = blurred_FGA / (blurred_alpha + 1e-5)
 
     blurred_B1A = cv2.blur(B * (1 - alpha), (r, r))
     blurred_B = blurred_B1A / ((1 - blurred_alpha) + 1e-5)
-    F = blurred_F + alpha * \
-        (image - alpha * blurred_F - (1 - alpha) * blurred_B)
-    F = np.clip(F, 0, 1)
-    return F, blurred_B
+    FG = blurred_FG + alpha * (image - alpha * blurred_FG - (1 - alpha) * blurred_B)
+    FG = np.clip(FG, 0, 1)
+    return FG, blurred_B
+
+
+def FB_blur_fusion_foreground_estimator_cpu_2(image, alpha, r=90):
+    # Thanks to the source: https://github.com/Photoroom/fast-foreground-estimation
+    alpha = alpha[:, :, None]
+    FG, blur_B = FB_blur_fusion_foreground_estimator_cpu(image, image, image, alpha, r)
+    return FB_blur_fusion_foreground_estimator_cpu(image, FG, blur_B, alpha, r=6)[0]
+
+
+## GPU version refinement
+def mean_blur(x, kernel_size):
+    """
+    equivalent to cv.blur
+    x:  [B, C, H, W]
+    """
+    if kernel_size % 2 == 0:
+        pad_l = kernel_size // 2 - 1
+        pad_r = kernel_size // 2
+        pad_t = kernel_size // 2 - 1
+        pad_b = kernel_size // 2
+    else:
+        pad_l = pad_r = pad_t = pad_b = kernel_size // 2
+
+    x_padded = torch.nn.functional.pad(x, (pad_l, pad_r, pad_t, pad_b), mode='replicate')
+
+    return torch.nn.functional.avg_pool2d(x_padded, kernel_size=(kernel_size, kernel_size), stride=1, count_include_pad=False)
+
+def FB_blur_fusion_foreground_estimator_gpu(image, FG, B, alpha, r=90):
+    as_dtype = lambda x, dtype: x.to(dtype) if x.dtype != dtype else x
+
+    input_dtype = image.dtype
+    # convert image to float to avoid overflow
+    image = as_dtype(image, torch.float32)
+    FG = as_dtype(FG, torch.float32)
+    B = as_dtype(B, torch.float32)
+    alpha = as_dtype(alpha, torch.float32)
+
+    blurred_alpha = mean_blur(alpha, kernel_size=r)
+
+    blurred_FGA = mean_blur(FG * alpha, kernel_size=r)
+    blurred_FG = blurred_FGA / (blurred_alpha + 1e-5)
+
+    blurred_B1A = mean_blur(B * (1 - alpha), kernel_size=r)
+    blurred_B = blurred_B1A / ((1 - blurred_alpha) + 1e-5)
+
+    FG_output = blurred_FG + alpha * (image - alpha * blurred_FG - (1 - alpha) * blurred_B)
+    FG_output = torch.clamp(FG_output, 0, 1)
+
+    return as_dtype(FG_output, input_dtype), as_dtype(blurred_B, input_dtype)
+
+
+def FB_blur_fusion_foreground_estimator_gpu_2(image, alpha, r=90):
+    # Thanks to the source: https://github.com/ZhengPeng7/BiRefNet/issues/226#issuecomment-3016433728
+    FG, blur_B = FB_blur_fusion_foreground_estimator_gpu(image, image, image, alpha, r)
+    return FB_blur_fusion_foreground_estimator_gpu(image, FG, blur_B, alpha, r=6)[0]
+
+
+def refine_foreground(image, mask, r=90, device='cuda'):
+    """both image and mask are in range of [0, 1]"""
+    if mask.size != image.size:
+        mask = mask.resize(image.size)
+
+    if device == 'cuda':
+        image = transforms.functional.to_tensor(image).float().cuda()
+        mask = transforms.functional.to_tensor(mask).float().cuda()
+        image = image.unsqueeze(0)
+        mask = mask.unsqueeze(0)
+
+        estimated_foreground = FB_blur_fusion_foreground_estimator_gpu_2(image, mask, r=r)
+        
+        estimated_foreground = estimated_foreground.squeeze()
+        estimated_foreground = (estimated_foreground.mul(255.0)).to(torch.uint8)
+        estimated_foreground = estimated_foreground.permute(1, 2, 0).contiguous().cpu().numpy().astype(np.uint8)
+    else:
+        image = np.array(image, dtype=np.float32) / 255.0
+        mask = np.array(mask, dtype=np.float32) / 255.0
+        estimated_foreground = FB_blur_fusion_foreground_estimator_cpu_2(image, mask, r=r)
+        estimated_foreground = (estimated_foreground * 255.0).astype(np.uint8)
+
+    estimated_foreground = Image.fromarray(np.ascontiguousarray(estimated_foreground))
+
+    return estimated_foreground
 
 
 def preproc(image, label, preproc_methods=['flip']):
