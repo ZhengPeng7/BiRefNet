@@ -33,6 +33,9 @@
   <a href='https://colab.research.google.com/drive/1B6aKZ3ekcvKMkSBn0N5mCASLUYMp0whK'><img src='https://img.shields.io/badge/Box_Guided_Segmentation-F9AB00?style=for-the-badge&logo=googlecolab&color=525252'></a>&ensp; 
 </div>
 
+<div align="center" style="display: flex; justify-content: center; flex-wrap: wrap;">
+    <a href="https://trendshift.io/repositories/11502" target="_blank"><img src="https://trendshift.io/api/badge/repositories/11502" alt="ZhengPeng7%2FBiRefNet | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
+</div>
 
 |            *DIS-Sample_1*        |             *DIS-Sample_2*        |
 | :------------------------------: | :-------------------------------: |
