@@ -44,8 +44,7 @@
 This repo is the official implementation of "[**Bilateral Reference for High-Resolution Dichotomous Image Segmentation**](https://arxiv.org/pdf/2401.03407)" (___CAAI AIR 2024___).
 
 > [!note]
-> **We need more GPU resources** to push forward the performance of BiRefNet, especially on *video* tasks and more *efficient* model designs on higher-resolution images. If you are happy to cooperate, please contact me at zhengpeng0108@gmail.com.
-video of 
+> **We need more GPU resources (2024-04-08)** to push forward the performance of BiRefNet, especially on pushing BiRefNet to general use and higher-resolution images. If you are happy to cooperate, please contact me at zhengpeng0108@gmail.com.
 
 ## News :newspaper:
 * **`Jun 30, 2025`:**  We managed to accelerate refine_foreground by 8 times (~80ms now on 5090) with [the GPU implementation of fast-fg-est](https://github.com/ZhengPeng7/BiRefNet/issues/226#issuecomment-3016433728) (thanks to @lucasgblu) and upgrades on the pre-/post-processing of arrays there.
