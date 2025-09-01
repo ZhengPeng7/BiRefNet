@@ -166,9 +166,9 @@ def random_gaussian(image, mean=0.1, sigma=0.35):
         return im
 
     img = np.asarray(image)
-    width, height = img.shape
+    height, width, channels = img.shape
     img = gaussianNoisy(img[:].flatten(), mean, sigma)
-    img = img.reshape([width, height])
+    img = img.reshape([height, width, channels])
     return Image.fromarray(np.uint8(img))
 
 
