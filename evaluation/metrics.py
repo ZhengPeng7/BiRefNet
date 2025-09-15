@@ -1,4 +1,6 @@
 import os
+import time
+import concurrent.futures
 from tqdm import tqdm
 import cv2
 from PIL import Image
@@ -13,36 +15,11 @@ _EPS = np.spacing(1)
 _TYPE = np.float64
 
 
-def evaluator(gt_paths, pred_paths, metrics=['S', 'MAE', 'E', 'F', 'WF', 'MBA', 'BIoU', 'MSE', 'HCE'], verbose=False):
-    # define measures
-    if 'E' in metrics:
-        EM = EMeasure()
-    if 'S' in metrics:
-        SM = SMeasure()
-    if 'F' in metrics:
-        FM = FMeasure()
-    if 'MAE' in metrics:
-        MAE = MAEMeasure()
-    if 'MSE' in metrics:
-        MSE = MSEMeasure()
-    if 'WF' in metrics:
-        WFM = WeightedFMeasure()
-    if 'HCE' in metrics:
-        HCE = HCEMeasure()
-    if 'MBA' in metrics:
-        MBA = MBAMeasure()
-    if 'BIoU' in metrics:
-        BIoU = BIoUMeasure()
-
-    if isinstance(gt_paths, list) and isinstance(pred_paths, list):
-        # print(len(gt_paths), len(pred_paths))
-        assert len(gt_paths) == len(pred_paths)
-
-    for idx_sample in tqdm(range(len(gt_paths)), total=len(gt_paths)) if verbose else range(len(gt_paths)):
-        gt = gt_paths[idx_sample]
-        pred = pred_paths[idx_sample]
-
-        pred = pred[:-4] + '.png'
+def load_single_image_pair(args):
+    gt_path, pred_path, idx = args
+    
+    try:
+        pred = pred_path[:-4] + '.png'
         valid_extensions = ['.png', '.jpg', '.PNG', '.JPG', '.JPEG']
         file_exists = False
         for ext in valid_extensions:
@@ -50,83 +27,293 @@ def evaluator(gt_paths, pred_paths, metrics=['S', 'MAE', 'E', 'F', 'WF', 'MBA', 
                 pred = pred[:-4] + ext
                 file_exists = True
                 break
-        if file_exists:
-            pred_ary = cv2.imread(pred, cv2.IMREAD_GRAYSCALE)
-        else:
-            print('Not exists:', pred)
 
-        gt_ary = cv2.imread(gt, cv2.IMREAD_GRAYSCALE)
+        if not file_exists:
+            print(f'Not exists: {pred}')
+            return None
+
+        gt_ary = cv2.imread(gt_path, cv2.IMREAD_GRAYSCALE)
+        pred_ary = cv2.imread(pred, cv2.IMREAD_GRAYSCALE)
+
+        if gt_ary is None or pred_ary is None:
+            return None
+
         pred_ary = cv2.resize(pred_ary, (gt_ary.shape[1], gt_ary.shape[0]))
 
-        if 'E' in metrics:
-            EM.step(pred=pred_ary, gt=gt_ary)
-        if 'S' in metrics:
-            SM.step(pred=pred_ary, gt=gt_ary)
-        if 'F' in metrics:
-            FM.step(pred=pred_ary, gt=gt_ary)
-        if 'MAE' in metrics:
-            MAE.step(pred=pred_ary, gt=gt_ary)
-        if 'MSE' in metrics:
-            MSE.step(pred=pred_ary, gt=gt_ary)
-        if 'WF' in metrics:
-            WFM.step(pred=pred_ary, gt=gt_ary)
-        if 'HCE' in metrics:
-            ske_path = gt.replace('/gt/', '/ske/')
-            if os.path.exists(ske_path):
-                ske_ary = cv2.imread(ske_path, cv2.IMREAD_GRAYSCALE)
-                ske_ary = ske_ary > 128
-            else:
-                ske_ary = skeletonize(gt_ary > 128)
-                ske_save_dir = os.path.join(*ske_path.split(os.sep)[:-1])
-                if ske_path[0] == os.sep:
-                    ske_save_dir = os.sep + ske_save_dir
-                os.makedirs(ske_save_dir, exist_ok=True)
-                cv2.imwrite(ske_path, ske_ary.astype(np.uint8) * 255)
-            HCE.step(pred=pred_ary, gt=gt_ary, gt_ske=ske_ary)
-        if 'MBA' in metrics:
-            MBA.step(pred=pred_ary, gt=gt_ary)
-        if 'BIoU' in metrics:
-            BIoU.step(pred=pred_ary, gt=gt_ary)
+        return {
+            'idx': idx,
+            'gt': gt_ary,
+            'pred': pred_ary,
+            'gt_path': gt_path,
+            'pred_path': pred
+        }
+    except Exception as e:
+        print(f"Error loading {gt_path}: {e}")
+        return None
+
+
+def load_images_parallel(gt_paths, pred_paths, num_workers, verbose):
+    args_list = [(gt_path, pred_path, idx) 
+                 for idx, (gt_path, pred_path) in enumerate(zip(gt_paths, pred_paths))]
+    
+    with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
+        if verbose:
+            results = list(tqdm(executor.map(load_single_image_pair, args_list), 
+                              total=len(args_list), desc="Loading images"))
+        else:
+            results = list(executor.map(load_single_image_pair, args_list))
+    
+    # 过滤掉加载失败的图像
+    valid_results = [r for r in results if r is not None]
+    return valid_results
+
+
+def process_metrics_single(data, measures, metrics):
+    gt_ary = data['gt']
+    pred_ary = data['pred']
+    gt_path = data['gt_path']
 
     if 'E' in metrics:
-        em = EM.get_results()['em']
-    else:
-        em = {'curve': np.array([np.float64(-1)]), 'adp': np.float64(-1)}
+        measures['E'].step(pred=pred_ary, gt=gt_ary)
     if 'S' in metrics:
-        sm = SM.get_results()['sm']
-    else:
-        sm = np.float64(-1)
+        measures['S'].step(pred=pred_ary, gt=gt_ary)
     if 'F' in metrics:
-        fm = FM.get_results()['fm']
-    else:
-        fm = {'curve': np.array([np.float64(-1)]), 'adp': np.float64(-1)}
+        measures['F'].step(pred=pred_ary, gt=gt_ary)
     if 'MAE' in metrics:
-        mae = MAE.get_results()['mae']
-    else:
-        mae = np.float64(-1)
+        measures['MAE'].step(pred=pred_ary, gt=gt_ary)
     if 'MSE' in metrics:
-        mse = MSE.get_results()['mse']
-    else:
-        mse = np.float64(-1)
+        measures['MSE'].step(pred=pred_ary, gt=gt_ary)
     if 'WF' in metrics:
-        wfm = WFM.get_results()['wfm']
-    else:
-        wfm = np.float64(-1)
+        measures['WF'].step(pred=pred_ary, gt=gt_ary)
     if 'HCE' in metrics:
-        hce = HCE.get_results()['hce']
-    else:
-        hce = np.float64(-1)
+        # HCE需要特殊处理
+        ske_path = gt_path.replace('/gt/', '/ske/')
+        if os.path.exists(ske_path):
+            ske_ary = cv2.imread(ske_path, cv2.IMREAD_GRAYSCALE)
+            ske_ary = ske_ary > 128
+        else:
+            ske_ary = skeletonize(gt_ary > 128)
+            ske_save_dir = os.path.join(*ske_path.split(os.sep)[:-1])
+            if ske_path[0] == os.sep:
+                ske_save_dir = os.sep + ske_save_dir
+            os.makedirs(ske_save_dir, exist_ok=True)
+            cv2.imwrite(ske_path, ske_ary.astype(np.uint8) * 255)
+        measures['HCE'].step(pred=pred_ary, gt=gt_ary, gt_ske=ske_ary)
     if 'MBA' in metrics:
-        mba = MBA.get_results()['mba']
-    else:
-        mba = np.float64(-1)
+        measures['MBA'].step(pred=pred_ary, gt=gt_ary)
     if 'BIoU' in metrics:
-        biou = BIoU.get_results()['biou']
+        measures['BIoU'].step(pred=pred_ary, gt=gt_ary)
+    return measures
+
+
+def process_with_measures(args):
+    """为并行处理创建独立的 measures 对象"""
+    data, metrics = args
+    
+    # 创建临时的 measures 对象
+    temp_measures = {}
+    if 'E' in metrics:
+        temp_measures['E'] = EMeasure()
+    if 'S' in metrics:
+        temp_measures['S'] = SMeasure()
+    if 'F' in metrics:
+        temp_measures['F'] = FMeasure()
+    if 'MAE' in metrics:
+        temp_measures['MAE'] = MAEMeasure()
+    if 'MSE' in metrics:
+        temp_measures['MSE'] = MSEMeasure()
+    if 'WF' in metrics:
+        temp_measures['WF'] = WeightedFMeasure()
+    if 'HCE' in metrics:
+        temp_measures['HCE'] = HCEMeasure()
+    if 'MBA' in metrics:
+        temp_measures['MBA'] = MBAMeasure()
+    if 'BIoU' in metrics:
+        temp_measures['BIoU'] = BIoUMeasure()
+    
+    # 处理单个图像
+    process_metrics_single(data, temp_measures, metrics)
+    return temp_measures
+
+
+def process_metrics_batch(image_data, measures, metrics, verbose, num_workers=10):
+    if num_workers:
+        # 并行处理
+        num_workers = min(8, len(image_data))
+        args_list = [(data, metrics) for data in image_data]
+        
+        with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
+            if verbose:
+                results = list(tqdm(executor.map(process_with_measures, args_list), 
+                                  total=len(args_list), desc="Computing metrics"))
+            else:
+                results = list(executor.map(process_with_measures, args_list))
+        
+        # 合并结果到主 measures
+        for temp_measures in results:
+            if temp_measures is not None:
+                for metric_name in metrics:
+                    if metric_name in measures and metric_name in temp_measures:
+                        # 直接合并各个指标的列表
+                        if hasattr(measures[metric_name], 'sms'):
+                            measures[metric_name].sms.extend(temp_measures[metric_name].sms)
+                        if hasattr(measures[metric_name], 'maes'):
+                            measures[metric_name].maes.extend(temp_measures[metric_name].maes)
+                        if hasattr(measures[metric_name], 'mses'):
+                            measures[metric_name].mses.extend(temp_measures[metric_name].mses)
+                        if hasattr(measures[metric_name], 'adaptive_fms'):
+                            measures[metric_name].adaptive_fms.extend(temp_measures[metric_name].adaptive_fms)
+                            measures[metric_name].precisions.extend(temp_measures[metric_name].precisions)
+                            measures[metric_name].recalls.extend(temp_measures[metric_name].recalls)
+                            measures[metric_name].changeable_fms.extend(temp_measures[metric_name].changeable_fms)
+                        if hasattr(measures[metric_name], 'adaptive_ems'):
+                            measures[metric_name].adaptive_ems.extend(temp_measures[metric_name].adaptive_ems)
+                            measures[metric_name].changeable_ems.extend(temp_measures[metric_name].changeable_ems)
+                        if hasattr(measures[metric_name], 'weighted_fms'):
+                            measures[metric_name].weighted_fms.extend(temp_measures[metric_name].weighted_fms)
+                        if hasattr(measures[metric_name], 'hces'):
+                            measures[metric_name].hces.extend(temp_measures[metric_name].hces)
+                        if hasattr(measures[metric_name], 'bas'):
+                            measures[metric_name].bas.extend(temp_measures[metric_name].bas)
+                            # MBA 需要合并累积统计
+                            measures[metric_name].all_h += temp_measures[metric_name].all_h
+                            measures[metric_name].all_w += temp_measures[metric_name].all_w
+                            measures[metric_name].all_max += temp_measures[metric_name].all_max
+                        if hasattr(measures[metric_name], 'bious'):
+                            measures[metric_name].bious.extend(temp_measures[metric_name].bious)
     else:
-        biou = {'curve': np.array([np.float64(-1)])}
+        # 串行处理
+        iterator = tqdm(image_data, desc="Computing metrics") if verbose else image_data
+        
+        for data in iterator:
+            measures = process_metrics_single(data, measures, metrics)
+    
+    return measures
 
-    return em, sm, fm, mae, mse, wfm, hce, mba, biou
 
+def collect_results(measures, metrics):
+    em = measures['E'].get_results()['em'] if 'E' in metrics else {'curve': np.array([np.float64(-1)]), 'adp': np.float64(-1)}
+    sm = measures['S'].get_results()['sm'] if 'S' in metrics else np.float64(-1)
+    fm = measures['F'].get_results()['fm'] if 'F' in metrics else {'curve': np.array([np.float64(-1)]), 'adp': np.float64(-1)}
+    mae = measures['MAE'].get_results()['mae'] if 'MAE' in metrics else np.float64(-1)
+    mse = measures['MSE'].get_results()['mse'] if 'MSE' in metrics else np.float64(-1)
+    wfm = measures['WF'].get_results()['wfm'] if 'WF' in metrics else np.float64(-1)
+    hce = measures['HCE'].get_results()['hce'] if 'HCE' in metrics else np.float64(-1)
+    mba = measures['MBA'].get_results()['mba'] if 'MBA' in metrics else np.float64(-1)
+    biou = measures['BIoU'].get_results()['biou'] if 'BIoU' in metrics else {'curve': np.array([np.float64(-1)])}
+
+    return (em, sm, fm, mae, mse, wfm, hce, mba, biou)
+
+
+def evaluator(gt_paths, pred_paths, metrics=['S', 'MAE', 'E', 'F', 'WF', 'MBA', 'BIoU', 'MSE', 'HCE'], verbose=False, num_workers=8):
+    start_time = time.time()
+
+    measures = {}
+    if 'E' in metrics:
+        measures['E'] = EMeasure()
+    if 'S' in metrics:
+        measures['S'] = SMeasure()
+    if 'F' in metrics:
+        measures['F'] = FMeasure()
+    if 'MAE' in metrics:
+        measures['MAE'] = MAEMeasure()
+    if 'MSE' in metrics:
+        measures['MSE'] = MSEMeasure()
+    if 'WF' in metrics:
+        measures['WF'] = WeightedFMeasure()
+    if 'HCE' in metrics:
+        measures['HCE'] = HCEMeasure()
+    if 'MBA' in metrics:
+        measures['MBA'] = MBAMeasure()
+    if 'BIoU' in metrics:
+        measures['BIoU'] = BIoUMeasure()
+
+    if isinstance(gt_paths, list) and isinstance(pred_paths, list):
+        assert len(gt_paths) == len(pred_paths)
+
+    if num_workers is None:
+        num_workers = 1
+    use_parallel = len(gt_paths) > 50 and num_workers > 1
+
+    if use_parallel:
+        if verbose:
+            print(f"Loading {len(gt_paths)} images in parallel with {num_workers} workers...")
+
+        image_data = load_images_parallel(gt_paths, pred_paths, num_workers, verbose)
+
+        if verbose:
+            print(f"Successfully loaded {len(image_data)}/{len(gt_paths)} images")
+
+        measures = process_metrics_batch(image_data, measures, metrics, verbose, num_workers)
+    else:
+        iterator = tqdm(range(len(gt_paths)), total=len(gt_paths), desc="Loading and processing images") if verbose else range(len(gt_paths))
+
+        for idx_sample in iterator:
+            gt = gt_paths[idx_sample]
+            pred = pred_paths[idx_sample]
+
+            pred = pred[:-4] + '.png'
+            valid_extensions = ['.png', '.jpg', '.PNG', '.JPG', '.JPEG']
+            file_exists = False
+            for ext in valid_extensions:
+                if os.path.exists(pred[:-4] + ext):
+                    pred = pred[:-4] + ext
+                    file_exists = True
+                    break
+            
+            if not file_exists:
+                print('Not exists:', pred)
+                continue
+
+            gt_ary = cv2.imread(gt, cv2.IMREAD_GRAYSCALE)
+            pred_ary = cv2.imread(pred, cv2.IMREAD_GRAYSCALE)
+            
+            if gt_ary is None or pred_ary is None:
+                continue
+                
+            pred_ary = cv2.resize(pred_ary, (gt_ary.shape[1], gt_ary.shape[0]))
+
+            if 'E' in metrics:
+                measures['E'].step(pred=pred_ary, gt=gt_ary)
+            if 'S' in metrics:
+                measures['S'].step(pred=pred_ary, gt=gt_ary)
+            if 'F' in metrics:
+                measures['F'].step(pred=pred_ary, gt=gt_ary)
+            if 'MAE' in metrics:
+                measures['MAE'].step(pred=pred_ary, gt=gt_ary)
+            if 'MSE' in metrics:
+                measures['MSE'].step(pred=pred_ary, gt=gt_ary)
+            if 'WF' in metrics:
+                measures['WF'].step(pred=pred_ary, gt=gt_ary)
+            if 'HCE' in metrics:
+                ske_path = gt.replace('/gt/', '/ske/')
+                if os.path.exists(ske_path):
+                    ske_ary = cv2.imread(ske_path, cv2.IMREAD_GRAYSCALE)
+                    ske_ary = ske_ary > 128
+                else:
+                    ske_ary = skeletonize(gt_ary > 128)
+                    ske_save_dir = os.path.join(*ske_path.split(os.sep)[:-1])
+                    if ske_path[0] == os.sep:
+                        ske_save_dir = os.sep + ske_save_dir
+                    os.makedirs(ske_save_dir, exist_ok=True)
+                    cv2.imwrite(ske_path, ske_ary.astype(np.uint8) * 255)
+                measures['HCE'].step(pred=pred_ary, gt=gt_ary, gt_ske=ske_ary)
+            if 'MBA' in metrics:
+                measures['MBA'].step(pred=pred_ary, gt=gt_ary)
+            if 'BIoU' in metrics:
+                measures['BIoU'].step(pred=pred_ary, gt=gt_ary)
+
+    results = collect_results(measures, metrics)
+    
+    if verbose:
+        total_time = time.time() - start_time
+        processing_method = "parallel" if use_parallel else "serial"
+        print(f"Evaluation completed in {total_time:.2f}s using {processing_method} processing")
+    
+    return results
+
+
+## >>>>>>>>>>>> Definitions of metrics:
 
 def _prepare_data(pred: np.ndarray, gt: np.ndarray) -> tuple:
     gt = gt > 128
@@ -673,7 +860,7 @@ class MBAMeasure(object):
 
     def step(self, pred: np.ndarray, gt: np.ndarray):
         # pred, gt = _prepare_data(pred, gt)
-        
+
         refined = gt.copy()
 
         rmin = cmin = 0
@@ -691,13 +878,13 @@ class MBAMeasure(object):
             if not((cmax==cmin) or (rmax==rmin)):
                 class_refined_prob = np.array(Image.fromarray(pred).resize((cmax-cmin, rmax-rmin), Image.BILINEAR))
                 refined[rmin:rmax, cmin:cmax] = class_refined_prob
-        
+
         pred = pred > 128
         gt = gt > 128
 
         ba = self.cal_ba(pred, gt)
         self.bas.append(ba)
-        
+
     def get_disk_kernel(self, radius):
         return cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (radius*2+1, radius*2+1))
 
@@ -782,10 +969,44 @@ class BIoUMeasure(object):
         Ps = fg_w_thrs + bg_w_thrs # positives
         Ps[Ps == 0] = 1 
         T = max(np.count_nonzero(gt), 1)
-        
+
         ious = TPs / (T + bg_w_thrs)
         return ious
 
     def get_results(self) -> dict:
         biou = np.mean(np.array(self.bious, dtype=_TYPE), axis=0)
         return dict(biou=dict(curve=biou))
+
+
+def sort_and_round_scores(task, scores, r=3):
+    em, sm, fm, mae, mse, wfm, hce, mba, biou = scores
+    if task == 'DIS5K':
+        scores = [fm['curve'].max().round(r), wfm.round(r), mae.round(r), sm.round(r), em['curve'].mean().round(r), int(hce.round()),
+                  em['curve'].max().round(r), fm['curve'].mean().round(r), em['adp'].round(r), fm['adp'].round(r),
+                  mba.round(r), biou['curve'].max().round(r), biou['curve'].mean().round(r),]
+    elif task == 'COD':
+        scores = [sm.round(r), wfm.round(r), fm['curve'].mean().round(r), em['curve'].mean().round(r), em['curve'].max().round(r), mae.round(r),
+                  fm['curve'].max().round(r), em['adp'].round(r), fm['adp'].round(r), int(hce.round()),
+                  mba.round(r), biou['curve'].max().round(r), biou['curve'].mean().round(r),]
+    elif task == 'HRSOD':
+        scores = [sm.round(r), fm['curve'].max().round(r), em['curve'].mean().round(r), mae.round(r),
+                  em['curve'].max().round(r), fm['curve'].mean().round(r), wfm.round(r), em['adp'].round(r), fm['adp'].round(r), int(hce.round()),
+                  mba.round(r), biou['curve'].max().round(r), biou['curve'].mean().round(r),]
+    elif task == 'General':
+        scores = [fm['curve'].max().round(r), wfm.round(r), mae.round(r), sm.round(r), em['curve'].mean().round(r), int(hce.round()),
+                  em['curve'].max().round(r), fm['curve'].mean().round(r), em['adp'].round(r), fm['adp'].round(r),
+                  mba.round(r), biou['curve'].max().round(r), biou['curve'].mean().round(r),]
+    elif task == 'General-2K':
+        scores = [fm['curve'].max().round(r), wfm.round(r), mae.round(r), sm.round(r), em['curve'].mean().round(r), int(hce.round()),
+                  em['curve'].max().round(r), fm['curve'].mean().round(r), em['adp'].round(r), fm['adp'].round(r),
+                  mba.round(r), biou['curve'].max().round(r), biou['curve'].mean().round(r),]
+    elif task == 'Matting':
+        scores = [sm.round(r), fm['curve'].max().round(r), em['curve'].mean().round(r), mse.round(5),
+                  em['curve'].max().round(r), fm['curve'].mean().round(r), wfm.round(r), em['adp'].round(r), fm['adp'].round(r), int(hce.round()),
+                  mba.round(r), biou['curve'].max().round(r), biou['curve'].mean().round(r),]
+    else:
+        scores = [sm.round(r), mae.round(r), em['curve'].max().round(r), em['curve'].mean().round(r),
+                  fm['curve'].max().round(r), fm['curve'].mean().round(r), wfm.round(r),
+                  em['adp'].round(r), fm['adp'].round(r), int(hce.round()),
+                  mba.round(r), biou['curve'].max().round(r), biou['curve'].mean().round(r),]
+    return scores
