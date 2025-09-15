@@ -37,9 +37,13 @@
     <a href="https://trendshift.io/repositories/11502" target="_blank"><img src="https://trendshift.io/api/badge/repositories/11502" alt="ZhengPeng7%2FBiRefNet | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
 </div>
 
+<div align="center">
+
 |            *DIS-Sample_1*        |             *DIS-Sample_2*        |
 | :------------------------------: | :-------------------------------: |
 | <img src="https://drive.google.com/thumbnail?id=1ItXaA26iYnE8XQ_GgNLy71MOWePoS2-g&sz=w400" /> |  <img src="https://drive.google.com/thumbnail?id=1Z-esCujQF_uEa_YJjkibc3NUrW4aR_d4&sz=w400" /> |
+
+</div>
 
 This repo is the official implementation of "[**Bilateral Reference for High-Resolution Dichotomous Image Segmentation**](https://arxiv.org/pdf/2401.03407)" (___CAAI AIR 2024___).
 
@@ -228,10 +232,6 @@ Choose the one you like to try with clicks instead of codes:
 
      <p align="center"><img src="https://github.com/user-attachments/assets/9969dd10-38a8-4cf2-a6c7-5b11f074b9b4" height="300"/></p>
 
-   + Thanks [**briaai/RMBG-2.0**](https://huggingface.co/briaai/RMBG-2.0): this project trained BiRefNet with their **high-quality private data**, which brings improvement on the DIS task. Note that their weights are for only **non-commercial use** and are **not aware of transparency** due to training in the DIS task setting, which focuses only on predicting binary masks.
-
-     <p align="center"><img src="https://huggingface.co/briaai/RMBG-2.0/media/main/t4.png" height="300"/></p>
-
    + Thanks [**lldacing/ComfyUI_BiRefNet_ll**](https://github.com/lldacing/ComfyUI_BiRefNet_ll): this project further upgrade the **ComfyUI node** for BiRefNet with both our **latest weights** and **the legacy ones**.
 
      <p align="center"><img src="https://github.com/lldacing/ComfyUI_BiRefNet_ll/raw/main/doc/video.gif" height="300"/></p>
@@ -239,16 +239,6 @@ Choose the one you like to try with clicks instead of codes:
    + Thanks [**MoonHugo/ComfyUI-BiRefNet-Hugo**](https://github.com/MoonHugo/ComfyUI-BiRefNet-Hugo): this project further upgrade the **ComfyUI node** for BiRefNet with our **latest weights**.
 
      <p align="center"><img src="https://github.com/MoonHugo/ComfyUI-BiRefNet-Hugo/raw/main/assets/demo4.gif" height="300"/></p>
-
-   + Thanks [**lbq779660843/BiRefNet-Tensorrt**](https://github.com/lbq779660843/BiRefNet-Tensorrt) and [**yuanyang1991/birefnet_tensorrt**](https://github.com/yuanyang1991/birefnet_tensorrt): they both provided the project to convert BiRefNet to **TensorRT**, which is faster and better for deployment. Their repos offer solid local establishment (Win and Linux) and [colab demo](https://colab.research.google.com/drive/1r8GkFPyMMO0OkMX6ih5FjZnUCQrl2SHV?usp=sharing), respectively. And @yuanyang1991 kindly offered the comparison among the inference efficiency of naive PyTorch, ONNX, and TensorRT on an RTX 4080S:
-
-| Methods | [Pytorch](https://drive.google.com/file/d/1_IfUnu8Fpfn-nerB89FzdNXQ7zk6FKxc/view) | [ONNX](https://drive.google.com/drive/u/0/folders/1kZM55bwsRdS__bdnsXpkmH6QPyza-9-N) | TensorRT |
-|:------------------------------------------------------------------------------------:|:--------------:|:--------------:|:--------------:|
-|  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;First Inference Time&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  |     0.71s      |     5.32s      |     **0.17s**      |
-
-| Methods | [Pytorch](https://drive.google.com/file/d/1_IfUnu8Fpfn-nerB89FzdNXQ7zk6FKxc/view) | [ONNX](https://drive.google.com/drive/u/0/folders/1kZM55bwsRdS__bdnsXpkmH6QPyza-9-N) | TensorRT |
-|:------------------------------------------------------------------------------------:|:--------------:|:--------------:|:--------------:|
-|  Avg Inf Time (excluding 1st)   |     0.15s      |     4.43s      |     **0.11s**      |
 
    + Thanks [**dimitribarbot/sd-webui-birefnet**](https://github.com/dimitribarbot/sd-webui-birefnet): this project allows to add a BiRefNet section to the original **Stable Diffusion WebUI**'s Extras tab.
      <p align="center"><img src="https://drive.google.com/thumbnail?id=159bLXI71FWh4ZsHTvc-wApSN9ytVRmua&sz=w1620" /></p>
@@ -266,16 +256,56 @@ Choose the one you like to try with clicks instead of codes:
 
    + Thanks [**Rishabh**](https://github.com/rishabh063) for offering a demo for the [easier multiple images inference on colab](https://colab.research.google.com/drive/14Dqg7oeBkFEtchaHLNpig2BcdkZEogba).
 
-2. **More Visual Comparisons**
+2. **Model Extensions**
+
+   + Thanks [**MatteoKartoon/BiRefNet**](https://github.com/MatteoKartoon/BiRefNet): this project fine-tuned BiRefNet with their **custom anime data** to obtain their model **ToonOut**, which brings improvement on the background-removal task for anime images. See [their paper on arXiv](https://arxiv.org/pdf/2509.06839).
+
+     <p align="center"><img src="https://github.com/MatteoKartoon/BiRefNet/blob/main/images/models_comparison.png" height="300"/></p>
+
+   + Thanks [**nusu-github/BiRefNet-Burn**](https://github.com/nusu-github/BiRefNet-Burn): this project re-implemented BiRefNet with **Burn**, which is a new deep-learning framework in **Rust**.
+
+   + Thanks [**Acly/BiRefNet-GGUF**](https://huggingface.co/Acly/BiRefNet-GGUF): this project converted BiRefNet to the GGUF format for lightweight inference on consumer hardware with vision.cpp in **C++**.
+
+     ```C++
+     image_data image      = image_load("input.png");
+     backend_device device = backend_init();
+     birefnet_model model  = birefnet_load_model("BiRefNet-F16.gguf", device);
+     image_data mask       = birefnet_compute(model, image);
+     image_save(mask, "mask.png");
+     ```
+   
+   + Thanks [**briaai/RMBG-2.0**](https://huggingface.co/briaai/RMBG-2.0): this project trained BiRefNet with their **high-quality private data**, which brings improvement on the DIS task. Note that their weights are for only **non-commercial use** and are **not aware of transparency** due to training in the DIS task setting, which focuses only on predicting binary masks.
+
+     <p align="center"><img src="https://huggingface.co/briaai/RMBG-2.0/media/main/t4.png" height="300"/></p>
+
+   + Thanks [**lbq779660843/BiRefNet-Tensorrt**](https://github.com/lbq779660843/BiRefNet-Tensorrt) and [**yuanyang1991/birefnet_tensorrt**](https://github.com/yuanyang1991/birefnet_tensorrt): they both provided the project to convert BiRefNet to **TensorRT**, which is faster and better for deployment. Their repos offer solid local establishment (Win and Linux) and [colab demo](https://colab.research.google.com/drive/1r8GkFPyMMO0OkMX6ih5FjZnUCQrl2SHV?usp=sharing), respectively. And @yuanyang1991 kindly offered the comparison among the inference efficiency of naive PyTorch, ONNX, and TensorRT on an RTX 4080S:
+
+<div align="center">
+
+| Methods | [Pytorch](https://drive.google.com/file/d/1_IfUnu8Fpfn-nerB89FzdNXQ7zk6FKxc/view) | [ONNX](https://drive.google.com/drive/u/0/folders/1kZM55bwsRdS__bdnsXpkmH6QPyza-9-N) | TensorRT |
+|:------------------------------------------------------------------------------------:|:--------------:|:--------------:|:--------------:|
+|  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;First Inference Time&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  |     0.71s      |     5.32s      |     **0.17s**      |
+
+| Methods | [Pytorch](https://drive.google.com/file/d/1_IfUnu8Fpfn-nerB89FzdNXQ7zk6FKxc/view) | [ONNX](https://drive.google.com/drive/u/0/folders/1kZM55bwsRdS__bdnsXpkmH6QPyza-9-N) | TensorRT |
+|:------------------------------------------------------------------------------------:|:--------------:|:--------------:|:--------------:|
+|  Avg Inf Time (excluding 1st)   |     0.15s      |     4.43s      |     **0.11s**      |
+
+</div>
+
+3. **More Visual Comparisons**
    + Thanks [**twitter.com/ZHOZHO672070**](https://twitter.com/ZHOZHO672070) for the comparison with more background-removal methods in images:
 
      <img src="https://drive.google.com/thumbnail?id=1nvVIFt_Ezs-crPSQxUDqkUBz598fTe63&sz=w1620" />
 
    + Thanks [**twitter.com/toyxyz3**](https://twitter.com/toyxyz3) for the comparison with more background-removal methods in videos:
 
+    <div align="center">
+
     <https://github.com/ZhengPeng7/BiRefNet/assets/25921713/40136198-01cc-4106-81f9-81c985f02e31>
 
     <https://github.com/ZhengPeng7/BiRefNet/assets/25921713/1a32860c-0893-49dd-b557-c2e35a83c160>
+
+    </div>
 
 
 ## Usage
@@ -311,7 +341,11 @@ Download backbone weights from [my google-drive folder](https://drive.google.com
 
 > A video of the tutorial on BiRefNet fine-tuning has been released on my YouTube channel ⬇️
 
+<div align="center">
+
 [![BiRefNet Fine-tuning Tutorial](https://img.youtube.com/vi/FwGT_0V9E-k/0.jpg)](https://youtu.be/FwGT_0V9E-k)
+
+</div>
 
 > Suppose you have some custom data, fine-tuning on it tends to bring improvement.
 
