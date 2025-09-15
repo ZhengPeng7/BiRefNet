@@ -246,7 +246,7 @@ def evaluator(gt_paths, pred_paths, metrics=['S', 'MAE', 'E', 'F', 'WF', 'MBA', 
 
         measures = process_metrics_batch(image_data, measures, metrics, verbose, num_workers)
     else:
-        iterator = tqdm(range(len(gt_paths)), total=len(gt_paths), desc="Loading and processing images") if verbose else range(len(gt_paths))
+        iterator = tqdm(range(len(gt_paths)), total=len(gt_paths), desc="Loading images and computing metrics") if verbose else range(len(gt_paths))
 
         for idx_sample in iterator:
             gt = gt_paths[idx_sample]

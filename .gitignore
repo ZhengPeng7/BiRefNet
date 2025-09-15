@@ -10,8 +10,8 @@ predictions/
 *.avi
 e_*
 .vscode
-ckpt
-preds
+ckpts/
+preds/
 evaluation/eval-*
 nohup.*
 tmp*

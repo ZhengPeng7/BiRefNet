@@ -26,14 +26,14 @@ then
     echo "Multi-GPU mode received..."
     CUDA_VISIBLE_DEVICES=${devices} \
     torchrun --standalone --nproc_per_node $((nproc_per_node+1)) \
-    train.py --ckpt_dir ckpt/${method} --epochs ${epochs} \
+    train.py --ckpt_dir ckpts/${method} --epochs ${epochs} \
         --dist ${to_be_distributed} \
         --resume ${resume_weights_path} \
         --use_accelerate
 else
     echo "Single-GPU mode received..."
     CUDA_VISIBLE_DEVICES=${devices} \
-    python train.py --ckpt_dir ckpt/${method} --epochs ${epochs} \
+    python train.py --ckpt_dir ckpts/${method} --epochs ${epochs} \
         --dist ${to_be_distributed} \
         --resume ${resume_weights_path} \
         --use_accelerate

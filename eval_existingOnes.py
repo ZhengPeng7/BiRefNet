@@ -60,7 +60,9 @@ if __name__ == '__main__':
     parser.add_argument('--save_dir', type=str, help='directory to save results', default='e_results')
     parser.add_argument('--metrics', type=str, help='candidate competitors', default='+'.join(['S', 'MAE']))
     args = parser.parse_args()
-    args.metrics = '+'.join(['S', 'MAE', 'E', 'F', 'WF', 'MBA', 'BIoU', 'MSE', 'HCE'][:100 if sum(['DIS-' in _data for _data in args.data_lst.split('+')]) else -1])
+
+    if args.metrics == 'all':
+        args.metrics = '+'.join(['S', 'MAE', 'E', 'F', 'WF', 'MBA', 'BIoU', 'MSE', 'HCE'][:100 if sum(['DIS-' in _data for _data in args.data_lst.split('+')]) else -1])
 
     try:
         args.model_lst = [m for m in sorted(os.listdir(args.pred_root), key=lambda x: int(x.split('epoch_')[-1].split('-')[0]), reverse=True) if int(m.split('epoch_')[-1].split('-')[0]) % 1 == 0]

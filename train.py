@@ -22,7 +22,7 @@ from torch.distributed import init_process_group, destroy_process_group
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('--resume', default=None, type=str, help='path to latest checkpoint')
 parser.add_argument('--epochs', default=120, type=int)
-parser.add_argument('--ckpt_dir', default='ckpt/tmp', help='Temporary folder')
+parser.add_argument('--ckpt_dir', default='ckpts/tmp', help='Temporary folder')
 parser.add_argument('--dist', default=False, type=lambda x: x == 'True')
 parser.add_argument('--use_accelerate', action='store_true', help='`accelerate launch --multi_gpu train.py --use_accelerate`. Use accelerate for training, good for FP16/BF16/...')
 args = parser.parse_args()
