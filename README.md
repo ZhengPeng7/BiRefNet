@@ -88,7 +88,9 @@ You can access the **inference API** service of BiRefNet on [FAL](https://fal.ai
 + https://fal.ai/models/fal-ai/birefnet/v2
 + https://ui.endpoints.huggingface.co/new?repository=ZhengPeng7/BiRefNet
 
-Our BiRefNet has achieved SOTA on many similar HR tasks:
+<details><summary>Our BiRefNet has achieved SOTA on many similar HR tasks:</summary>
+
+> Papers-with-code website has been shut down, but screenshots at that time have been kept.
 
 **DIS**: [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/bilateral-reference-for-high-resolution/dichotomous-image-segmentation-on-dis-te1)](https://paperswithcode.com/sota/dichotomous-image-segmentation-on-dis-te1?p=bilateral-reference-for-high-resolution) [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/bilateral-reference-for-high-resolution/dichotomous-image-segmentation-on-dis-te2)](https://paperswithcode.com/sota/dichotomous-image-segmentation-on-dis-te2?p=bilateral-reference-for-high-resolution) [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/bilateral-reference-for-high-resolution/dichotomous-image-segmentation-on-dis-te3)](https://paperswithcode.com/sota/dichotomous-image-segmentation-on-dis-te3?p=bilateral-reference-for-high-resolution) [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/bilateral-reference-for-high-resolution/dichotomous-image-segmentation-on-dis-te4)](https://paperswithcode.com/sota/dichotomous-image-segmentation-on-dis-te4?p=bilateral-reference-for-high-resolution) [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/bilateral-reference-for-high-resolution/dichotomous-image-segmentation-on-dis-vd)](https://paperswithcode.com/sota/dichotomous-image-segmentation-on-dis-vd?p=bilateral-reference-for-high-resolution)
 
@@ -120,6 +122,8 @@ Our BiRefNet has achieved SOTA on many similar HR tasks:
 <img src="https://drive.google.com/thumbnail?id=1A3V9HjVtcMQdnGPwuy-DBVhwKuo0q2lT&sz=w1620" />
 </details>
 <br />
+
+</details>
 
 #### Try our online demos for inference:
 
