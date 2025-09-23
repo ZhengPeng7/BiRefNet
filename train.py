@@ -32,14 +32,19 @@ config = Config()
 if args.use_accelerate:
     from accelerate import Accelerator, utils
     mixed_precision = config.mixed_precision
+    kwargs_handlers = [
+            utils.InitProcessGroupKwargs(backend="nccl", timeout=datetime.timedelta(seconds=3600*10)),
+            utils.DistributedDataParallelKwargs(find_unused_parameters=False),
+            utils.GradScalerKwargs(backoff_factor=0.5),
+    ]
+    if mixed_precision == 'fp8':
+        kwargs_handlers.append(utils.AORecipeKwargs())
     accelerator = Accelerator(
         mixed_precision=mixed_precision,
         gradient_accumulation_steps=1,
-        kwargs_handlers=[
-            utils.InitProcessGroupKwargs(backend="nccl", timeout=datetime.timedelta(seconds=3600*10)),
-            utils.DistributedDataParallelKwargs(find_unused_parameters=False),
-            utils.GradScalerKwargs(backoff_factor=0.5)],
+        kwargs_handlers=kwargs_handlers,
     )
+    accelerator.print(accelerator.state)
     args.dist = False
 
 # DDP

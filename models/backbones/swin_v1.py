@@ -1,15 +1,7 @@
-# --------------------------------------------------------
-# Swin Transformer
-# Copyright (c) 2021 Microsoft
-# Licensed under The MIT License [see LICENSE for details]
-# Written by Ze Liu, Yutong Lin, Yixuan Wei
-# --------------------------------------------------------
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.checkpoint as checkpoint
-import numpy as np
 from timm.layers import DropPath, to_2tuple, trunc_normal_
 
 from config import Config
@@ -84,9 +76,10 @@ class WindowAttention(nn.Module):
         proj_drop (float, optional): Dropout ratio of output. Default: 0.0
     """
 
-    def __init__(self, dim, window_size, num_heads, qkv_bias=True, qk_scale=None, attn_drop=0., proj_drop=0.):
+    def __init__(self, dim, window_size, num_heads, qkv_bias=True, qk_scale=None, attn_drop=0., proj_drop=0., sdpa_backend='auto'):
 
         super().__init__()
+        self.sdpa_backend = sdpa_backend
         self.dim = dim
         self.window_size = window_size  # Wh, Ww
         self.num_heads = num_heads
@@ -94,8 +87,7 @@ class WindowAttention(nn.Module):
         self.scale = qk_scale or head_dim ** -0.5
 
         # define a parameter table of relative position bias
-        self.relative_position_bias_table = nn.Parameter(
-            torch.zeros((2 * window_size[0] - 1) * (2 * window_size[1] - 1), num_heads))  # 2*Wh-1 * 2*Ww-1, nH
+        self.relative_position_bias_table = nn.Parameter(torch.zeros((2 * window_size[0] - 1) * (2 * window_size[1] - 1), num_heads))  # 2*Wh-1 * 2*Ww-1, nH
 
         # get pair-wise relative position index for each token inside the window
         coords_h = torch.arange(self.window_size[0])
@@ -127,35 +119,39 @@ class WindowAttention(nn.Module):
             mask: (0/-inf) mask with shape of (num_windows, Wh*Ww, Wh*Ww) or None
         """
         B_, N, C = x.shape
-        qkv = self.qkv(x).reshape(B_, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
-        q, k, v = qkv[0], qkv[1], qkv[2]  # make torchscript happy (cannot use tensor as tuple)
+        assert N == self.window_size[0] * self.window_size[1], "N must equal Wh*Ww for Swin window attention"
 
-        q = q * self.scale
+        qkv = self.qkv(x).reshape(B_, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
+        q, k, v = qkv.unbind(0)  # [B_, H, N, Dh]
+        relative_position_bias = self.relative_position_bias_table[self.relative_position_index.view(-1)].view(
+            N, N, -1
+        ).permute(2, 0, 1).unsqueeze(0).to(dtype=q.dtype, device=q.device)
+        if mask is not None:
+            mask = mask.to(dtype=q.dtype).unsqueeze(1)
 
         if config.SDPA_enabled:
-            x = torch.nn.functional.scaled_dot_product_attention(
-                q, k, v,
-                attn_mask=None, dropout_p=self.attn_drop_prob, is_causal=False
-            ).transpose(1, 2).reshape(B_, N, C)
-        else:
-            attn = (q @ k.transpose(-2, -1))
+            attn_mask = relative_position_bias
+            if mask is not None:
+                attn_mask = attn_mask + mask
 
-            relative_position_bias = self.relative_position_bias_table[self.relative_position_index.view(-1)].view(
-                self.window_size[0] * self.window_size[1], self.window_size[0] * self.window_size[1], -1
-            )   # Wh*Ww, Wh*Ww, nH
-            relative_position_bias = relative_position_bias.permute(2, 0, 1).contiguous()  # nH, Wh*Ww, Wh*Ww
-            attn = attn + relative_position_bias.unsqueeze(0)
+            attn_out = F.scaled_dot_product_attention(
+                q, k, v,
+                attn_mask=attn_mask,    # None or [B_|1, H|1, N, N]
+                dropout_p=self.attn_drop_prob if self.training else 0.0,
+                is_causal=False
+            )  # [B_, H, N, Dh]
+            x = attn_out.transpose(1, 2).reshape(B_, N, C)
+        else:
+            q = q * self.scale
+            attn = q @ k.transpose(-2, -1)
+            attn = attn + relative_position_bias
 
             if mask is not None:
                 nW = mask.shape[0]
-                attn = attn.view(B_ // nW, nW, self.num_heads, N, N) + mask.unsqueeze(1).unsqueeze(0)
+                attn = attn.view(B_ // nW, nW, self.num_heads, N, N) + mask.unsqueeze(0)
                 attn = attn.view(-1, self.num_heads, N, N)
-                attn = self.softmax(attn)
-            else:
-                attn = self.softmax(attn)
-
+            attn = self.softmax(attn)
             attn = self.attn_drop(attn)
-
             x = (attn @ v).transpose(1, 2).reshape(B_, N, C)
         x = self.proj(x)
         x = self.proj_drop(x)
@@ -230,7 +226,12 @@ class SwinTransformerBlock(nn.Module):
         # cyclic shift
         if self.shift_size > 0:
             shifted_x = torch.roll(x, shifts=(-self.shift_size, -self.shift_size), dims=(1, 2))
-            attn_mask = mask_matrix
+            if config.SDPA_enabled:
+                B = x.size(0)
+                nW, N = mask_matrix.size(0), mask_matrix.size(1)
+                attn_mask = mask_matrix.unsqueeze(0).expand(B, nW, N, N).reshape(B * nW, N, N)
+            else:
+                attn_mask = mask_matrix
         else:
             shifted_x = x
             attn_mask = None
@@ -396,7 +397,7 @@ class BasicLayer(nn.Module):
         mask_windows = window_partition(img_mask, self.window_size)  # nW, window_size, window_size, 1
         mask_windows = mask_windows.view(-1, self.window_size * self.window_size)
         attn_mask = mask_windows.unsqueeze(1) - mask_windows.unsqueeze(2)
-        attn_mask = attn_mask.masked_fill(attn_mask != 0, float(-100.0)).masked_fill(attn_mask == 0, float(0.0)).to(x.dtype)
+        attn_mask = attn_mask.masked_fill(attn_mask != 0, float('-inf')).masked_fill(attn_mask == 0, float(0.0)).to(x.dtype)
 
         for blk in self.blocks:
             blk.H, blk.W = H, W

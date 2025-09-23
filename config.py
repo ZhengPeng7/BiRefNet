@@ -173,7 +173,9 @@ class Config():
         # Callbacks - inactive
         self.verbose_eval = True
         self.only_S_MAE = False
-        self.SDPA_enabled = False    # Bugs. Slower and errors occur in multi-GPUs
+        self.SDPA_enabled = True
+        # H200x1 + compilation: True.  None: 43GB + 14s, math: 43GB + 15s, mem_eff: 35GB + 15s.
+        # H200x1 + compilation: False. None: 54GB + 25s, math: 51GB + 26s, mem_eff: 40GB + 25s.
 
         # others
         self.device = [0, 'cpu'][0]     # .to(0) == .to('cuda:0')
