@@ -11,7 +11,7 @@ if tuple(map(int, torch.__version__.split('+')[0].split(".")[:3])) >= (2, 5, 0):
 from config import Config
 from loss import PixLoss, ClsLoss
 from dataset import MyData
-from models.birefnet import BiRefNet, BiRefNetC2F
+from models.birefnet import BiRefNet
 from utils import Logger, AverageMeter, set_seed, check_state_dict
 
 from torch.utils.data.distributed import DistributedSampler
@@ -107,8 +107,9 @@ def init_models_optimizers(epochs, to_be_distributed):
     # Init models
     if config.model == 'BiRefNet':
         model = BiRefNet(bb_pretrained=True and not os.path.isfile(str(args.resume)))
-    elif config.model == 'BiRefNetC2F':
-        model = BiRefNetC2F(bb_pretrained=True and not os.path.isfile(str(args.resume)))
+    else:
+        print('Undefined model: {}.'.format(config.model))
+        return None
     if args.resume:
         if os.path.isfile(args.resume):
             logger.info("=> loading checkpoint '{}'".format(args.resume))

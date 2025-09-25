@@ -39,7 +39,7 @@ def do_eval(args):
                 pred_paths=pred_paths,
                 metrics=args.metrics.split('+'),
                 verbose=config.verbose_eval,
-                num_workers=8,
+                num_workers=min(8, int(os.cpu_count() * 0.9)),
             )
             scores = sort_and_round_scores(config.task, [em, sm, fm, mae, mse, wfm, hce, mba, biou])
             for idx_score, score in enumerate(scores):

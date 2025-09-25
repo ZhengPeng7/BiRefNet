@@ -4,6 +4,13 @@ import math
 
 class Config():
     def __init__(self) -> None:
+        # Main active settings
+        self.batch_size = 2                                     # Multi-GPU+BF16 training for 76GB / 62GB, without / with compile, on each A100.
+        self.compile = False                                     # 1. Trigger CPU memory leak in some extend, which is an inherent problem of PyTorch.
+        self.mixed_precision = ['no', 'fp16', 'bf16', 'fp8'][1] # 2. FP8 doesn't show acceleration in the torch.compile mode.
+        self.SDPA_enabled = True                                # H200x1 + compile==True.  None: 43GB + 14s, math: 43GB + 15s, mem_eff: 35GB + 15s.
+                                                                # H200x1 + compile==False. None: 54GB + 25s, math: 51GB + 26s, mem_eff: 40GB + 25s.
+
         # PATH settings
         # Make up your file system as: SYS_HOME_DIR/codes/dis/BiRefNet, SYS_HOME_DIR/datasets/dis/xx, SYS_HOME_DIR/weights/xx
         self.sys_home_dir = [os.path.expanduser('~'), '/workspace'][1]   # Default, custom
@@ -37,13 +44,11 @@ class Config():
         self.background_color_synthesis = False             # whether to use pure bg color to replace the original backgrounds.
 
         # Faster-Training settings
-        self.mixed_precision = ['no', 'fp16', 'bf16', 'fp8'][1]
-        self.load_all = False and self.dynamic_size is None   # Turn it on/off by your case. It may consume a lot of CPU memory. And for multi-GPU (N), it would cost N times the CPU memory to load the data.
-        self.compile = True                             # 1. Trigger CPU memory leak in some extend, which is an inherent problem of PyTorch.
-                                                        #   Machines with > 70GB CPU memory can run the whole training on DIS5K with default setting.
-                                                        # 2. Higher PyTorch version may fix it: https://github.com/pytorch/pytorch/issues/119607.
-                                                        # 3. But compile in 2.0.1 < Pytorch < 2.5.0 seems to bring no acceleration for training.
         self.precisionHigh = True
+        self.load_all = False and self.dynamic_size is None     # Turn it on/off by your case. It may consume a lot of CPU memory. And for multi-GPU (N), it would cost N times the CPU memory to load the data.
+                                                                #   Machines with > 70GB CPU memory can run the whole training on DIS5K with default setting.
+                                                                # 2. Higher PyTorch version may fix it: https://github.com/pytorch/pytorch/issues/119607.
+                                                                # 3. But compile in 2.0.1 < Pytorch < 2.5.0 seems to bring no acceleration for training.
 
         # MODEL settings
         self.ms_supervision = True
@@ -57,7 +62,6 @@ class Config():
         self.dec_blk = ['BasicDecBlk', 'ResBlk'][0]
 
         # TRAINING settings
-        self.batch_size = 4
         self.finetune_last_epochs = [
             0,
             {
@@ -94,16 +98,10 @@ class Config():
         # MODEL settings - inactive
         self.lat_blk = ['BasicLatBlk'][0]
         self.dec_channels_inter = ['fixed', 'adap'][0]
-        self.refine = ['', 'itself', 'RefUNet', 'Refiner', 'RefinerPVTInChannels4'][0]
-        self.progressive_ref = self.refine and True
-        self.ender = self.progressive_ref and False
-        self.scale = self.progressive_ref and 2
         self.auxiliary_classification = False       # Only for DIS5K, where class labels are saved in `dataset.py`.
-        self.refine_iteration = 1
         self.freeze_bb = False
         self.model = [
             'BiRefNet',
-            'BiRefNetC2F',
         ][0]
 
         # TRAINING settings - inactive
@@ -173,9 +171,6 @@ class Config():
         # Callbacks - inactive
         self.verbose_eval = True
         self.only_S_MAE = False
-        self.SDPA_enabled = True
-        # H200x1 + compilation: True.  None: 43GB + 14s, math: 43GB + 15s, mem_eff: 35GB + 15s.
-        # H200x1 + compilation: False. None: 54GB + 25s, math: 51GB + 26s, mem_eff: 40GB + 25s.
 
         # others
         self.device = [0, 'cpu'][0]     # .to(0) == .to('cuda:0')

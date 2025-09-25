@@ -199,11 +199,11 @@ You can access the **inference API** service of BiRefNet on [FAL](https://fal.ai
 |  4090   | 95.8ms | 57.7ms |
 |  V100   | 384ms  | 152ms  |
 
-| GPU Memory | *FP32* | *FP16* |
+| GPU Memory | *FP32* | *FP16/BF16* |
 | :--------: | :----: | :----: |
-| Inference  | 4.76GB | 3.45GB |
-| Training (\#GPU=1, batch\_size=2, compile=False+PyTorch=2.5.1) | 36.3GB | 30.4GB |
-| Training (\#GPU=1, batch\_size=2, compile=True+PyTorch=2.5.1) | 35.9GB | **22.5GB (4090), 23.5GB (A100)** |
+| Inference  | 4.8GB | 3.5GB |
+| Training (\#GPU=2, batch\_size=2, compile=False+PyTorch=2.8.0) | 38.2GB (A100) | 28.5GB (A100) |
+| Training (\#GPU=2, batch\_size=2, compile=True+PyTorch=2.8.0) | 35.6GB (A100) | **23.5GB (4090), 23.9GB (A100)** |
 
 </details>
 
@@ -318,8 +318,8 @@ Choose the one you like to try with clicks instead of codes:
 #### Environment Setup
 
 ```shell
-# PyTorch==2.5.1+CUDA12.4 (or 2.0.1+CUDA11.8) is used for faster training (~40%) with compilation.
-conda create -n birefnet python=3.10 -y && conda activate birefnet
+# PyTorch>=2.5.0 (I try to make everything as latest as possible) is used for faster training (~40%) with compilation.
+conda create -n birefnet python=3.11 -y && conda activate birefnet
 pip install -r requirements.txt
 ```
 

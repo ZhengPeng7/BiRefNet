@@ -11,6 +11,7 @@ einops
 tqdm
 prettytable
 tabulate
+ipykernel
 
 huggingface-hub>0.25
 accelerate
