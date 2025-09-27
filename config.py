@@ -74,21 +74,23 @@ class Config():
             }[self.task]
         ][1]    # choose 0 to skip
         self.lr = (1e-4 if 'DIS5K' in self.task else 1e-5) * math.sqrt(self.batch_size / 4)     # DIS needs high lr to converge faster. Adapt the lr linearly
-        self.num_workers = max(4, self.batch_size)          # will be decrease to min(it, batch_size) at the initialization of the data_loader
+        self.num_workers = max(4, self.batch_size)          # will be decreased to min(it, batch_size) at the initialization of the data_loader
 
         # Backbone settings
         self.bb = [
-            'vgg16', 'vgg16bn', 'resnet50',         # 0, 1, 2
-            'swin_v1_t', 'swin_v1_s',               # 3, 4
-            'swin_v1_b', 'swin_v1_l',               # 5-bs9, 6-bs4
-            'pvt_v2_b0', 'pvt_v2_b1',               # 7, 8
-            'pvt_v2_b2', 'pvt_v2_b5',               # 9-bs10, 10-bs5
-        ][6]
+            'vgg16', 'vgg16bn', 'resnet50',
+
+            'swin_v1_l', 'swin_v1_b',
+            'swin_v1_s', 'swin_v1_t',
+
+            'pvt_v2_b5', 'pvt_v2_b2',
+            'pvt_v2_b1', 'pvt_v2_b0',
+        ][3]
         self.lateral_channels_in_collection = {
             'vgg16': [512, 512, 256, 128], 'vgg16bn': [512, 512, 256, 128], 'resnet50': [2048, 1024, 512, 256],
-            'pvt_v2_b2': [512, 320, 128, 64], 'pvt_v2_b5': [512, 320, 128, 64],
             'swin_v1_b': [1024, 512, 256, 128], 'swin_v1_l': [1536, 768, 384, 192],
             'swin_v1_t': [768, 384, 192, 96], 'swin_v1_s': [768, 384, 192, 96],
+            'pvt_v2_b5': [512, 320, 128, 64], 'pvt_v2_b2': [512, 320, 128, 64],
             'pvt_v2_b0': [256, 160, 64, 32], 'pvt_v2_b1': [512, 320, 128, 64],
         }[self.bb]
         if self.mul_scl_ipt == 'cat':
@@ -158,14 +160,14 @@ class Config():
         # PATH settings - inactive
         self.weights_root_dir = os.path.join(self.sys_home_dir, 'weights/cv')
         self.weights = {
+            'swin_v1_l': os.path.join(self.weights_root_dir, 'swin_large_patch4_window12_384_22kto1k.pth'),
+            'swin_v1_b': os.path.join(self.weights_root_dir, 'swin_base_patch4_window12_384_22kto1k.pth'),
+            'swin_v1_t': os.path.join(self.weights_root_dir, 'swin_tiny_patch4_window7_224_22kto1k_finetune.pth'),
+            'swin_v1_s': os.path.join(self.weights_root_dir, 'swin_small_patch4_window7_224_22kto1k_finetune.pth'),
+            'pvt_v2_b5': os.path.join(self.weights_root_dir, 'pvt_v2_b5.pth'),
             'pvt_v2_b2': os.path.join(self.weights_root_dir, 'pvt_v2_b2.pth'),
-            'pvt_v2_b5': os.path.join(self.weights_root_dir, ['pvt_v2_b5.pth', 'pvt_v2_b5_22k.pth'][0]),
-            'swin_v1_b': os.path.join(self.weights_root_dir, ['swin_base_patch4_window12_384_22kto1k.pth', 'swin_base_patch4_window12_384_22k.pth'][0]),
-            'swin_v1_l': os.path.join(self.weights_root_dir, ['swin_large_patch4_window12_384_22kto1k.pth', 'swin_large_patch4_window12_384_22k.pth'][0]),
-            'swin_v1_t': os.path.join(self.weights_root_dir, ['swin_tiny_patch4_window7_224_22kto1k_finetune.pth'][0]),
-            'swin_v1_s': os.path.join(self.weights_root_dir, ['swin_small_patch4_window7_224_22kto1k_finetune.pth'][0]),
-            'pvt_v2_b0': os.path.join(self.weights_root_dir, ['pvt_v2_b0.pth'][0]),
-            'pvt_v2_b1': os.path.join(self.weights_root_dir, ['pvt_v2_b1.pth'][0]),
+            'pvt_v2_b1': os.path.join(self.weights_root_dir, 'pvt_v2_b1.pth'),
+            'pvt_v2_b0': os.path.join(self.weights_root_dir, 'pvt_v2_b0.pth'),
         }
 
         # Callbacks - inactive
