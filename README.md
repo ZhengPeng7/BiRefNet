@@ -229,6 +229,10 @@ Choose the one you like to try with clicks instead of codes:
 
 1. **Applications**:
 
+   + Thanks [**veeliks/invoke_birefnet**](https://github.com/veeliks/invoke_birefnet): this project integrates BiRefNet as a node into the **[Invoke framework](https://github.com/invoke-ai/InvokeAI)**.
+
+     <p align="center"><img src="https://github.com/veeliks/invoke_birefnet/blob/main/.readme/invoke_workflow_example_v2.png" height="300"/></p>
+
    + Thanks [**tin2tin/2D_Asset_Generator**](https://github.com/tin2tin/2D_Asset_Generator): this project combined BiRefNet and FLUX as a **Blender add-on** for "AI generating 2D cutout assets for ex. previz".
 
      https://github.com/user-attachments/assets/6cce7ca7-7817-4406-b6c4-6d4e8c414ed4
