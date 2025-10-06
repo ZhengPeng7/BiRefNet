@@ -10,6 +10,7 @@ class Config():
         self.mixed_precision = ['no', 'fp16', 'bf16', 'fp8'][1] # 2. FP8 doesn't show acceleration in the torch.compile mode.
         self.SDPA_enabled = True                                # H200x1 + compile==True.  None: 43GB + 14s, math: 43GB + 15s, mem_eff: 35GB + 15s.
                                                                 # H200x1 + compile==False. None: 54GB + 25s, math: 51GB + 26s, mem_eff: 40GB + 25s.
+        self.freeze_bb = False                                  # whether to freeze the backbone
 
         # PATH settings
         # Make up your file system as: SYS_HOME_DIR/codes/dis/BiRefNet, SYS_HOME_DIR/datasets/dis/xx, SYS_HOME_DIR/weights/xx
@@ -85,13 +86,21 @@ class Config():
 
             'pvt_v2_b5', 'pvt_v2_b2',
             'pvt_v2_b1', 'pvt_v2_b0',
+
+            'dino_v3_7b', 'dino_v3_h_plus', 'dino_v3_l',
+            'dino_v3_b', 'dino_v3_s_plus', 'dino_v3_s',
         ][3]
         self.lateral_channels_in_collection = {
             'vgg16': [512, 512, 256, 128], 'vgg16bn': [512, 512, 256, 128], 'resnet50': [2048, 1024, 512, 256],
-            'swin_v1_b': [1024, 512, 256, 128], 'swin_v1_l': [1536, 768, 384, 192],
-            'swin_v1_t': [768, 384, 192, 96], 'swin_v1_s': [768, 384, 192, 96],
+
+            'dino_v3_7b': [4096] * 4, 'dino_v3_h_plus': [1280] * 4, 'dino_v3_l': [1024] * 4,
+            'dino_v3_b': [768] * 4, 'dino_v3_s_plus': [384] * 4, 'dino_v3_s': [384] * 4,
+
+            'swin_v1_l': [1536, 768, 384, 192], 'swin_v1_b': [1024, 512, 256, 128],
+            'swin_v1_s': [768, 384, 192, 96], 'swin_v1_t': [768, 384, 192, 96],
+
             'pvt_v2_b5': [512, 320, 128, 64], 'pvt_v2_b2': [512, 320, 128, 64],
-            'pvt_v2_b0': [256, 160, 64, 32], 'pvt_v2_b1': [512, 320, 128, 64],
+            'pvt_v2_b1': [512, 320, 128, 64], 'pvt_v2_b0': [256, 160, 64, 32],
         }[self.bb]
         if self.mul_scl_ipt == 'cat':
             self.lateral_channels_in_collection = [channel * 2 for channel in self.lateral_channels_in_collection]
@@ -101,7 +110,6 @@ class Config():
         self.lat_blk = ['BasicLatBlk'][0]
         self.dec_channels_inter = ['fixed', 'adap'][0]
         self.auxiliary_classification = False       # Only for DIS5K, where class labels are saved in `dataset.py`.
-        self.freeze_bb = False
         self.model = [
             'BiRefNet',
         ][0]
@@ -159,16 +167,26 @@ class Config():
 
         # PATH settings - inactive
         self.weights_root_dir = os.path.join(self.sys_home_dir, 'weights/cv')
-        self.weights = {
-            'swin_v1_l': os.path.join(self.weights_root_dir, 'swin_large_patch4_window12_384_22kto1k.pth'),
-            'swin_v1_b': os.path.join(self.weights_root_dir, 'swin_base_patch4_window12_384_22kto1k.pth'),
-            'swin_v1_t': os.path.join(self.weights_root_dir, 'swin_tiny_patch4_window7_224_22kto1k_finetune.pth'),
-            'swin_v1_s': os.path.join(self.weights_root_dir, 'swin_small_patch4_window7_224_22kto1k_finetune.pth'),
-            'pvt_v2_b5': os.path.join(self.weights_root_dir, 'pvt_v2_b5.pth'),
-            'pvt_v2_b2': os.path.join(self.weights_root_dir, 'pvt_v2_b2.pth'),
-            'pvt_v2_b1': os.path.join(self.weights_root_dir, 'pvt_v2_b1.pth'),
-            'pvt_v2_b0': os.path.join(self.weights_root_dir, 'pvt_v2_b0.pth'),
+        model_name_to_weights_file = {
+            'dino_v3_7b': 'vit_7b_patch16_dinov3.lvd1689m.pth', 'dino_v3_h_plus': 'vit_huge_plus_patch16_dinov3.lvd1689m.pth',
+            'dino_v3_l': 'vit_large_patch16_dinov3.lvd1689m.pth', 'dino_v3_b': 'vit_base_patch16_dinov3.lvd1689m.pth',
+            'dino_v3_s_plus': 'vit_small_plus_patch16_dinov3.lvd1689m.pth', 'dino_v3_s': 'vit_small_patch16_dinov3.lvd1689m.pth',
+            'swin_v1_l': 'swin_large_patch4_window12_384_22kto1k.pth', 'swin_v1_b': 'swin_base_patch4_window12_384_22kto1k.pth',
+            'swin_v1_t': 'swin_tiny_patch4_window7_224_22kto1k_finetune.pth', 'swin_v1_s': 'swin_small_patch4_window7_224_22kto1k_finetune.pth',
+            'pvt_v2_b5': 'pvt_v2_b5.pth', 'pvt_v2_b2': 'pvt_v2_b2.pth', 'pvt_v2_b1': 'pvt_v2_b1.pth', 'pvt_v2_b0': 'pvt_v2_b0.pth',
         }
+        self.weights = {}
+        for model_name, weights_file in model_name_to_weights_file.items():
+            if 'dino_v3' in model_name:
+                model_name_dir = 'DINOv3-timm'
+            elif 'swin_v1' in model_name:
+                model_name_dir = ''
+            elif 'pvt_v2' in model_name:
+                model_name_dir = ''
+            else:
+                model_name_dir = ''
+            self.weights[model_name] = os.path.join(self.weights_root_dir, model_name_dir, weights_file)
+
 
         # Callbacks - inactive
         self.verbose_eval = True

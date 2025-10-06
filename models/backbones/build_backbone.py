@@ -4,6 +4,7 @@ from collections import OrderedDict
 from torchvision.models import vgg16, vgg16_bn, VGG16_Weights, VGG16_BN_Weights, resnet50, ResNet50_Weights
 from models.backbones.pvt_v2 import pvt_v2_b0, pvt_v2_b1, pvt_v2_b2, pvt_v2_b5
 from models.backbones.swin_v1 import swin_v1_t, swin_v1_s, swin_v1_b, swin_v1_l
+from models.backbones.dino_v3 import dino_v3_s, dino_v3_s_plus, dino_v3_b, dino_v3_l, dino_v3_h_plus, dino_v3_7b, vit_model_to_out_indices
 from config import Config
 
 
