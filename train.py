@@ -45,6 +45,7 @@ if args.use_accelerate:
         kwargs_handlers=kwargs_handlers,
     )
     accelerator.print(accelerator.state)
+    accelerator.print('backbone:', config.bb, ', freeze_bb:', config.freeze_bb)
     args.dist = False
 
 # DDP

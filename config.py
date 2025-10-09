@@ -5,12 +5,11 @@ import math
 class Config():
     def __init__(self) -> None:
         # Main active settings
-        self.batch_size = 6                                     # Multi-GPU+BF16 training for 76GB / 62GB, without/with compile, on each A100.
+        self.batch_size = 8                                     # Multi-GPU+BF16 training for 76GB / 62GB, without/with compile, on each A100.
         self.compile = True                                     # 1. PyTorch<=2.0.1 has an inherent CPU memory leak problem; 2.0.1<PyTorch<2.5.0 cannot successfully compile.
-        self.mixed_precision = ['no', 'fp16', 'bf16', 'fp8'][1] # 2. FP8 doesn't show acceleration in the torch.compile mode.
+        self.mixed_precision = ['no', 'fp16', 'bf16', 'fp8'][2] # 2. FP8 doesn't show acceleration in the torch.compile mode.
         self.SDPA_enabled = True                                # H200x1 + compile==True.  None: 43GB + 14s, math: 43GB + 15s, mem_eff: 35GB + 15s.
                                                                 # H200x1 + compile==False. None: 54GB + 25s, math: 51GB + 26s, mem_eff: 40GB + 25s.
-        self.freeze_bb = False                                  # whether to freeze the backbone
 
         # PATH settings
         # Make up your file system as: SYS_HOME_DIR/codes/dis/BiRefNet, SYS_HOME_DIR/datasets/dis/xx, SYS_HOME_DIR/weights/xx
@@ -90,6 +89,7 @@ class Config():
             'dino_v3_7b', 'dino_v3_h_plus', 'dino_v3_l',
             'dino_v3_b', 'dino_v3_s_plus', 'dino_v3_s',
         ][3]
+        self.freeze_bb = 'dino_v3' in self.bb
         self.lateral_channels_in_collection = {
             'vgg16': [512, 512, 256, 128], 'vgg16bn': [512, 512, 256, 128], 'resnet50': [2048, 1024, 512, 256],
 

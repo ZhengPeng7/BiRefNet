@@ -56,7 +56,6 @@ class BiRefNet(
 
         if self.config.freeze_bb:
             # Freeze the backbone...
-            print(self.named_parameters())
             for key, value in self.named_parameters():
                 if 'bb.' in key and 'refiner.' not in key:
                     value.requires_grad = False
@@ -124,6 +123,15 @@ class Decoder(nn.Module):
         DecoderBlock = eval(self.config.dec_blk)
         LateralBlock = eval(self.config.lat_blk)
 
+        self.bbs_without_pyramid = ['vit', 'dino']
+        self.use_pyramid_neck = any(bb_without_pyramid in self.config.bb for bb_without_pyramid in self.bbs_without_pyramid)
+        if self.use_pyramid_neck:
+            self.manually_controlled_decoder_in_channels = [c * (1 + int(self.config.mul_scl_ipt == 'cat')) for c in (1536, 768, 384, 192)]     # Use the channels of swin_v1_l as default.
+            self.pyramid_neck_x4 = LateralBlock(channels[0], self.manually_controlled_decoder_in_channels[0])
+            self.pyramid_neck_x3 = LateralBlock(channels[1], self.manually_controlled_decoder_in_channels[1])
+            self.pyramid_neck_x2 = LateralBlock(channels[2], self.manually_controlled_decoder_in_channels[2])
+            self.pyramid_neck_x1 = LateralBlock(channels[3], self.manually_controlled_decoder_in_channels[3])
+
         if self.config.dec_ipt:
             self.split = self.config.dec_ipt_split
             N_dec_ipt = 64
@@ -140,26 +148,35 @@ class Decoder(nn.Module):
         else:
             self.split = None
 
-        self.decoder_block4 = DecoderBlock(channels[0]+(ipt_blk_out_channels[0] if self.config.dec_ipt else 0), channels[1])
-        self.decoder_block3 = DecoderBlock(channels[1]+(ipt_blk_out_channels[0] if self.config.dec_ipt else 0), channels[2])
-        self.decoder_block2 = DecoderBlock(channels[2]+(ipt_blk_out_channels[1] if self.config.dec_ipt else 0), channels[3])
-        self.decoder_block1 = DecoderBlock(channels[3]+(ipt_blk_out_channels[2] if self.config.dec_ipt else 0), channels[3]//2)
-        self.conv_out1 = nn.Sequential(nn.Conv2d(channels[3]//2+(ipt_blk_out_channels[3] if self.config.dec_ipt else 0), 1, 1, 1, 0))
+        if self.use_pyramid_neck:
+            bb_neck_out_channels = [c for c in self.manually_controlled_decoder_in_channels]
+        else:
+            bb_neck_out_channels = channels.copy()
+        dec_blk_out_channels = [c for c in bb_neck_out_channels[1:]] + [bb_neck_out_channels[-1] // 2]
+        if self.config.dec_ipt:
+            dec_blk_in_channels = [bb_neck_out_channels[i] + ipt_blk_out_channels[max(0, i - 1)] for i in range(len(bb_neck_out_channels))]
 
-        self.lateral_block4 = LateralBlock(channels[1], channels[1])
-        self.lateral_block3 = LateralBlock(channels[2], channels[2])
-        self.lateral_block2 = LateralBlock(channels[3], channels[3])
+        self.decoder_block4 = DecoderBlock(dec_blk_in_channels[0], dec_blk_out_channels[0])
+        self.decoder_block3 = DecoderBlock(dec_blk_in_channels[1], dec_blk_out_channels[1])
+        self.decoder_block2 = DecoderBlock(dec_blk_in_channels[2], dec_blk_out_channels[2])
+        self.decoder_block1 = DecoderBlock(dec_blk_in_channels[3], dec_blk_out_channels[3])
+        self.conv_out1 = nn.Sequential(nn.Conv2d(dec_blk_out_channels[3] + (ipt_blk_out_channels[3] if self.config.dec_ipt else 0), 1, 1, 1, 0))
+
+        # Backbone+PyramidNeck --> lateral block --> DecoderBlock
+        self.lateral_block4 = LateralBlock(bb_neck_out_channels[1], dec_blk_out_channels[0])
+        self.lateral_block3 = LateralBlock(bb_neck_out_channels[2], dec_blk_out_channels[1])
+        self.lateral_block2 = LateralBlock(bb_neck_out_channels[3], dec_blk_out_channels[2])
 
         if self.config.ms_supervision:
-            self.conv_ms_spvn_4 = nn.Conv2d(channels[1], 1, 1, 1, 0)
-            self.conv_ms_spvn_3 = nn.Conv2d(channels[2], 1, 1, 1, 0)
-            self.conv_ms_spvn_2 = nn.Conv2d(channels[3], 1, 1, 1, 0)
+            self.conv_ms_spvn_4 = nn.Conv2d(dec_blk_out_channels[0], 1, 1, 1, 0)
+            self.conv_ms_spvn_3 = nn.Conv2d(dec_blk_out_channels[1], 1, 1, 1, 0)
+            self.conv_ms_spvn_2 = nn.Conv2d(dec_blk_out_channels[2], 1, 1, 1, 0)
 
             if self.config.out_ref:
                 _N = 16
-                self.gdt_convs_4 = nn.Sequential(nn.Conv2d(channels[1], _N, 3, 1, 1), nn.BatchNorm2d(_N) if self.config.batch_size > 1 else nn.Identity(), nn.ReLU(inplace=True))
-                self.gdt_convs_3 = nn.Sequential(nn.Conv2d(channels[2], _N, 3, 1, 1), nn.BatchNorm2d(_N) if self.config.batch_size > 1 else nn.Identity(), nn.ReLU(inplace=True))
-                self.gdt_convs_2 = nn.Sequential(nn.Conv2d(channels[3], _N, 3, 1, 1), nn.BatchNorm2d(_N) if self.config.batch_size > 1 else nn.Identity(), nn.ReLU(inplace=True))
+                self.gdt_convs_4 = nn.Sequential(nn.Conv2d(dec_blk_out_channels[0], _N, 3, 1, 1), nn.BatchNorm2d(_N) if self.config.batch_size > 1 else nn.Identity(), nn.ReLU(inplace=True))
+                self.gdt_convs_3 = nn.Sequential(nn.Conv2d(dec_blk_out_channels[1], _N, 3, 1, 1), nn.BatchNorm2d(_N) if self.config.batch_size > 1 else nn.Identity(), nn.ReLU(inplace=True))
+                self.gdt_convs_2 = nn.Sequential(nn.Conv2d(dec_blk_out_channels[2], _N, 3, 1, 1), nn.BatchNorm2d(_N) if self.config.batch_size > 1 else nn.Identity(), nn.ReLU(inplace=True))
 
                 self.gdt_convs_pred_4 = nn.Sequential(nn.Conv2d(_N, 1, 1, 1, 0))
                 self.gdt_convs_pred_3 = nn.Sequential(nn.Conv2d(_N, 1, 1, 1, 0))
@@ -177,19 +194,23 @@ class Decoder(nn.Module):
         else:
             x, x1, x2, x3, x4 = features
         size_x1_to_x4_template = [(x.shape[2] // (2 ** i), x.shape[3] // (2 ** i)) for i in (2, 3, 4, 5)]
-        bbs_without_pyramid = ['vit', 'dino']
-        if any(bb_without_pyramid in self.config.bb for bb_without_pyramid in bbs_without_pyramid):
+        if self.use_pyramid_neck:
             x1 = F.interpolate(x1, size=size_x1_to_x4_template[0], mode='bilinear', align_corners=True)
+            x1 = self.pyramid_neck_x1(x1)
+
             x2 = F.interpolate(x2, size=size_x1_to_x4_template[1], mode='bilinear', align_corners=True)
+            x2 = self.pyramid_neck_x2(x2)
+
             x3 = F.interpolate(x3, size=size_x1_to_x4_template[2], mode='bilinear', align_corners=True)
+            x3 = self.pyramid_neck_x3(x3)
+
             x4 = F.interpolate(x4, size=size_x1_to_x4_template[3], mode='bilinear', align_corners=True)
+            x4 = self.pyramid_neck_x4(x4)
         outs = []
 
         if self.config.dec_ipt:
             patches_batch = image2patches(x, patch_ref=x4, transformation='b c (hg h) (wg w) -> b (c hg wg) h w') if self.split else x
-            tt = F.interpolate(patches_batch, size=x4.shape[2:], mode='bilinear', align_corners=True)
-            t = self.ipt_blk5(tt)
-            x4 = torch.cat((x4, t), 1)
+            x4 = torch.cat((x4, self.ipt_blk5(F.interpolate(patches_batch, size=x4.shape[2:], mode='bilinear', align_corners=True))), 1)
         p4 = self.decoder_block4(x4)
         m4 = self.conv_ms_spvn_4(p4) if self.config.ms_supervision and self.training else None
         if self.config.out_ref:
