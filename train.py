@@ -134,9 +134,9 @@ def init_models_optimizers(epochs, to_be_distributed):
 
     # Setting optimizer
     if config.optimizer == 'AdamW':
-        optimizer = optim.AdamW(params=model.parameters(), lr=config.lr, weight_decay=1e-2)
+        optimizer = optim.AdamW(params=[p for p in model.parameters() if p.requires_grad], lr=config.lr, weight_decay=1e-2)
     elif config.optimizer == 'Adam':
-        optimizer = optim.Adam(params=model.parameters(), lr=config.lr, weight_decay=0)
+        optimizer = optim.Adam(params=[p for p in model.parameters() if p.requires_grad], lr=config.lr, weight_decay=0)
     lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(
         optimizer,
         milestones=[lde if lde > 0 else epochs + lde + 1 for lde in config.lr_decay_epochs],
