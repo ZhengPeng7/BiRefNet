@@ -229,13 +229,21 @@ Choose the one you like to try with clicks instead of codes:
 
 1. **Applications**:
 
+   + Thanks [**unscreen.pro**](https://unscreen.pro): this project has deployed BiRefNet as the backend model for online video background removal service.
+
+    <div align="center">
+        <video src="https://github.com/user-attachments/assets/221ee6eb-9c1f-4bca-b233-7e6fe8b8103e">
+    </div>
+
    + Thanks [**veeliks/invoke_birefnet**](https://github.com/veeliks/invoke_birefnet): this project integrates BiRefNet as a node into the **[Invoke framework](https://github.com/invoke-ai/InvokeAI)**.
 
      <p align="center"><img src="https://github.com/veeliks/invoke_birefnet/blob/main/.readme/invoke_workflow_example_v2.png" height="300"/></p>
 
    + Thanks [**tin2tin/2D_Asset_Generator**](https://github.com/tin2tin/2D_Asset_Generator): this project combined BiRefNet and FLUX as a **Blender add-on** for "AI generating 2D cutout assets for ex. previz".
 
-     https://github.com/user-attachments/assets/6cce7ca7-7817-4406-b6c4-6d4e8c414ed4
+    <div align="center">
+        <video src="https://github.com/user-attachments/assets/6cce7ca7-7817-4406-b6c4-6d4e8c414ed4">
+    </div>
 
    + Thanks [**camenduru/text-behind-tost**](https://github.com/camenduru/text-behind-tost): this project employed BiRefNet to extract foreground subjects and **add texts between the subjects and background**, which looks amazing especially for videos. Check their [tweets](https://x.com/camenduru/status/1856290408294220010) for more examples.
 
@@ -265,7 +273,7 @@ Choose the one you like to try with clicks instead of codes:
 
    + Thanks [**Rishabh**](https://github.com/rishabh063) for offering a demo for the [easier multiple images inference on colab](https://colab.research.google.com/drive/14Dqg7oeBkFEtchaHLNpig2BcdkZEogba).
 
-2. **Model Extensions**
+3. **Model Extensions**
 
    + Thanks [**MatteoKartoon/BiRefNet**](https://github.com/MatteoKartoon/BiRefNet): this project fine-tuned BiRefNet with their **custom anime data** to obtain their model **ToonOut**, which brings improvement on the background-removal task for anime images. See [their paper on arXiv](https://arxiv.org/pdf/2509.06839).
 
