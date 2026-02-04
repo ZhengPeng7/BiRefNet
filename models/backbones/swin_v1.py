@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -529,7 +530,7 @@ class SwinTransformer(nn.Module):
         self.pos_drop = nn.Dropout(p=drop_rate)
 
         # stochastic depth
-        dpr = [x.item() for x in torch.linspace(0, drop_path_rate, sum(depths))]  # stochastic depth decay rule
+        dpr = np.linspace(0, drop_path_rate, sum(depths)).tolist()  # stochastic depth decay rule
 
         # build layers
         self.layers = nn.ModuleList()
@@ -588,7 +589,7 @@ class SwinTransformer(nn.Module):
             # interpolate the position embedding to the corresponding size
             absolute_pos_embed = F.interpolate(self.absolute_pos_embed, size=(Wh, Ww), mode='bicubic')
             x = (x + absolute_pos_embed) # B Wh*Ww C
-            
+
         outs = []#x.contiguous()]
         x = x.flatten(2).transpose(1, 2)
         x = self.pos_drop(x)
