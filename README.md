@@ -90,15 +90,6 @@ You can access the **inference API** service of BiRefNet on [FAL](https://fal.ai
 + https://ui.endpoints.huggingface.co/new?repository=ZhengPeng7/BiRefNet
 
 
-## Awards:
-
-<div align="center">
-
-|            *大创2024国家级铜奖*        |
-| :------------------------------: |
-| <img src="https://drive.google.com/thumbnail?id=1iHrT96zscxiiNP6xRfak3UFW350TG44Q&sz=w400" /> |
-
-</div>
 
 <details><summary>Our BiRefNet has achieved SOTA on many similar HR tasks:</summary>
 
