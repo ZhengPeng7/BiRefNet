@@ -90,7 +90,6 @@ You can access the **inference API** service of BiRefNet on [FAL](https://fal.ai
 + https://ui.endpoints.huggingface.co/new?repository=ZhengPeng7/BiRefNet
 
 
-
 <details><summary>Our BiRefNet has achieved SOTA on many similar HR tasks:</summary>
 
 > Papers-with-code website has been shut down, but screenshots at that time have been kept.
@@ -136,6 +135,16 @@ You can access the **inference API** service of BiRefNet on [FAL](https://fal.ai
 
 <img src="https://drive.google.com/thumbnail?id=12XmDhKtO1o2fEvBu4OE4ULVB2BK0ecWi&sz=w1620" />
 
+## Awards:
+> Some great projects based on BiRefNet.
+
+<div align="center">
+
+|            *大创2024省金奖*        |
+| :------------------------------: |
+| <img src="https://drive.google.com/thumbnail?id=1QL_epkUDDhzIX6-Q8y1iXrce0uDwAOdH&sz=w600" /> |
+
+</div>
 
 
 ## Model Zoo
