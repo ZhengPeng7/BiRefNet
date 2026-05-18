@@ -235,10 +235,14 @@ You can access the **inference API** service of BiRefNet on [FAL](https://fal.ai
 
 
 ## Third-Party Creations
->We found there've been some 3rd party applications based on our BiRefNet. Many thanks for their contribution to the community!  
+> We found there've been some 3rd party applications based on our BiRefNet. Many thanks for their contribution to the community!  
 Choose the one you like to try with clicks instead of codes:  
 
 1. **Applications**:
+
+   + Thanks [Comfy-Org/BiRefNet](https://blog.comfy.org/p/new-open-source-models-now-in-comfyui): ComfyUI has provided their official integration of BiRefNet. You can check their [blog](https://blog.comfy.org/i/197285326/birefnet-high-resolution-background-and-object-segmentation) for a possibly easier way to use BiRefNet in ComfyUI.
+
+    <p align="center"><img height="300" alt="ComfyUI-Org/BiRefNet" src="https://github.com/user-attachments/assets/b40143f2-fc9a-4ae5-9f79-53e2a1604aa1" /></p>
 
    + Thanks [**unscreen.pro**](https://unscreen.pro): this project has deployed BiRefNet as the backend model for online video background removal service.
 
