@@ -290,7 +290,7 @@ Choose the one you like to try with clicks instead of codes:
 
 3. **Model Extensions**
 
-   + Thanks [**MatteoKartoon/BiRefNet**](https://github.com/MatteoKartoon/BiRefNet): this project fine-tuned BiRefNet with their **custom anime data** to obtain their model **ToonOut**, which brings improvement on the background-removal task for anime images. See [their paper on arXiv](https://arxiv.org/pdf/2509.06839).
+   + Thanks [**MatteoKartoon/BiRefNet**](https://github.com/MatteoKartoon/BiRefNet): this project fine-tuned BiRefNet with their **custom anime data** to obtain their model **ToonOut**, which brings improvement on the background-removal task for anime images. See [their paper on arXiv](https://arxiv.org/pdf/2509.06839). Check [this](https://replicate.com/sprited/birefnet-toonout) if you need an endpoint for ToonOut.
 
      <p align="center"><img src="https://github.com/MatteoKartoon/BiRefNet/blob/main/images/models_comparison.png" height="300"/></p>
 
