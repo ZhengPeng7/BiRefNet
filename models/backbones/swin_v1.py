@@ -126,7 +126,7 @@ class WindowAttention(nn.Module):
         q, k, v = qkv.unbind(0)  # [B_, H, N, Dh]
         relative_position_bias = self.relative_position_bias_table[self.relative_position_index.view(-1)].view(
             N, N, -1
-        ).permute(2, 0, 1).unsqueeze(0).to(dtype=q.dtype, device=q.device)
+        ).permute(2, 0, 1).unsqueeze(0).to(dtype=q.dtype)
         if mask is not None:
             mask = mask.to(dtype=q.dtype).unsqueeze(1)
 
@@ -382,7 +382,7 @@ class BasicLayer(nn.Module):
         # Turn int to torch.tensor for the compatiability with torch.compile in PyTorch >= 2.5.
         Hp = torch.ceil(torch.tensor(H) / self.window_size).to(torch.int64) * self.window_size
         Wp = torch.ceil(torch.tensor(W) / self.window_size).to(torch.int64) * self.window_size
-        img_mask = torch.zeros((1, Hp, Wp, 1), device=x.device)  # 1 Hp Wp 1
+        img_mask = x.new_zeros((1, Hp, Wp, 1))  # 1 Hp Wp 1
         h_slices = (slice(0, -self.window_size),
                     slice(-self.window_size, -self.shift_size),
                     slice(-self.shift_size, None))
