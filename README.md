@@ -234,6 +234,43 @@ You can access the **inference API** service of BiRefNet on [FAL](https://fal.ai
 
 
 
+<details><summary><b>TorchScript</b> export:</summary>
+
+> `export_torchscript.py` traces the model's main inference graph (backbone + decoder) into a self-contained TorchScript module, loadable with `torch.jit.load` and no dependency on this repo's Python code. Image normalization and the final `sigmoid()` are **not** included in the traced module — run those yourself before/after calling it, same as `inference.py` does.
+
+**Prerequisites**:
++ [`uv`](https://docs.astral.sh/uv/) for environment/dependency management.
++ `pyproject.toml` pins `torch==2.13.0` plus the runtime deps needed to import `models/birefnet.py` (`torchvision`, `timm`, `einops`, `kornia`, `huggingface-hub`, `opencv-python`, `pillow`, `numpy<2`). Run `uv sync` once to create the `.venv`.
++ Network access to the Hugging Face Hub (or a local cache) to fetch the weights repo.
+
+**Run**:
+```shell
+uv run python export_torchscript.py \
+  --repo_id zhengpeng7/BiRefNet \
+  --output birefnet.pt \
+  --height 1024 \
+  --width 1024 \
+  --batch_size 1
+```
+
+| Argument       | Default             | Meaning                                                                 |
+| :------------: | :------------------: | :----------------------------------------------------------------------: |
+| `--repo_id`    | `zhengpeng7/BiRefNet` | HuggingFace Hub repo id to load weights from via `BiRefNet.from_pretrained`. |
+| `--output`     | `birefnet.pt`         | Output path for the saved TorchScript module.                            |
+| `--height`     | `1024`                | Input image height traced into the module (fixed at trace time).        |
+| `--width`      | `1024`                | Input image width traced into the module (fixed at trace time).         |
+| `--batch_size` | `1`                   | Batch size traced into the module (fixed at trace time).                |
+
+> The model is exported via `torch.jit.trace`, not `torch.jit.script`, since the decoder's `dec_ipt` path uses `einops.rearrange` (not scriptable) and the Swin/PVT backbones have Python-level control flow. Because it's a trace, the input shape and batch size above are baked into the graph — export a new module for a different resolution.
+>
+> The traced graph calls `torchvision::deform_conv2d` (used by the `ASPPDeformable` decoder attention), a custom op registered by `torchvision`. Wherever you load the exported module, `import torchvision` **before** `torch.jit.load`, or loading fails with `Unknown builtin op: torchvision::deform_conv2d`.
+>
+> You'll need to make sure that versions of torch and torchvision that you use when running the model match those you export with.
+
+</details>
+
+
+
 ## Third-Party Creations
 > We found there've been some 3rd party applications based on our BiRefNet. Many thanks for their contribution to the community!  
 Choose the one you like to try with clicks instead of codes:  

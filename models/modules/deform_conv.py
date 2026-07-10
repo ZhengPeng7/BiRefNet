@@ -53,12 +53,20 @@ class DeformableConv2d(nn.Module):
 
         offset = self.offset_conv(x)#.clamp(-max_offset, max_offset)
         modulator = 2. * torch.sigmoid(self.modulator_conv(x))
-        
+
+        # torchvision's deform_conv2d builds its own zero bias via
+        # `torch.zeros(out_channels, device=input.device)` when bias=None, which bakes
+        # the trace-time device in as a constant under torch.jit.trace. Build it here
+        # instead with `new_zeros`, which tracks the weight's device dynamically.
+        bias = self.regular_conv.bias
+        if bias is None:
+            bias = self.regular_conv.weight.new_zeros(self.regular_conv.weight.shape[0])
+
         x = deform_conv2d(
             input=x,
             offset=offset,
             weight=self.regular_conv.weight,
-            bias=self.regular_conv.bias,
+            bias=bias,
             padding=self.padding,
             mask=modulator,
             stride=self.stride,
