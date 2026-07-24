@@ -226,8 +226,8 @@ You can access the **inference API** service of BiRefNet on [FAL](https://fal.ai
 > We referred a lot to the [Kazuhito00/BiRefNet-ONNX-Sample](https://github.com/Kazuhito00/BiRefNet-ONNX-Sample), many thanks to @Kazuhito00.
 
 + Check our [Colab demo for ONNX conversion](https://colab.research.google.com/drive/1z6OruR52LOvDDpnp516F-N4EyPGrp5om) or the [notebook file for local running](https://drive.google.com/file/d/1cgL2qyvOO5q3ySfhytypX46swdQwZLrJ), where you can do the conversion/inference by yourself and find all relevant info.
-+ As tested, BiRefNets with SwinL (default backbone) cost `~90%` more time (the inference costs `~165ms` on an A100 GPU) using ONNX files. Meanwhile, BiRefNets with SwinT (lightweight) cost `~75%` more time (the inference costs `~93.8ms` on an A100 GPU) using ONNX files. Input resolution is `1024x1024` as default.
-+ The results of the original pth files and the converted onnx files are slightly different, which is acceptable.
++ As tested, BiRefNets with SwinL (default backbone) cost `~90%` more time (the inference costs `~165ms` on an A100 GPU) using ONNX files. Meanwhile, BiRefNets with SwinT (lightweight) cost `~75%` more time (the inference costs `~93.8ms` on an A100 GPU) using ONNX files. Input resolution is `1024x1024` by default.
++ The results of the original pth files and the converted ONNX files are slightly different, which is acceptable.
 + Pay attention to the compatibility among `onnxruntime-gpu, CUDA, and CUDNN` (we use `torch==2.0.1, cuda=11.8` here).
 
 </details>
@@ -235,10 +235,14 @@ You can access the **inference API** service of BiRefNet on [FAL](https://fal.ai
 
 
 ## Third-Party Creations
-> We found there've been some 3rd party applications based on our BiRefNet. Many thanks for their contribution to the community!  
-Choose the one you like to try with clicks instead of codes:  
+> We found that there have been some 3rd-party applications based on our BiRefNet. Many thanks for their contribution to the community!  
+Choose the one you like to try with clicks instead of code:  
 
 1. **Applications**:
+
+   + Thanks [CNAPS.AI/BiRefNet](https://docs.cnaps.ai/birefnet): CNAPS.AI has provided a flexible [workflow](https://cnaps.ai/community/318c3e9a-c93c-462a-8d26-e725f1c0a95e) of BiRefNet on their online inference service platform. You can check their [blog](https://docs.cnaps.ai/birefnet) for an easy tutorial and more adaptable parameters to better use BiRefNet there.
+
+    <p align="center"><img height="300" alt="ComfyUI-Org/BiRefNet" src="https://images.spr.so/cdn-cgi/imagedelivery/j42No7y-dcokJuNgXeA0ig/8e3d6508-f5d2-482c-8593-af16f9184030/screenshot_2026-07-23_at_11.40.45_am/quality=99" /></p>
 
    + Thanks [Comfy-Org/BiRefNet](https://blog.comfy.org/p/new-open-source-models-now-in-comfyui): ComfyUI has provided their official integration of BiRefNet. You can check their [blog](https://blog.comfy.org/i/197285326/birefnet-high-resolution-background-and-object-segmentation) for a possibly easier way to use BiRefNet in ComfyUI.
 
