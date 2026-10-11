@@ -242,6 +242,10 @@ Choose the one you like to try with clicks instead of code:
 
 1. **Applications**:
 
+   + Thanks [SafeResize](https://saferesize.com/remove-background): SafeResize has provided an online interface for using BiRefNet_lite to remove photo backgrounds **entirely in your browser** with ONNX Runtime Web.
+
+    <p align="center"><img height="300" alt="SafeResize_screenshot" src="https://github.com/user-attachments/assets/20df90fb-ed60-45ab-9ecc-33eddd4473be" /></p>
+
    + Thanks [CNAPS.AI/BiRefNet](https://docs.cnaps.ai/birefnet): CNAPS.AI has provided a flexible [workflow](https://cnaps.ai/community/318c3e9a-c93c-462a-8d26-e725f1c0a95e) of BiRefNet on their online inference service platform. You can check their [blog](https://docs.cnaps.ai/birefnet) for an easy tutorial and more adaptable parameters to better use BiRefNet there.
 
     <p align="center"><img height="300" alt="ComfyUI-Org/BiRefNet" src="https://images.spr.so/cdn-cgi/imagedelivery/j42No7y-dcokJuNgXeA0ig/8e3d6508-f5d2-482c-8593-af16f9184030/screenshot_2026-07-23_at_11.40.45_am/quality=99" /></p>
