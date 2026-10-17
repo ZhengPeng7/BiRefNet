@@ -56,7 +56,6 @@ This repo is the official implementation of "[**Bilateral Reference for High-Res
 * **`May 15, 2025`:**  We released a video of the tutorial (screen recording) on BiRefNet fine-tuning on both my [YouTube](https://youtu.be/FwGT_0V9E-k) and [Bilibili](https://www.bilibili.com/video/BV1dxEkzgE3J) channels.
 * **`Mar 31, 2025`:**  We released the [BiRefNet_dynamic](https://huggingface.co/ZhengPeng7/BiRefNet_dynamic) for general use, which was trained on images in a dynamic resolution range from `256x256` to `2304x2304` and shows great and **robust** performance on **any resolution** images! Thanks again to [Freepik](https://www.freepik.com) their kind GPU support.
 * **`Feb 12, 2025`:**  We released the [BiRefNet_HR-matting](https://huggingface.co/ZhengPeng7/BiRefNet_HR-matting) for general matting use, which was trained on images in `2048x2048` and shows great matting performance on higher resolution images! Thanks again to [Freepik](https://www.freepik.com) their kind GPU support.
-* **`Feb 12, 2025`:**  We released the [BiRefNet_HR-matting](https://huggingface.co/ZhengPeng7/BiRefNet_HR-matting) for general matting use, which was trained on images in `2048x2048` and shows great matting performance on higher resolution images! Thanks again to [Freepik](https://www.freepik.com) their kind GPU support.
 * **`Feb 1, 2025`:**  We released the [BiRefNet_HR](https://huggingface.co/ZhengPeng7/BiRefNet_HR) for general use, which was trained on images in `2048x2048` and shows great performance on higher resolution images! Thanks to [Freepik](https://www.freepik.com) for offering H200x4 GPU for this huge training (~3 weeks).
 * **`Jan 6, 2025`:**  Validate the success of FP16 inference with ~0 decrease of performance and better efficiency: the standard BiRefNet can run in `17 FPS` with `resolution==1024x1024` with `3.45GB GPU memory` on a single `RTX 4090`. Check more details in the model efficiency part below in [model zoo section](https://github.com/ZhengPeng7/BiRefNet?tab=readme-ov-file#model-zoo).
 * **`Dec 5, 2024`:**  Fix the bug of using `torch.compile` in latest PyTorch versions (2.5.1) and the slow iteration in FP16 training with accelerate (set as default).
@@ -241,6 +240,10 @@ You can access the **inference API** service of BiRefNet on [FAL](https://fal.ai
 Choose the one you like to try with clicks instead of code:  
 
 1. **Applications**:
+
+   + Thanks [sticraft](https://sticraft.com/background-eraser): Sticraft has also provided an online service for removing background with BiRefNet_lite. It runs with ONNX Runtime Web to avoid sending your images to the server.
+
+    <p align="center"><img height="300" alt="Sticraft_screenshot" src="https://github.com/user-attachments/assets/f01d8f2f-177e-46b7-b9d5-787bdd45f74d" /></p>
 
    + Thanks [SafeResize](https://saferesize.com/remove-background): SafeResize has provided an online interface for using BiRefNet_lite to remove photo backgrounds **entirely in your browser** with ONNX Runtime Web.
 
