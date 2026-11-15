@@ -25,6 +25,7 @@
   <a href='LICENSE'><img src='https://img.shields.io/badge/License-MIT-yellow'></a>&ensp; 
   <a href='https://huggingface.co/spaces/ZhengPeng7/BiRefNet_demo'><img src='https://img.shields.io/badge/%F0%9F%A4%97%20HF-Space-blue'></a>&ensp; 
   <a href='https://huggingface.co/ZhengPeng7/BiRefNet'><img src='https://img.shields.io/badge/%F0%9F%A4%97%20HF-Model-blue'></a>&ensp; 
+  <a href='https://cloud.swmgpu.com/w/samofvaani/vision-pbr-matte-studio'><img src='https://img.shields.io/badge/swm%20cloud-ComfyUI%20Studio-0A84FF'></a>&ensp; 
 </div>
 
 <div align="center" style="display: flex; justify-content: center; flex-wrap: wrap;">
@@ -87,6 +88,7 @@ birefnet = AutoModelForImageSegmentation.from_pretrained('zhengpeng7/BiRefNet', 
 You can access the **inference API** service of BiRefNet on [FAL](https://fal.ai) or click the `Deploy` button on our [HF model page](https://huggingface.co/ZhengPeng7/BiRefNet) to set up your own deployment.
 + https://fal.ai/models/fal-ai/birefnet/v2
 + https://ui.endpoints.huggingface.co/new?repository=ZhengPeng7/BiRefNet
++ **1-click ComfyUI cloud GPU workspaces on [swm cloud](https://cloud.swmgpu.com):** [Vision, Matting & PBR Decomposition Studio (BiRefNet + Lucida + Marigold v2 + MoGe)](https://cloud.swmgpu.com/w/samofvaani/vision-pbr-matte-studio) · [ComfyArt Infinite Canvas, 360° Panorama Stickers & Qwen-Image-Layered Studio](https://cloud.swmgpu.com/w/samofvaani/comfyart-panorama-canvas-studio)
 
 
 <details><summary>Our BiRefNet has achieved SOTA on many similar HR tasks:</summary>
